@@ -34,6 +34,7 @@ IntervalMethod = Literal[
     "rg-bootstrap-inflated-v1",
 ]
 
+SYNTHETIC_BYTES_MODEL = "synthetic-overview-block-v1"
 CHIP_LABELS = {
     Tier.KEYED: "Checked",
     Tier.GOLD_ANCHORED: "Estimated from a random check",
@@ -118,4 +119,12 @@ class TypedNumber(Frozen):
             parts.append("SYNTHETIC")
         if self.replayed:
             parts.append("recorded")
+        if self.detail.get("bytes_model") == SYNTHETIC_BYTES_MODEL:
+            parts.append("modelled bytes")
         return " · ".join(parts)
+
+    def chip_hover(self) -> str:
+        """Hover text for the chip (RS-B1: modelled bytes are declared, not measured)."""
+        if self.detail.get("bytes_model") == SYNTHETIC_BYTES_MODEL:
+            return "declared overview-block model, not measured"
+        return "; ".join(self.reasons) if self.reasons else self.tier.value

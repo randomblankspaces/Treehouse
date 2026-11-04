@@ -10,6 +10,7 @@ from treehouse.schemas.claims import Claim
 from treehouse.schemas.numbers import TypedNumber
 from treehouse.schemas.passport import TrustPassport
 from treehouse.schemas.scorecard import Scorecard
+from treehouse.schemas.tools import WindowResult
 from treehouse.schemas.trace import SpanRecord
 
 
@@ -29,6 +30,7 @@ class ReportBundle(Frozen):
     claims: list[Claim] = []
     ledgers: list[CheckLedger] = []
     trace_rows: list[SpanRecord] = []
+    evidence: list[WindowResult] = []  # cited windows (metadata only, never pixels)
     facts: dict[str, TypedNumber] = {}
     summary: str
     lint: SummaryLint
