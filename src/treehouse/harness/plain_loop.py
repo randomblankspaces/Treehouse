@@ -10,6 +10,11 @@ carries the turn's text and tool-use ids inline; the agent span carries ``treeho
 bodies themselves go to blobs through ``blob_sink`` (the runner passes
 ``lambda b: store.put_blob(b, media_type="application/json", license=...)``); verify() fails a sealed run
 whose ``*_ref`` attributes name blobs that are not in the store, so a runner that seals must pass one.
+
+Error contract: BudgetExceeded ends the run with ``stop="budget"``; an odd stop reason ends it with
+``stop="error"``. Any other provider or gateway exception (CassetteMiss, ScriptDivergence, MissingPixels,
+ToolDivergence, ...) is recorded on the open spans and propagates: the runner maps it to
+``TrialHead.stop="error"``.
 """
 
 from __future__ import annotations

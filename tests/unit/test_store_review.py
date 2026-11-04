@@ -8,6 +8,7 @@ import os
 import shutil
 
 import pytest
+from test_store import CFG, _manifest_fields, make_sealed_run
 from typer.testing import CliRunner
 
 from treehouse.canon import canonical_json, sha256_bytes
@@ -18,8 +19,6 @@ from treehouse.store.local import LEDGER_GENESIS, LocalStore
 from treehouse.store.seal import seal
 from treehouse.store.verify import verify
 from treehouse.trace.chain import ChainedJsonlWriter, append_chained
-
-from .test_store import CFG, _manifest_fields, make_sealed_run
 
 
 @pytest.fixture
@@ -307,7 +306,8 @@ def test_m3_traversal_ids_report_fail_not_crash(store):
     make_sealed_run(store)
     assert any("invalid run id" in p for p in _problems(store, "../../etc"))
     r = CliRunner().invoke(app, ["verify", "../../etc", "--store", str(store.root)])
-    assert r.exit_code == 1 and "FAIL" in r.output and r.exception is None or isinstance(r.exception, SystemExit)
+    assert r.exit_code == 1 and "FAIL ../../etc: invalid run id" in r.output
+    assert r.exception is None or isinstance(r.exception, SystemExit)  # no traceback
     append_chained(store.ledger_path, {"kind": "run", "run_id": "../../x", "ref": "y"}, genesis=LEDGER_GENESIS)
     assert any("invalid run id" in p for p in _problems(store))
 
