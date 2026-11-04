@@ -1,0 +1,74 @@
+[
+  {
+    "id": "uspvdb:401372",
+    "lon": -78.6427,
+    "lat": 38.3834,
+    "cls": "solar_farm"
+  },
+  {
+    "id": "uspvdb:402037",
+    "lon": -78.3734,
+    "lat": 37.5037,
+    "cls": "solar_farm"
+  },
+  {
+    "id": "uspvdb:402364",
+    "lon": -78.2316,
+    "lat": 37.9651,
+    "cls": "solar_farm"
+  },
+  {
+    "id": "uspvdb:402640",
+    "lon": -79.3043,
+    "lat": 36.6582,
+    "cls": "solar_farm"
+  },
+  {
+    "id": "uspvdb:403215",
+    "lon": -78.446,
+    "lat": 36.8164,
+    "cls": "solar_farm"
+  },
+  {
+    "id": "uspvdb:403292",
+    "lon": -79.3532,
+    "lat": 36.9279,
+    "cls": "solar_farm"
+  },
+  {
+    "id": "uspvdb:403383",
+    "lon": -78.5811,
+    "lat": 37.0231,
+    "cls": "solar_farm"
+  },
+  {
+    "id": "uspvdb:403389",
+    "lon": -78.7683,
+    "lat": 37.33,
+    "cls": "solar_farm"
+  },
+  {
+    "id": "uspvdb:403717",
+    "lon": -79.033,
+    "lat": 37.0117,
+    "cls": "solar_farm"
+  },
+  {
+    "id": "uspvdb:403919",
+    "lon": -79.301,
+    "lat": 36.5925,
+    "cls": "solar_farm"
+  },
+  {
+    "id": "uspvdb:403951",
+    "lon": -78.384,
+    "lat": 37.5024,
+    "cls": "solar_farm"
+  },
+  {
+    "id": "uspvdb:403955",
+    "lon": -79.3566,
+    "lat": 37.1441,
+    "cls": "solar_farm"
+  }
+]

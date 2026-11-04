@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Treehouse · Judge workbench</title>
+  <link rel="stylesheet" href="assets/style.css"><script src="assets/app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#question">Skip to question</a>
+<header><a class="brand" href="./" aria-label="Treehouse workbench home"><span class="mark" aria-hidden="true">⌂</span> Treehouse</a><span class="header-note">Agent evidence workbench</span><span id="mode" class="mode">Connecting</span></header>
+<main>
+  <div class="intro"><div><h1>Ask the project.<br>Inspect the evidence.</h1><p>One question, a grounded answer, and the AWS receipts behind it.</p></div><p class="scope">Judge preview<br><strong>Three challenges. One trace.</strong></p></div>
+  <div id="setup" class="notice"><strong>Ready for AWS evidence</strong><p>Start the server with the AWS outputs configuration from Kiro to enable live questions. You can inspect a recorded receipt without making an AWS call.</p><code>treehouse judge serve --config judge-config.json</code></div>
+  <div class="workbench">
+    <section class="question-pane" aria-labelledby="question-heading">
+      <h2 id="question-heading">Question</h2>
+      <form id="ask-form">
+        <label for="question">What would you like to know about Treehouse?</label>
+        <p id="question-hint" class="hint">Ask about the project documents or its task cards. Each submit starts one Runtime invocation, which may call Bedrock and tools.</p>
+        <textarea id="question" name="prompt" rows="3" maxlength="2000" required aria-describedby="question-hint">What does Treehouse evaluate, and which project document explains it?</textarea>
+        <div class="form-footer"><span id="request-note">No background AWS calls.</span><button id="submit" type="submit" disabled>Ask agent</button></div>
+      </form>
+      <p id="announcement" role="status" aria-live="polite"></p><p id="error" role="alert" hidden></p>
+      <article id="answer-pane" aria-labelledby="answer-heading" aria-busy="false">
+        <div class="answer-head"><h2 id="answer-heading">Answer</h2><span id="answer-source" class="subtle">Awaiting a question</span></div>
+        <div id="empty-answer"><span class="empty-mark" aria-hidden="true">⌕</span><h3>Your evidence starts here.</h3><p>A returned answer will appear alongside its document citations. Open the trace to inspect the actual tool results and invocation identifiers.</p></div>
+        <div id="answer-content" hidden><p id="answer-text"></p><h3>Document sources</h3><ol id="citations"></ol><p id="no-citations" class="hint" hidden>No document citations were returned. Know Your Stuff evidence is incomplete.</p></div>
+      </article>
+    </section>
+    <aside aria-labelledby="proof-heading">
+      <div class="proof-head"><h2 id="proof-heading">Challenge evidence</h2><span id="proof-count">0 / 3 observed</span></div>
+      <p class="hint">Derived from the returned receipt. These observations are not an AWS-signed attestation.</p>
+      <ol id="proofs" class="proofs"></ol>
+      <div id="recorded-warning" class="notice compact" hidden></div>
+      <section class="trace" aria-labelledby="trace-heading"><h2 id="trace-heading">Inspect the trace</h2>
+        <details><summary>Gateway tools &amp; calls <span id="tool-count">0 calls</span></summary><div id="tool-trace" class="trace-content"><p>No tool calls yet.</p></div></details>
+        <details><summary>Runtime invocation</summary><dl id="runtime-trace"><dt>Status</dt><dd>No invocation receipt.</dd></dl></details>
+        <details><summary>Configured resources</summary><dl id="resources"><dt>Status</dt><dd>No server configuration loaded.</dd></dl></details>
+        <a id="export" class="export" href="api/receipt" hidden>Download JSON receipt</a>
+      </section>
+    </aside>
+  </div>
+  <footer>Treehouse <span>Answers are observations to inspect. Local previews do not demonstrate an AWS deployment.</span></footer>
+</main>
+</body></html>

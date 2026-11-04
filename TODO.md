@@ -255,3 +255,19 @@ Commit reconcile.json on kiro/k9-tracer.
   output panels (currently `no_grade_reason`); I1-I3 use the demo runs (fabricator 10/10/16, key-peeker 2 blocked).
 - P8: replace `trust/stub.py`; add verdict/gold fixtures (`fixtures/demo/{verdicts,gold}`) to
   `scripts/make_demo_fixtures.py` from `keys/synth/*.json`; wire §5.3 steps 5 and 7 into `service.demo`.
+
+
+## Current continuation — user clarification November 4
+
+This section supplements the historical overnight checklist above; it does not erase previous decisions.
+See docs/PLAN.md and docs/KIRO-HANDOFF.md for the current sequence and actual commands.
+
+- [x] Independently authored investigation acceptance/rubric and reference/holdout regression tests.
+- [x] Local plugin sandbox, causal decisions, vision-classifier adapter, sealed reports and SQLite/GeoJSON.
+- [x] Investigation UI with actual prediction markers, evidence and confidence links.
+- [x] Local all-extras suite: 733 passed, 2 live skips, 1 deselected; fresh independent repair review passed.
+- [ ] Record successful pushed/main merge and Kiro handoff in the final user report.
+- [ ] Incorporate Suhas's next explanation before further feature work.
+- [ ] Kiro: connect real AWS providers, imagery/embedding sources and classifier under existing guards.
+- [ ] Kiro: independently test real workflow/output, record actual costs/accuracy and remaining failures.
+- [ ] Refine from live evidence; keep simulations, human-baseline claims and unsafe trust wiring deferred.

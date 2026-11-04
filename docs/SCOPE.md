@@ -1,5 +1,14 @@
 # Team Scope — Clay agent-eval sandbox ("Treehouse")
 
+> Current context, November 4: Suhas clarified that Treehouse evaluates an agent's complete
+> investigation and the accuracy of its resulting geographic database, across configurable tasks
+> and zones. Agent explanations/confidence are self-reports; held-out evaluation and separate-context
+> process review have distinct evidence labels. Independent test authorship precedes implementation.
+> The current delivery sequence and superseding scope are in [OUTLINE.md](OUTLINE.md)
+> and [PLAN.md](PLAN.md). Earlier Nepal-only, UI-deferred and old overnight ordering below
+> are historical where they conflict; preserved decisions are not new execution authority.
+
+
 > **For agents — what this file is:** The team's own scope: the problem, constraints, and solution requirements in the team's words, plus a decisions log from the scope interview, the design talk and the overnight design councils (D1–D75). It is the **source of team intent**. Files 01–06 turn it into features, criteria, tests and risks, merged with Clay's vision doc. Every S-requirement below maps to items in 01/02/04/05. S14–S19 (round 5) were mapped and S20–S29 added in round 6, from the two adopted designs in [design/](design/). If you find a requirement with no matching item, or this file disagrees with a numbered file, raise it with the team and don't silently pick one. The build-time design questions in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) are **decided** (D25), and several are superseded by round 6 (marked there). Text marked *(interpretation)* is the assistant's reading and hasn't been confirmed by the team. Terms are defined in the [Glossary](#glossary) at the end.
 
 ## Problem

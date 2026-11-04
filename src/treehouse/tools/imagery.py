@@ -45,13 +45,15 @@ class NoImagery:
 def make_imagery_server(source: ImagerySource) -> MCPServer:
     srv = MCPServer("imagery")
 
-    @srv.tool()
+    # Explicit metadata preserves cassette whitespace when Python cleans function docstrings.
+    @srv.tool(description=(
+        'Read a square window of side_m metres centred on lon/lat from a scene, resampled to out_px x out_px.\n'
+        '        effective_gsd_m = max(side_m / out_px, pixel_spacing_m) is the detail you actually see (upsampling\n'
+        '        adds none); the image follows the metadata.'
+    ))
     def imagery_window(scene_id: str, lon: float, lat: float, side_m: Annotated[float, Field(gt=0)],
                        out_px: Annotated[int, Field(gt=0)] = 512,
                        resampling: Literal["average", "nearest"] = "average") -> WindowResult | ToolError:
-        """Read a square window of side_m metres centred on lon/lat from a scene, resampled to out_px x out_px.
-        effective_gsd_m = max(side_m / out_px, pixel_spacing_m) is the detail you actually see (upsampling
-        adds none); the image follows the metadata."""
         bad = check_window(lon, lat, side_m, out_px)
         if bad is not None:
             return bad

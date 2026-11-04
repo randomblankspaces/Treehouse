@@ -13,6 +13,7 @@ import shutil
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 from treehouse import __version__
 from treehouse.canon import canonical_json, sha256_bytes
@@ -24,6 +25,7 @@ from treehouse.gateway.meter import Meter
 from treehouse.gateway.pixel_cache import PixelCache
 from treehouse.gateway.policy import Policy
 from treehouse.gateway.tool_cassette import ToolCassette
+from treehouse.harness.base import HarnessResult
 from treehouse.harness.plain_loop import PlainLoop
 from treehouse.ids import IdSource
 from treehouse.providers.base import ModelProvider
@@ -59,6 +61,7 @@ class RunSpec:
     tool_cassettes: list[Path | None] = field(default_factory=list)  # one per trial (verify or record)
     model_cassette: Path | None = None  # copied into the sealed run
     recorded_windows: list[dict] | None = None
+    investigation: Any = None  # opt-in factory; default replay path is unchanged
 
 
 @dataclass
@@ -102,15 +105,26 @@ async def _trial(spec: RunSpec, store: LocalStore, tmp: Path, i: int, floor: str
     ledger = ClaimLedger(card, run_id=spec.run_id, trial_id=tid)
     guard = BudgetGuard(cfg.budget, clock=clock)
     servers = build_servers(card, ledger=ledger, pixels=pixels, recorded_windows=spec.recorded_windows)
+    investigation = spec.investigation(ledger, pixels, guard, tracer) if spec.investigation else None
+    if investigation is not None:
+        servers = investigation.servers(servers)
     tc_path = spec.tool_cassettes[i] if i < len(spec.tool_cassettes) else None
     tcas = ToolCassette(tc_path) if tc_path is not None else None
     gw = ToolGateway(servers, Policy(card), tracer, guard, Meter(), pixels, tool_cassette=tcas,
-                     mode=cfg.tool_mode, store=store, ledger=ledger, license=floor)
+                     mode=cfg.tool_mode, store=store, ledger=ledger, license=floor, investigation=investigation)
     loop = PlainLoop(model_id=cfg.worker.model_key, params=cfg.worker.params,
                      blob_sink=lambda b: store.put_blob(b, media_type="application/json", license=floor))
     async with gw:
-        res = await loop.run(system=SYSTEM, user=card.goal, provider=spec.provider, gateway=gw, tracer=tracer,
+        try:
+            res = await loop.run(system=investigation.system if investigation else SYSTEM,
+                             user=investigation.task() if investigation else card.goal,
+                             provider=spec.provider, gateway=gw, tracer=tracer,
                              budget=guard, max_turns=cfg.max_turns, role="worker", trial_index=i)
+        except Exception as exc:
+            if investigation is None:
+                raise
+            res = HarnessResult(final_text="", stop="error", turns=0,
+                                detail=f"{type(exc).__name__}: provider or runtime failure; partial work preserved")
     if hasattr(spec.provider, "check_consumed") and cfg.trials == 1:
         spec.provider.check_consumed()  # a replay that stopped early is a divergence
     head = tracer.close()
@@ -119,6 +133,8 @@ async def _trial(spec: RunSpec, store: LocalStore, tmp: Path, i: int, floor: str
     extra = {"understanding": ledger.understanding.model_dump(mode="json") if ledger.understanding else None,
              "limitations": ledger.limitations}
     parts[f"trials/{tid}.understanding.json"] = canonical_json(extra).encode()
+    if investigation is not None:
+        parts[f"trials/{tid}.investigation.json"] = canonical_json(investigation.snapshot(res)).encode()
     th = TrialHead(trial_id=tid, role="worker", trace_file=f"trials/{tid}.trace.jsonl", head=head,
                    claims_sha256=sha256_bytes(claims), stop=res.stop)
     return th, parts, TrialOutcome(tid, res.stop, res.detail, len(ledger.claims), head.head), tc_path

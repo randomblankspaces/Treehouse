@@ -1,0 +1,638 @@
+{
+  "checks": [
+    {
+      "data": {
+        "account": "sha256:c62c529fc9b8..9664",
+        "identity": "assumed-role/WSParticipantRole"
+      },
+      "detail": "",
+      "error_code": null,
+      "name": "sts.get_caller_identity",
+      "service": "sts",
+      "status": "ok"
+    },
+    {
+      "data": {
+        "count": 124
+      },
+      "detail": "",
+      "error_code": null,
+      "name": "bedrock.list_foundation_models",
+      "service": "bedrock",
+      "status": "ok"
+    },
+    {
+      "data": {
+        "count": 99
+      },
+      "detail": "",
+      "error_code": null,
+      "name": "bedrock.list_inference_profiles",
+      "service": "bedrock",
+      "status": "ok"
+    },
+    {
+      "data": {
+        "estimated_cost_usd": 0.0039000000000000003,
+        "invoke_id": "us.anthropic.claude-sonnet-5-5",
+        "mode": "user_turn",
+        "reply": "Mixed",
+        "stop_reason": "end_turn",
+        "usage": {
+          "cache_read": 0,
+          "cache_write": 0,
+          "image_input_tokens": null,
+          "input_tokens": 48,
+          "output_tokens": 6
+        }
+      },
+      "detail": "",
+      "error_code": null,
+      "name": "bedrock.converse:claude-sonnet-5-5:user_turn:us.anthropic.claude-sonnet-5-5",
+      "service": "bedrock-runtime",
+      "status": "ok"
+    },
+    {
+      "data": {
+        "estimated_cost_usd": 0.0239,
+        "invoke_id": "us.anthropic.claude-sonnet-5-5",
+        "mode": "tool_result",
+        "reply": "Mixed.",
+        "stop_reason": "end_turn",
+        "usage": {
+          "cache_read": 0,
+          "cache_write": 0,
+          "image_input_tokens": null,
+          "input_tokens": 443,
+          "output_tokens": 7
+        }
+      },
+      "detail": "",
+      "error_code": null,
+      "name": "bedrock.converse:claude-sonnet-5-5:tool_result:us.anthropic.claude-sonnet-5-5",
+      "service": "bedrock-runtime",
+      "status": "ok"
+    },
+    {
+      "data": {
+        "estimated_cost_usd": 0.02825,
+        "invoke_id": "us.amazon.nova-pro-v1:0",
+        "mode": "user_turn",
+        "reply": "Mixed",
+        "stop_reason": "end_turn",
+        "usage": {
+          "cache_read": 0,
+          "cache_write": 0,
+          "image_input_tokens": null,
+          "input_tokens": 555,
+          "output_tokens": 2
+        }
+      },
+      "detail": "",
+      "error_code": null,
+      "name": "bedrock.converse:nova-pro:user_turn:us.amazon.nova-pro-v1:0",
+      "service": "bedrock-runtime",
+      "status": "ok"
+    },
+    {
+      "data": {
+        "estimated_cost_usd": 0.049300000000000004,
+        "invoke_id": "us.amazon.nova-pro-v1:0",
+        "mode": "tool_result",
+        "reply": "Mixed",
+        "stop_reason": "end_turn",
+        "usage": {
+          "cache_read": 0,
+          "cache_write": 0,
+          "image_input_tokens": null,
+          "input_tokens": 976,
+          "output_tokens": 2
+        }
+      },
+      "detail": "",
+      "error_code": null,
+      "name": "bedrock.converse:nova-pro:tool_result:us.amazon.nova-pro-v1:0",
+      "service": "bedrock-runtime",
+      "status": "ok"
+    },
+    {
+      "data": {
+        "matched": 25,
+        "quotas_seen": 410
+      },
+      "detail": "",
+      "error_code": null,
+      "name": "service-quotas.list_service_quotas:bedrock",
+      "service": "service-quotas",
+      "status": "ok"
+    },
+    {
+      "data": {},
+      "detail": "image payloads are not logged",
+      "error_code": null,
+      "name": "bedrock.get_model_invocation_logging_configuration",
+      "service": "bedrock",
+      "status": "ok"
+    },
+    {
+      "data": {
+        "buckets": 2
+      },
+      "detail": "",
+      "error_code": null,
+      "name": "s3.list_buckets",
+      "service": "s3",
+      "status": "ok"
+    },
+    {
+      "data": {
+        "work_groups": [
+          "primary"
+        ]
+      },
+      "detail": "",
+      "error_code": null,
+      "name": "athena.list_work_groups",
+      "service": "athena",
+      "status": "ok"
+    },
+    {
+      "data": {
+        "functions_seen": 1
+      },
+      "detail": "",
+      "error_code": null,
+      "name": "lambda.list_functions",
+      "service": "lambda",
+      "status": "ok"
+    },
+    {
+      "data": {
+        "created": true,
+        "log_group": "/treehouse/probe",
+        "retention_days": 1
+      },
+      "detail": "",
+      "error_code": null,
+      "name": "logs.put_log_events:/treehouse/probe",
+      "service": "logs",
+      "status": "ok"
+    },
+    {
+      "data": {
+        "state_machines_seen": 0
+      },
+      "detail": "",
+      "error_code": null,
+      "name": "stepfunctions.list_state_machines",
+      "service": "stepfunctions",
+      "status": "ok"
+    },
+    {
+      "data": {
+        "runtimes_seen": 0
+      },
+      "detail": "",
+      "error_code": null,
+      "name": "bedrock-agentcore-control.list_agent_runtimes",
+      "service": "bedrock-agentcore-control",
+      "status": "ok"
+    },
+    {
+      "data": {
+        "budgets": [
+          "hackathon-budget-<acct>"
+        ]
+      },
+      "detail": "",
+      "error_code": null,
+      "name": "budgets.describe_budgets",
+      "service": "budgets",
+      "status": "ok"
+    }
+  ],
+  "execution": {
+    "account": "sha256:c62c529fc9b8..9664",
+    "aws_execution_env": null,
+    "boto3": "1.43.123",
+    "identity_arn": "assumed-role/WSParticipantRole",
+    "locus": "local-or-ec2",
+    "platform": "Linux-6.18.56-125.164.amzn2023.x86_64-x86_64-with-glibc2.34",
+    "python": "3.15.2"
+  },
+  "foundation_models": [
+    "ai21.jamba-1-5-large-v1:0",
+    "ai21.jamba-1-5-mini-v1:0",
+    "amazon.nova-2-5-sonic",
+    "amazon.nova-2-lite-v1:0",
+    "amazon.nova-2-lite-v1:0:256k",
+    "amazon.nova-2-multimodal-embeddings-v1:0",
+    "amazon.nova-2-sonic-v1:0",
+    "amazon.nova-lite-v1:0",
+    "amazon.nova-lite-v1:0:24k",
+    "amazon.nova-lite-v1:0:300k",
+    "amazon.nova-micro-v1:0",
+    "amazon.nova-micro-v1:0:128k",
+    "amazon.nova-micro-v1:0:24k",
+    "amazon.nova-pro-v1:0",
+    "amazon.nova-pro-v1:0:24k",
+    "amazon.nova-pro-v1:0:300k",
+    "amazon.titan-embed-g1-text-02",
+    "amazon.titan-embed-image-v1",
+    "amazon.titan-embed-image-v1:0",
+    "amazon.titan-embed-text-v1",
+    "amazon.titan-embed-text-v1:2:8k",
+    "amazon.titan-embed-text-v2:0",
+    "amazon.titan-embed-text-v2:0:8k",
+    "anthropic.claude-fable-5",
+    "anthropic.claude-fable-5-1",
+    "anthropic.claude-haiku-4-5-20251001-v1:0",
+    "anthropic.claude-haiku-5-5",
+    "anthropic.claude-opus-4-1-20250805-v1:0",
+    "anthropic.claude-opus-4-5-20251101-v1:0",
+    "anthropic.claude-opus-4-6-v1",
+    "anthropic.claude-opus-4-7",
+    "anthropic.claude-opus-4-8",
+    "anthropic.claude-opus-5",
+    "anthropic.claude-opus-5-5",
+    "anthropic.claude-sonnet-4-5-20250929-v1:0",
+    "anthropic.claude-sonnet-4-6",
+    "anthropic.claude-sonnet-5",
+    "anthropic.claude-sonnet-5-5",
+    "cohere.embed-english-v3",
+    "cohere.embed-english-v3:0:512",
+    "cohere.embed-multilingual-v3",
+    "cohere.embed-multilingual-v3:0:512",
+    "cohere.embed-v4:0",
+    "cohere.rerank-v3-5:0",
+    "deepseek.r1-v1:0",
+    "deepseek.v3.2",
+    "google.gemma-3-12b-it",
+    "google.gemma-3-27b-it",
+    "google.gemma-3-4b-it",
+    "meta.llama3-1-70b-instruct-v1:0",
+    "meta.llama3-1-8b-instruct-v1:0",
+    "meta.llama3-3-70b-instruct-v1:0",
+    "meta.llama3-70b-instruct-v1:0",
+    "meta.llama3-8b-instruct-v1:0",
+    "meta.llama4-maverick-17b-instruct-v1:0",
+    "meta.llama4-scout-17b-instruct-v1:0",
+    "minimax.minimax-m2",
+    "minimax.minimax-m2.1",
+    "minimax.minimax-m2.5",
+    "mistral.devstral-2-123b",
+    "mistral.magistral-small-2509",
+    "mistral.ministral-3-14b-instruct",
+    "mistral.ministral-3-3b-instruct",
+    "mistral.ministral-3-8b-instruct",
+    "mistral.mistral-7b-instruct-v0:2",
+    "mistral.mistral-large-2402-v1:0",
+    "mistral.mistral-large-3-675b-instruct",
+    "mistral.mistral-small-2402-v1:0",
+    "mistral.mixtral-8x7b-instruct-v0:1",
+    "mistral.pixtral-large-2502-v1:0",
+    "mistral.voxtral-mini-3b-2507",
+    "mistral.voxtral-small-24b-2507",
+    "moonshot.kimi-k2-thinking",
+    "moonshotai.kimi-k2.5",
+    "moonshotai.kimi-k3",
+    "nvidia.nemotron-nano-12b-v2",
+    "nvidia.nemotron-nano-3-30b",
+    "nvidia.nemotron-nano-9b-v2",
+    "nvidia.nemotron-super-3-120b",
+    "openai.gpt-5.4",
+    "openai.gpt-5.5",
+    "openai.gpt-5.6-luna",
+    "openai.gpt-5.6-sol",
+    "openai.gpt-5.6-terra",
+    "openai.gpt-6-astra",
+    "openai.gpt-6-luna",
+    "openai.gpt-6-sol",
+    "openai.gpt-6.1-sol",
+    "openai.gpt-6.1-terra",
+    "openai.gpt-oss-120b-1:0",
+    "openai.gpt-oss-20b-1:0",
+    "openai.gpt-oss-safeguard-120b",
+    "openai.gpt-oss-safeguard-20b",
+    "qwen.qwen3-32b-v1:0",
+    "qwen.qwen3-coder-30b-a3b-v1:0",
+    "qwen.qwen3-coder-next",
+    "qwen.qwen3-next-80b-a3b",
+    "qwen.qwen3-vl-235b-a22b",
+    "stability.stable-conservative-upscale-v1:0",
+    "stability.stable-creative-upscale-v1:0",
+    "stability.stable-fast-upscale-v1:0",
+    "stability.stable-image-control-sketch-v1:0",
+    "stability.stable-image-control-structure-v1:0",
+    "stability.stable-image-erase-object-v1:0",
+    "stability.stable-image-inpaint-v1:0",
+    "stability.stable-image-remove-background-v1:0",
+    "stability.stable-image-search-recolor-v1:0",
+    "stability.stable-image-search-replace-v1:0",
+    "stability.stable-image-style-guide-v1:0",
+    "stability.stable-outpaint-v1:0",
+    "stability.stable-style-transfer-v1:0",
+    "twelvelabs.marengo-embed-2-7-v1:0",
+    "twelvelabs.marengo-embed-3-0-v1:0",
+    "twelvelabs.pegasus-1-2-v1:0",
+    "twelvelabs.pegasus-1-5-v1:0",
+    "writer.palmyra-vision-7b",
+    "writer.palmyra-x4-v1:0",
+    "writer.palmyra-x5-v1:0",
+    "xai.grok-4.6",
+    "xai.grok-4.7",
+    "zai.glm-4.7",
+    "zai.glm-4.7-flash",
+    "zai.glm-5",
+    "zai.glm-5.3"
+  ],
+  "generated_at": "2026-11-04T15:03:05+00:00",
+  "inference_profiles": [
+    "global.amazon.nova-2-lite-v1:0",
+    "global.anthropic.claude-fable-5",
+    "global.anthropic.claude-fable-5-1",
+    "global.anthropic.claude-haiku-4-5-20251001-v1:0",
+    "global.anthropic.claude-haiku-5-5",
+    "global.anthropic.claude-opus-4-5-20251101-v1:0",
+    "global.anthropic.claude-opus-4-6-v1",
+    "global.anthropic.claude-opus-4-7",
+    "global.anthropic.claude-opus-4-8",
+    "global.anthropic.claude-opus-5",
+    "global.anthropic.claude-opus-5-5",
+    "global.anthropic.claude-sonnet-4-5-20250929-v1:0",
+    "global.anthropic.claude-sonnet-4-6",
+    "global.anthropic.claude-sonnet-5",
+    "global.anthropic.claude-sonnet-5-5",
+    "global.cohere.embed-v4:0",
+    "global.moonshotai.kimi-k3",
+    "global.openai.gpt-5.4",
+    "global.openai.gpt-5.5",
+    "global.openai.gpt-5.6-luna",
+    "global.openai.gpt-5.6-sol",
+    "global.openai.gpt-5.6-terra",
+    "global.openai.gpt-6-astra",
+    "global.openai.gpt-6-luna",
+    "global.openai.gpt-6-sol",
+    "global.openai.gpt-6.1-sol",
+    "global.openai.gpt-6.1-terra",
+    "global.twelvelabs.pegasus-1-2-v1:0",
+    "global.twelvelabs.pegasus-1-5-v1:0",
+    "global.xai.grok-4.6",
+    "global.xai.grok-4.7",
+    "global.zai.glm-5.3",
+    "us.amazon.nova-2-lite-v1:0",
+    "us.amazon.nova-lite-v1:0",
+    "us.amazon.nova-micro-v1:0",
+    "us.amazon.nova-premier-v1:0",
+    "us.amazon.nova-pro-v1:0",
+    "us.anthropic.claude-3-haiku-20240307-v1:0",
+    "us.anthropic.claude-3-sonnet-20240229-v1:0",
+    "us.anthropic.claude-fable-5",
+    "us.anthropic.claude-fable-5-1",
+    "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+    "us.anthropic.claude-haiku-5-5",
+    "us.anthropic.claude-opus-4-1-20250805-v1:0",
+    "us.anthropic.claude-opus-4-5-20251101-v1:0",
+    "us.anthropic.claude-opus-4-6-v1",
+    "us.anthropic.claude-opus-4-7",
+    "us.anthropic.claude-opus-4-8",
+    "us.anthropic.claude-opus-5",
+    "us.anthropic.claude-opus-5-5",
+    "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+    "us.anthropic.claude-sonnet-4-6",
+    "us.anthropic.claude-sonnet-5",
+    "us.anthropic.claude-sonnet-5-5",
+    "us.cohere.embed-v4:0",
+    "us.deepseek.r1-v1:0",
+    "us.meta.llama3-1-70b-instruct-v1:0",
+    "us.meta.llama3-1-8b-instruct-v1:0",
+    "us.meta.llama3-2-11b-instruct-v1:0",
+    "us.meta.llama3-2-1b-instruct-v1:0",
+    "us.meta.llama3-2-3b-instruct-v1:0",
+    "us.meta.llama3-2-90b-instruct-v1:0",
+    "us.meta.llama3-3-70b-instruct-v1:0",
+    "us.meta.llama4-maverick-17b-instruct-v1:0",
+    "us.meta.llama4-scout-17b-instruct-v1:0",
+    "us.mistral.pixtral-large-2502-v1:0",
+    "us.moonshotai.kimi-k3",
+    "us.openai.gpt-5.4",
+    "us.openai.gpt-5.5",
+    "us.openai.gpt-5.6-luna",
+    "us.openai.gpt-5.6-sol",
+    "us.openai.gpt-5.6-terra",
+    "us.openai.gpt-6-astra",
+    "us.openai.gpt-6-luna",
+    "us.openai.gpt-6-sol",
+    "us.openai.gpt-6.1-sol",
+    "us.openai.gpt-6.1-terra",
+    "us.stability.stable-conservative-upscale-v1:0",
+    "us.stability.stable-creative-upscale-v1:0",
+    "us.stability.stable-fast-upscale-v1:0",
+    "us.stability.stable-image-control-sketch-v1:0",
+    "us.stability.stable-image-control-structure-v1:0",
+    "us.stability.stable-image-erase-object-v1:0",
+    "us.stability.stable-image-inpaint-v1:0",
+    "us.stability.stable-image-remove-background-v1:0",
+    "us.stability.stable-image-search-recolor-v1:0",
+    "us.stability.stable-image-search-replace-v1:0",
+    "us.stability.stable-image-style-guide-v1:0",
+    "us.stability.stable-outpaint-v1:0",
+    "us.stability.stable-style-transfer-v1:0",
+    "us.twelvelabs.marengo-embed-2-7-v1:0",
+    "us.twelvelabs.marengo-embed-3-0-v1:0",
+    "us.twelvelabs.pegasus-1-2-v1:0",
+    "us.twelvelabs.pegasus-1-5-v1:0",
+    "us.writer.palmyra-x4-v1:0",
+    "us.writer.palmyra-x5-v1:0",
+    "us.xai.grok-4.6",
+    "us.xai.grok-4.7",
+    "us.zai.glm-5.3"
+  ],
+  "invocation_logging": {
+    "destinations": [],
+    "enabled": false,
+    "image_data_delivery": false,
+    "policy": "image payloads are not logged",
+    "text_data_delivery": false
+  },
+  "models": [
+    {
+      "image_input": true,
+      "inference_profile": "us.anthropic.claude-sonnet-5-5",
+      "invoke_id_used": "us.anthropic.claude-sonnet-5-5",
+      "key": "claude-sonnet-5-5",
+      "listed": true,
+      "model_id": "anthropic.claude-sonnet-5-5",
+      "near_matches": [],
+      "profile_listed": true,
+      "recommended_image_delivery": "tool_result",
+      "tool_result_image": "ok",
+      "user_turn_image": "ok"
+    },
+    {
+      "image_input": true,
+      "inference_profile": "us.amazon.nova-pro-v1:0",
+      "invoke_id_used": "us.amazon.nova-pro-v1:0",
+      "key": "nova-pro",
+      "listed": true,
+      "model_id": "amazon.nova-pro-v1:0",
+      "near_matches": [
+        "amazon.nova-pro-v1:0:24k",
+        "amazon.nova-pro-v1:0:300k"
+      ],
+      "profile_listed": true,
+      "recommended_image_delivery": "tool_result",
+      "tool_result_image": "ok",
+      "user_turn_image": "ok"
+    }
+  ],
+  "probe_version": "1",
+  "quotas": [
+    {
+      "adjustable": false,
+      "name": "Global cross-region model inference tokens per day for Amazon Nova 2 Pro Preview",
+      "value": 1440000000.0
+    },
+    {
+      "adjustable": false,
+      "name": "Batch inference job size (in GB) for Claude Sonnet 4.5",
+      "value": 5.0
+    },
+    {
+      "adjustable": true,
+      "name": "Cross-region model inference tokens per minute for Anthropic Claude Sonnet 4.5 V1 1M Context Length",
+      "value": 1000000.0
+    },
+    {
+      "adjustable": false,
+      "name": "Model invocation max tokens per day for Anthropic Claude Sonnet 4.5 V1 1M Context Length (doubled for cross-region calls)",
+      "value": 65359440.0
+    },
+    {
+      "adjustable": false,
+      "name": "Model invocation max tokens per day for Amazon Nova Pro (doubled for cross-region calls)",
+      "value": 1440000000.0
+    },
+    {
+      "adjustable": true,
+      "name": "Cross-region model inference requests per minute for Anthropic Claude Sonnet 4.5 V1 1M Context Length",
+      "value": 1000.0
+    },
+    {
+      "adjustable": true,
+      "name": "Model units per provisioned model for the 300k context length variant for Amazon Nova Lite",
+      "value": 0.0
+    },
+    {
+      "adjustable": false,
+      "name": "Batch inference job size (in GB) for Nova Pro V1",
+      "value": 100.0
+    },
+    {
+      "adjustable": true,
+      "name": "Model units per provisioned model for Amazon Nova 2 Lite V1.0 256K",
+      "value": 0.0
+    },
+    {
+      "adjustable": false,
+      "name": "Model invocation max tokens per day for Amazon Nova 2 Pro Preview (doubled for cross-region calls)",
+      "value": 720000000.0
+    },
+    {
+      "adjustable": true,
+      "name": "Cross-region model inference tokens per minute for Amazon Nova 2 Pro Preview",
+      "value": 1000000.0
+    },
+    {
+      "adjustable": true,
+      "name": "Sum of in-progress and submitted batch inference jobs using a base model for Nova Lite V1",
+      "value": 100.0
+    },
+    {
+      "adjustable": true,
+      "name": "Records per input file per batch inference job for Nova Pro V1",
+      "value": 100000.0
+    },
+    {
+      "adjustable": false,
+      "name": "On-Demand, latency-optimized model inference tokens per minute for Amazon Nova Pro V1",
+      "value": 40000.0
+    },
+    {
+      "adjustable": true,
+      "name": "Global cross-region model inference tokens per minute for Anthropic Claude Sonnet 4.5 V1 1M Context Length",
+      "value": 1000000.0
+    },
+    {
+      "adjustable": true,
+      "name": "Records per batch inference job for Claude Sonnet 4.5",
+      "value": 100000.0
+    },
+    {
+      "adjustable": false,
+      "name": "Minimum number of records per batch inference job for Nova Pro V1",
+      "value": 100.0
+    },
+    {
+      "adjustable": true,
+      "name": "Sum of in-progress and submitted batch inference jobs using a base model for Nova Pro V1",
+      "value": 100.0
+    },
+    {
+      "adjustable": false,
+      "name": "(Model customization) Sum of on demand custom model deployment requests per minute for Amazon Nova Pro",
+      "value": 200.0
+    },
+    {
+      "adjustable": false,
+      "name": "On-demand model inference requests per minute for Amazon Nova Pro",
+      "value": 250.0
+    },
+    {
+      "adjustable": true,
+      "name": "Cross-region model inference requests per minute for Anthropic Claude Sonnet 4.5 V1",
+      "value": 10000.0
+    },
+    {
+      "adjustable": true,
+      "name": "Sum of in-progress and submitted batch inference jobs using a base model for Amazon Nova 2 Multimodal Embeddings V1",
+      "value": 100.0
+    },
+    {
+      "adjustable": true,
+      "name": "Sum of in-progress and submitted batch inference jobs using a base model for Nova 2 Lite",
+      "value": 100.0
+    },
+    {
+      "adjustable": true,
+      "name": "(Model customization) Sum of training and validation records for a Amazon Nova Pro Fine-tuning job",
+      "value": 20000.0
+    },
+    {
+      "adjustable": true,
+      "name": "[bedrock-mantle endpoint] Input tokens per minute for Claude Sonnet 5",
+      "value": 3000000.0
+    }
+  ],
+  "region": "us-east-1",
+  "schema_version": "treehouse.aws-capabilities/v1",
+  "spend": {
+    "calls": 4,
+    "cap_usd": 3.0,
+    "committed_usd": 0.10535,
+    "estimated": true,
+    "max_tokens": 32,
+    "per_call_cap_usd": 0.25,
+    "price_table": "probe-ceiling-1",
+    "reserved_usd": 1.0
+  },
+  "summary": {
+    "denied": 0,
+    "error": 0,
+    "invalid_request": 0,
+    "ok": 16,
+    "skipped_budget": 0,
+    "unavailable": 0
+  },
+  "throttle_note": "0 retryable error(s) during 4 probe Converse call(s) (none). The adapter runs at concurrency 2 with botocore total_max_attempts=1 and its own jittered loop."
+}

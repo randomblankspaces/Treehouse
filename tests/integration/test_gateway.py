@@ -303,3 +303,19 @@ def test_recorded_source_attaches_a_pixel_free_image(tmp_path):
     assert outs[1].status == "error" and "no_coverage" in outs[1].content[0].text
     assert isinstance(RecordedImagerySource([], allowed=[], scene_dates={}, as_of=nepal.as_of).window(
         "X", 0, 0, 1, 1, "average").code, str)
+
+
+def test_tool_catalog_matches_recorded_request(rig):
+    """The advertised contract, including descriptions, is identical across interpreters."""
+    from treehouse.providers.cassette import Cassette
+    from treehouse.service import demo_root
+
+    async def specs():
+        async with rig.gateway as gateway:
+            return gateway.specs()
+
+    recorded = Cassette(demo_root() / "cassettes" / "synth-good.model.jsonl").get(("worker", 0, 0))
+    try:
+        assert asyncio.run(specs()) == recorded.request.tools
+    finally:
+        rig.tracer.close()

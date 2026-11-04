@@ -1,0 +1,122 @@
+{
+  "schema": "treehouse.master-probe/v1",
+  "generated_at": "2026-11-04",
+  "identity": {"role": "WSParticipantRole", "account": "redacted"},
+  "locus": {
+    "region_probed": "us-east-1",
+    "env_region": "us-west-2",
+    "python_system": "3.9.25",
+    "python_uv_venv": "3.15.2",
+    "uv": "0.13.7",
+    "docker": true,
+    "node": "v24.22.1",
+    "cdk": "2.1147.0",
+    "cdk_bootstrapped": {"us-east-1": false, "us-west-2": false},
+    "can_export_creds": true,
+    "creds_expiry": "2026-11-04T21:22:08+00:00",
+    "disk_free": "55G of 60G",
+    "cpus": 2,
+    "mem_gb": 7,
+    "host_uptime": "1 day 20h",
+    "session_timeout": "unknown; no idle timeout observed; instance up 1d20h; credentials expire 2026-11-04T21:22Z"
+  },
+  "bedrock": {
+    "probe_summary": {"ok": 16, "denied": 0, "unavailable": 0, "invalid_request": 0, "error": 0, "skipped_budget": 0},
+    "vision": {
+      "claude-sonnet-5-5": {"invoke_id": "us.anthropic.claude-sonnet-5-5", "user_turn_image": "ok", "tool_result_image": "ok"},
+      "nova-pro": {"invoke_id": "us.amazon.nova-pro-v1:0", "user_turn_image": "ok", "tool_result_image": "ok"}
+    },
+    "recommended_image_delivery": "tool_result",
+    "throttling_seen": "0 retryable errors in 4 Converse calls",
+    "foundation_models_listed": 124,
+    "inference_profiles_listed": 99,
+    "claude_family_listed": ["fable-5", "fable-5-1", "haiku-4-5", "haiku-5-5", "opus-4-1", "opus-4-5", "opus-4-6", "opus-4-7", "opus-4-8", "opus-5", "opus-5-5", "sonnet-4-5", "sonnet-4-6", "sonnet-5", "sonnet-5-5"],
+    "quotas": {
+      "Sonnet 5.5 cross-region tokens/min (us)": 6000000,
+      "Sonnet 5.5 global cross-region tokens/min": 6000000,
+      "Sonnet 5 cross-region tokens/min": 6000000,
+      "Sonnet 5 global cross-region tokens/min": 6000000,
+      "Sonnet 5 bedrock-mantle input tokens/min": 3000000,
+      "Sonnet 5 bedrock-mantle output tokens/min": 300000,
+      "Sonnet 5.5 requests/min": "not listed in Service Quotas",
+      "Nova Pro on-demand requests/min": 250,
+      "Nova Pro latency-optimized tokens/min": 40000,
+      "Nova Pro tokens/min (standard)": "not listed in Service Quotas",
+      "Sonnet 4.6 global requests/min": 10000
+    },
+    "invocation_logging_enabled": false
+  },
+  "prices": {
+    "file": "config/prices/bedrock-us-east-1.2026-11-04.yaml",
+    "retrieved": "2026-11-04",
+    "source": "aws pricing get-products (AmazonBedrockFoundationModels, AmazonBedrock)",
+    "unit_conversion": "Claude rows per 1M tokens divided by 1000; Nova Pro rows already per 1K",
+    "rows_usd_per_1k": {
+      "claude-sonnet-5-5@us": {"input": 0.0022, "output": 0.011, "cache_read": 0.00011, "cache_write": 0.00275},
+      "claude-sonnet-5-5@global": {"input": 0.002, "output": 0.01, "cache_read": 0.0001, "cache_write": 0.0025},
+      "nova-pro@us": {"input": 0.0008, "output": 0.0032, "cache_read": 0.0002, "cache_write": null}
+    },
+    "prices_check_exit": 0
+  },
+  "agentcore": {
+    "list_evaluators": "ok, 32 evaluators: 19 Builtin.* (Correctness, Faithfulness, Helpfulness, ResponseRelevance, Conciseness, Coherence, InstructionFollowing, Refusal, GoalSuccessRate, ToolSelectionAccuracy, ToolParameterAccuracy, Harmfulness, Stereotyping, FailureAnalysis, TrajectoryExactOrderMatch, TrajectoryInOrderMatch, TrajectoryAnyOrderMatch, SkillSelectionAccuracy, SkillInstructionFollowing), 10 ThirdParty.DeepEval.*, 3 ThirdParty.AutoEval.*",
+    "list_agent_runtimes": "ok, 0 runtimes",
+    "xray_trace_segment_destination": {"Destination": "XRay", "Status": "ACTIVE"},
+    "transaction_search": "not enabled (destination is XRay, not CloudWatchLogs)",
+    "sdk_versions": {"bedrock-agentcore": "1.25.3 (PyPI)", "bedrock-agentcore-starter-toolkit": "0.3.14 (PyPI)", "pip_index_note": "system pip 3.9 reports bedrock-agentcore 0.0.1, stale"},
+    "agentcore_cli_installed": false
+  },
+  "permissions_simulated": {
+    "note": "iam:SimulatePrincipalPolicy does not evaluate SCPs, so real SCP denies may still exist",
+    "bedrock:InvokeModel": "allowed",
+    "bedrock:Converse": "allowed",
+    "bedrock:CreateModelInvocationJob": "explicitDeny",
+    "bedrock-agentcore:Evaluate": "allowed",
+    "bedrock-agentcore:CreateEvaluator": "allowed",
+    "bedrock-agentcore:CreateAgentRuntime": "allowed",
+    "bedrock-agentcore:CreateOnlineEvaluationConfig": "allowed",
+    "lambda:CreateFunction": "allowed",
+    "states:CreateStateMachine": "allowed",
+    "states:StartExecution": "allowed",
+    "s3:CreateBucket": "allowed",
+    "s3:PutBucketVersioning": "allowed",
+    "s3:PutBucketObjectLockConfiguration": "allowed",
+    "kms:CreateKey": "allowed",
+    "athena:StartQueryExecution": "allowed",
+    "glue:CreateTable": "allowed",
+    "s3vectors:CreateVectorBucket": "allowed",
+    "cloudformation:CreateStack": "allowed",
+    "iam:CreateRole": "allowed",
+    "iam:PassRole": "allowed",
+    "logs:CreateLogGroup": "allowed",
+    "cloudwatch:PutMetricData": "allowed",
+    "budgets:ViewBudget": "allowed",
+    "ce:GetCostAndUsage": "allowed"
+  },
+  "s3": {"versioning": "allowed by simulation, not exercised", "object_lock": "allowed by simulation, not exercised", "buckets_existing": 2},
+  "spend": {
+    "treehouse_ledger_usd": 0.1053,
+    "treehouse_ledger_basis": "estimated at probe-ceiling prices (over-counts)",
+    "aws_month_to_date_usd": 4.17,
+    "budget": {"name": "hackathon-budget", "limit_usd": 500.0, "actual_usd": 4.175}
+  },
+  "data": {
+    "vantor": "HTTP 200, content-length 79335069",
+    "source_coop_embeddings": "ok, lists model_version=v1.5/ and README.md",
+    "naip_requester_pays": "ok, lists state prefixes (al/, ar/, az/ ...)",
+    "overpass": "HTTP 406 without User-Agent, 502 with User-Agent (upstream flaky)",
+    "uspvdb": "unreachable: Could not resolve host eerscmap.usgs.gov (DNS)",
+    "grw": "HTTP 200"
+  },
+  "treehouse_checks": {
+    "pytest": {"tests": 546, "passed": 522, "failed": 9, "errors": 13, "skipped": 2,
+      "notes": "13 errors in tests/journeys/test_demo.py are CassetteMiss (request hash differs in ['tools']); 2 failures in test_demo_fixtures and 1 in test_p6_review also fail on the unmodified repo. 4 extra failures (test_bedrock x2, test_spend x1, test_registry_prices::prices_check_fails_on_null) are tests that assume the price table is still null; 2 budget_status tests fail because a real ledger now exists in the repo."},
+    "demo": "exit 1: CassetteMiss at ('worker', 0, 0): request hash differs in ['tools']; installed strands-agents 1.63.0"
+  },
+  "errors": [
+    "step1: CDKToolkit stack does not exist in us-east-1 or us-west-2 (not bootstrapped)",
+    "step4: bedrock:CreateModelInvocationJob explicitDeny (no matched statement returned)",
+    "step6: eerscmap.usgs.gov DNS does not resolve; overpass-api.de returns 406/502",
+    "step7: pytest 13 errors + 9 failures; demo exit 1 CassetteMiss on tools hash"
+  ]
+}

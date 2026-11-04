@@ -228,3 +228,24 @@ def pytest_sessionfinish(session, exitstatus):
             f"method tests took {_method_seconds:.2f} s, over the {METHOD_BUDGET_S} s budget", red=True
         )
         session.exitstatus = pytest.ExitCode.TESTS_FAILED
+
+
+@pytest.fixture
+def unpriced_table_path():
+    """Immutable missing-price scenario, independent of the real dated price table."""
+    return Path(__file__).parent / "fixtures" / "prices" / "unpriced.yaml"
+
+
+@pytest.fixture
+def unpriced_prices(unpriced_table_path):
+    from treehouse.providers.prices import PriceTable
+
+    return PriceTable.load(unpriced_table_path)
+
+
+@pytest.fixture
+def isolated_repo_ledger(tmp_path, monkeypatch):
+    """CLI scenarios must compare against a test repo ledger, never real account spend."""
+    path = tmp_path / "repo" / ".spend" / "spend.jsonl"
+    monkeypatch.setattr("treehouse.providers.spend.repo_ledger_path", lambda: path)
+    return path

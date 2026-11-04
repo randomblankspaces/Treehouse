@@ -432,5 +432,84 @@ def run_cmd(
         typer.echo(f"report {st.root / 'bundles' / rid / 'report.html'} (trust: {ev.passport.headline.chip()})")
 
 
+judge_app = typer.Typer(help="Judge evidence workbench.", no_args_is_help=True)
+app.add_typer(judge_app, name="judge")
+
+
+@judge_app.command("serve")
+def judge_serve(
+    config: Annotated[Path | None, typer.Option("--config", help="Server-owned AWS outputs JSON.")] = None,
+    recorded: Annotated[Path | None, typer.Option("--recorded", help="Receipt to inspect without invoking AWS.")] = None,
+    host: Annotated[str, typer.Option("--host", help="Bind address; default is loopback.")] = "127.0.0.1",
+    port: Annotated[int, typer.Option("--port", min=1, max=65535)] = 8765,
+    origin: Annotated[str | None, typer.Option("--origin", help="Exact browser origin for a port preview.")] = None,
+) -> None:
+    """Serve the local UI. Startup and refresh never invoke AWS."""
+    try:
+        import uvicorn
+
+        from treehouse.judge.models import JudgeConfig
+        from treehouse.judge.service import JudgeService, read_json
+        from treehouse.judge.web import create_app
+    except ImportError as exc:
+        typer.echo("Judge UI requires the api extra: uv sync --extra api", err=True)
+        raise typer.Exit(2) from exc
+    try:
+        settings = JudgeConfig.model_validate(read_json(config)) if config else None
+        service = JudgeService(settings, recorded=read_json(recorded) if recorded else None)
+        browser_origin = origin or f"http://{host}:{port}"
+        web_app = create_app(service, origin=browser_origin)
+    except (OSError, ValueError) as exc:
+        typer.echo("Invalid server configuration or recorded receipt. Check the JSON schema and resource IDs.", err=True)
+        raise typer.Exit(2) from exc
+    typer.echo(f"Judge workbench: {browser_origin} (no AWS call until Ask agent)")
+    uvicorn.run(web_app, host=host, port=port, access_log=False)
+
+
+ui_app = typer.Typer(help="Treehouse Living Sky and Atlas.", no_args_is_help=True)
+app.add_typer(ui_app, name="ui")
+
+
+@ui_app.command("serve")
+def ui_serve(
+    store: Annotated[Path, typer.Option("--store", help="Local run store; browser cannot change this path.")] = Path("out/demo/store"),
+    frontend: Annotated[Path | None, typer.Option("--frontend", help="Built frontend directory (default ui/dist).")] = None,
+    judge_config: Annotated[Path | None, typer.Option("--judge-config", help="Optional server-owned AWS configuration.")] = None,
+    judge_recorded: Annotated[Path | None, typer.Option("--judge-recorded", help="Optional recorded AWS receipt.")] = None,
+    host: Annotated[str, typer.Option("--host", help="Bind address; default is loopback.")] = "127.0.0.1",
+    port: Annotated[int, typer.Option("--port", min=1, max=65535)] = 8765,
+    origin: Annotated[str | None, typer.Option("--origin", help="Exact browser origin for a restricted port preview.")] = None,
+) -> None:
+    """Serve the product UI and recorded runs. Page loads never call AWS."""
+    try:
+        import uvicorn
+
+        from treehouse.judge.models import JudgeConfig
+        from treehouse.judge.service import JudgeService, read_json
+        from treehouse.judge.web import create_app as create_judge_app
+        from treehouse.paths import repo_root
+        from treehouse.ui.web import create_app
+    except ImportError as exc:
+        typer.echo("Treehouse UI requires the api extra: uv sync --extra api", err=True)
+        raise typer.Exit(2) from exc
+    try:
+        browser_origin = origin or f"http://{host}:{port}"
+        settings = JudgeConfig.model_validate(read_json(judge_config)) if judge_config else None
+        judge = create_judge_app(JudgeService(settings, recorded=read_json(judge_recorded) if judge_recorded else None),
+                                 origin=browser_origin)
+        web_app = create_app(store, origin=browser_origin,
+                             frontend_dist=frontend or repo_root() / "ui" / "dist", judge_app=judge)
+    except (OSError, ValueError) as exc:
+        typer.echo("Invalid UI configuration. Check the store, origin, frontend build and optional judge JSON.", err=True)
+        raise typer.Exit(2) from exc
+    typer.echo(f"Treehouse: {browser_origin} (offline runs; optional AWS panel at /judge/)")
+    uvicorn.run(web_app, host=host, port=port, access_log=False)
+
+
+from treehouse.investigation.commands import sandbox_app  # noqa: E402
+
+app.add_typer(sandbox_app, name="sandbox")
+
+
 if __name__ == "__main__":  # pragma: no cover
     app()

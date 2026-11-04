@@ -1,8 +1,59 @@
-# Clay Agent-Eval Sandbox — team 43
+# Treehouse — team 43
 
-An observability and evaluation sandbox for agentic geospatial workflows, built for [Clay](https://madewithclay.org) (Earth Dataset Foundry) at the AWS Breaking Barriers Challenge 2026 (DC). An LLM agent on Amazon Bedrock calls geospatial tools over MCP. Every run is traced, summarized, and scored on how the agent worked and what it produced, and agents are compared statistically.
+Treehouse evaluates how a geospatial agent investigates a target area and whether its resulting database is accurate. It records the agent’s strategy, foundation-model/tool choices, decision explanations, alternatives, evidence, revisions and reported confidence, then checks the sealed output independently. Warehouses, solar facilities and bridges are task examples; the sandbox is configured by object class and geographic zone.
 
-**Start here:** [docs/README.md](docs/README.md) has the scope, MVP features, tests and definition of done. The team's decisions are in [docs/SCOPE.md](docs/SCOPE.md).
+**Start here:** [product outline](docs/OUTLINE.md), [current plan](docs/PLAN.md), [implementation status](docs/PRODUCT-STATUS.md), and [documentation index](docs/README.md). Earlier decisions remain in [docs/SCOPE.md](docs/SCOPE.md); the current plan records the user’s November 4 clarification.
+
+## Agent investigation MVP
+
+```sh
+uv sync --locked --extra api
+npm --prefix ui ci
+npm --prefix ui run build
+uv run --extra api treehouse sandbox demo --store out/investigation/store --run-id investigation-demo
+uv run --extra api treehouse ui serve --store out/investigation/store
+# Open http://127.0.0.1:8765 and select Investigation in Atlas.
+```
+
+The offline example makes choices from observed scene metadata and synthetic image bytes, records a
+parent-linked decision pathway, and produces an actual claim database. It uses an explicitly labeled
+synthetic heuristic; it does not measure a foundation model’s real-world detection accuracy.
+Choose a fresh store/run ID when repeating it.
+
+The [sandbox guide](docs/INVESTIGATION.md) explains trusted agent/provider, classifier and tool-source
+plugins, independent post-seal evaluation, and SQLite/GeoJSON exports. The separate review-model
+interface uses a fresh context and independently written rubric; its judgments are model-estimated.
+Reported confidence, evidence quality, empirical catalogue matching and cost remain separate.
+A red marker means an agent prediction, with links back to the decision and evidence.
+
+The small [USPVDB benchmark](keys/public-benchmark/README.md) has disjoint reference/holdout records
+and source provenance. It is incomplete and tests reference/evaluator mechanics, not image accuracy.
+Independent tests were authored in a different agent context before implementation; see
+[test provenance](tests/investigation/PROVENANCE.md). AWS and real imagery/model integration are the
+next Kiro step, followed by live testing and refinement. Nothing on page load invokes AWS.
+
+## Living Sky and Constellation Atlas
+
+The product UI follows the [master UI specification](docs/TREEHOUSE_MASTER_UI_IMPLEMENTATION_SPEC.md).
+It reads verified stored runs through the Python service: Clay search cells appear in a geographic sky,
+and Atlas shows claims, imagery metadata, observable traces, separate score panels and provenance.
+Story and Developer modes use the same records. Scene Builder and simulations remain planned.
+
+```sh
+uv sync --locked --extra api
+npm --prefix ui ci
+npm --prefix ui run build
+uv run --extra api python scripts/offline.py treehouse demo --out out/demo
+uv run --extra api treehouse ui serve --store out/demo/store
+# Open http://127.0.0.1:8765
+```
+
+Use a fresh demo output if `out/demo` already exists. The Book starts pinned recorded presets;
+custom live geospatial tasks are not enabled by this frontend. Page loads never invoke AWS.
+The optional server-configured AWS evidence workbench is at `/judge/`. See
+[product status](docs/PRODUCT-STATUS.md) for implemented features, evidence limits and Kiro checks.
+No restricted imagery pixels or answer keys are served to the browser. This local app has no hosted
+account system: use a restricted port preview, not a public production deployment.
 
 ## Quickstart (offline demo)
 
@@ -25,8 +76,9 @@ The existence checks do not protect against simultaneous writers.
 **Everything it shows is SYNTHETIC DEMO DATA.** The Nepal points are illustrative, not surveyed bridges.
 
 What the merged demo shows today:
-- **Checks:** R1 (schema and class), R2 (point inside the AOI) and R4 (evidence in trace: fabrication and
-  ungrounded). Keyed match and R3/R5–R9 are not built yet.
+- **Checks:** R1–R9 are reached through the service's check runner. Applicable evidence and policy checks
+  run; key-dependent checks can skip because the current service does not supply answer keys. Read each
+  ledger's reasons rather than treating a skipped check as a pass.
 - **Panels:** process basics and cost, speed and data (MEASURED, flagged as recorded; bytes are "modelled bytes"
   from the declared block model). Understanding and output panels: not built yet.
 - **Trust passport:** a stub that reports *Not issued* ("trust engine not yet built").

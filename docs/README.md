@@ -1,4 +1,19 @@
-# MVP Rubric (index) — Clay Earth Dataset Foundry (ADB agentic eval)
+# Treehouse documentation index
+
+## Current product context — November 4, 2026
+
+Start with [OUTLINE.md](OUTLINE.md), [PLAN.md](PLAN.md), [PRODUCT-STATUS.md](PRODUCT-STATUS.md),
+[INVESTIGATION.md](INVESTIGATION.md), [UI.md](UI.md), and [KIRO-HANDOFF.md](KIRO-HANDOFF.md).
+The current product evaluates an agent's strategy, exploration, decisions and resulting geospatial
+database. It is task/zone configurable; warehouses in Bangladesh are an example. MCP calls support
+the evidence trail but do not by themselves grade reasoning. Reported confidence, independent
+accuracy and optional model-estimated process review remain separate.
+
+The latest instruction is reviewed merge to Treehouse main, then stop and wait. The intended later sequence is additional user context, Kiro
+clone/AWS integration and live testing, then refinement. Independent acceptance tests use different
+agent context from implementation. [FUTURE-WORK.md](FUTURE-WORK.md) is the current roadmap.
+The earlier event notes and package order below are historical context, not the current build queue.
+
 
 > **For agents — what this file is:** Entry point and index for the whole folder. Read this first. It holds the scope note, event logistics and judging, the build order, the file list, and the stretch order. Reading order for a new agent: README → SCOPE → design/SYSTEM-DESIGN → design/IMPLEMENTATION-DESIGN → OPEN-QUESTIONS → 01 → 02 → 04 → 05 → 06 → 03 → EXTERNAL-DEPENDENCIES → FUTURE-WORK.
 
@@ -24,7 +39,7 @@ Source: Clay's vision doc and the AWS event guide, narrowed to our team's scope.
 | Judging | Four **equally weighted** criteria: **Technological Implementation** (execution and AWS service integration) · **Design** (UX, interface, architecture) · **Potential Impact** · **Quality of Idea** (innovation, creativity, feasibility). The top 3 per location go to finals, judged by new judges on the same criteria. The winning beneficiary gets $50K in AWS credits |
 | Support | AWS SMEs onsite, AWS Builder Center online, breaking-barriers-us-2026@amazon.com |
 
-## Build order
+## Historical overnight build order
 
 **Clay's Day-1 guidance (from the source):** harness on Bedrock + RODA MCP + 1–2 shortlist servers → **one trace captured end to end before adding any scoring** → prove observe → summarize → score on one synthetic task before adding swaps, comparisons and statistics.
 
@@ -56,7 +71,7 @@ Source: Clay's vision doc and the AWS event guide, narrowed to our team's scope.
 
 ---
 
-## Stretch order (after MVP done)
+## Historical stretch order (see current FUTURE-WORK.md)
 
 Full list, plus everything the cut line deferred and anything cut during the build: [FUTURE-WORK.md](FUTURE-WORK.md). Order: **the temporal hindcast first**, per DD1 ("Hindcasting = first stretch") and SD A12's Stretch list; then Clay's stretch goals. The simulation is a downstream consumer of the agent-built dataset, outside the eval product and the demo, and stays last (RJ C13, SCOPE D71). *(If DD1 meant first among truth sources only, the hindcast moves after Clay's goals; Suhas to confirm.)*
 

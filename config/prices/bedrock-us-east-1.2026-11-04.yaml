@@ -18,12 +18,12 @@ version: bedrock-us-east-1.2026-11-04
 region: us-east-1
 currency: USD
 unit: per_1k_tokens
-source: null        # URL or "aws pricing get-products"
-retrieved: null     # YYYY-MM-DD
-unit_source: null   # e.g. "page quotes per 1M tokens; divided by 1000"
+source: "aws pricing get-products --service-code AmazonBedrockFoundationModels (servicename=Claude Sonnet 5.5 (Amazon Bedrock Edition), regionCode=us-east-1) and --service-code AmazonBedrock (model=Nova Pro, regionCode=us-east-1); on-demand standard tier"
+retrieved: 2026-11-04
+unit_source: "Claude rows quoted by the Pricing API per 1M tokens, divided by 1000 (usagetype ..._standard-Units = geographic/us. profile, ..._global_standard-Units = global. profile). Nova Pro rows quoted per 1K tokens, used as-is. Nova Pro has no on-demand cache-write price in the API, left null."
 synthetic: false
 estimated: false
 models:
-  claude-sonnet-5-5@us: {input: null, output: null, cache_read: null, cache_write: null}
-  claude-sonnet-5-5@global: {input: null, output: null, cache_read: null, cache_write: null}
-  nova-pro@us: {input: null, output: null, cache_read: null, cache_write: null}
+  claude-sonnet-5-5@us: {input: 0.0022, output: 0.011, cache_read: 0.00011, cache_write: 0.00275}
+  claude-sonnet-5-5@global: {input: 0.002, output: 0.01, cache_read: 0.0001, cache_write: 0.0025}
+  nova-pro@us: {input: 0.0008, output: 0.0032, cache_read: 0.0002, cache_write: null}
