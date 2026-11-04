@@ -2,7 +2,7 @@
 
 > **For agents — what this file is:** Every outside resource: MCP servers, datasets, answer keys, platform and stack. Each has a link, access path, license, MVP/stretch tag, and a link check from 2026-11-03. Access facts and licences were updated on 2026-11-04 from the two designs ([design/SYSTEM-DESIGN.md](design/SYSTEM-DESIGN.md) A4 and fact-check pass 2; [design/IMPLEMENTATION-DESIGN.md](design/IMPLEMENTATION-DESIGN.md) fact-check of r3) and HANDOFF.md. Only reference/geomcp-catalog.csv and the Vantor STAC metadata fixture are committed; the source PDFs and all imagery pixels are kept out of the repo.
 
-All links below were checked on **2026-11-03**. The status column shows the result. "Build container" means the overnight agent's container (no AWS credentials, proxied network), checked 2026-11-04.
+All links below were checked on **2026-11-03**. The status column shows the result. "Build container" means the overnight agent's container (no AWS credentials, proxied network), checked 2026-11-04. Links added on 2026-11-04 (the USPVDB V4.0 release) come from the SD fact-check's search results and were not link-checked.
 Source documents: the PDFs and their text copies are kept out of the repo by `.gitignore` (the AWS guide is marked Amazon Confidential). Ask the team for a copy. Only the catalog CSV is committed:
 
 | Local file | What it is |
@@ -19,8 +19,8 @@ Source documents: the PDFs and their text copies are kept out of the repo by `.g
 
 | Dependency | Link | Access / install | License | Use | Status |
 |---|---|---|---|---|---|
-| RODA MCP server (AWS Registry of Open Data) | [Announcement blog](https://aws.amazon.com/blogs/opensource/introducing-mcp-server-for-registry-of-open-data-on-aws/) · [PyPI](https://pypi.org/project/awslabs.roda-mcp-server/) · [Source (awslabs/mcp)](https://github.com/awslabs/mcp) | `uvx awslabs.roda-mcp-server@latest` | Apache-2.0 | **MVP**: known-good starting tool | Links OK. Install not tested yet |
-| Clay geoMCP catalog (about 99 servers; free/priority shortlist to come from Clay) | [Google Sheet](https://docs.google.com/spreadsheets/d/1cMoPxhNTzNHuWEAK_PtAgFUqEMxQ1AyoZxMCzfdkYzQ/edit?usp=sharing) | Public. CSV export: `…/export?format=csv` | Varies per server | **MVP**: pick 1–2 alongside RODA | OK. First tab saved locally |
+| RODA MCP server (AWS Registry of Open Data) | [Announcement blog](https://aws.amazon.com/blogs/opensource/introducing-mcp-server-for-registry-of-open-data-on-aws/) · [PyPI](https://pypi.org/project/awslabs.roda-mcp-server/) · [Source (awslabs/mcp)](https://github.com/awslabs/mcp) | `uvx awslabs.roda-mcp-server@latest` | Apache-2.0 | Optional (F1): Clay's Day-1 starting tool; Treehouse's own servers replace it in the demo | Links OK. Install not tested yet |
+| Clay geoMCP catalog (about 99 servers; free/priority shortlist to come from Clay) | [Google Sheet](https://docs.google.com/spreadsheets/d/1cMoPxhNTzNHuWEAK_PtAgFUqEMxQ1AyoZxMCzfdkYzQ/edit?usp=sharing) | Public. CSV export: `…/export?format=csv` | Varies per server | Optional (F1): pick 1–2 alongside RODA | OK. First tab saved locally |
 | LGND Geo MCP server | [lgnd.ai/geo](https://lgnd.ai/geo) | Commercial. Hackathon teams get whitelisted | Commercial | MVP (optional) | Page OK. **Confirm our access with Clay** |
 | Treehouse's own tool servers (`stac`, `imagery`, `clay`, `claims`, `decoy`) | this repo, `src/treehouse/tools/` | In-process `MCPServer`s behind the tool gateway (ID §3) | Apache-2.0 | **MVP**: the agent's tools in the demo | Being built (P4) |
 
@@ -66,7 +66,7 @@ Global Renewables Watch is a stretch / fallback key. USPVDB and OSM are MVP keys
 |---|---|
 | AWS sandbox (Workshop Studio) | Provisioned by the team lead. **$500 spend cap.** Wiped after the event, so keep everything in the repo |
 | Amazon Bedrock | Worker, verifier and (later) summarizer models, behind our `ModelProvider`. Access confirmed (D40). Default worker `anthropic.claude-sonnet-5-5` (called through a `us.`/`eu.`/`global.` inference profile; the bare id reportedly fails) and verifier `amazon.nova-pro-v1:0` (`us.`/`eu.`/`apac.` profiles; image input via Converse). **Both UNVERIFIED until the K1 probe** (ID fact-check U1, U2) |
-| Kiro web IDE | The only way to reach the Workshop Studio account (D30). Runs the AWS steps K1–K9 from prompts in `TODO.md` |
+| Kiro web IDE | The only way to reach the Workshop Studio account (D30). Runs the AWS steps K0–K9 from prompts in `TODO.md` |
 | Public GitHub repo | Created at kickoff (per source). Required before judging. Open source (Apache-2.0, to match Clay), with infrastructure as code where it applies |
 | Event contact | breaking-barriers-us-2026@amazon.com |
 | Expected stack (Clay's doc) | Python 3.12+, boto3, an MCP SDK, an agent framework (any, kept swappable), an OpenTelemetry-style tracer (swappable), FastAPI for the thin API, scikit-learn/numpy for metrics, and optionally a TS/Node 20+ thin UI. Geospatial stack: rasterio / GDAL / xarray / pystac. Permitted extras: SQL (lightweight trace/metadata store) and Bash (sandbox scripting) |

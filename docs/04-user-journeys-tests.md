@@ -1,6 +1,6 @@
 # MVP User Journeys as Tests
 
-> **For agents — what this file is:** Acceptance tests written as user journeys (J1–J18). Each step has a check, and a journey passes only if every check passes. Each journey proves the success criteria in [02](02-success-criteria.md) noted beside it, and names the build package that makes it testable (ID §6 "Journeys" table, [design/IMPLEMENTATION-DESIGN.md](design/IMPLEMENTATION-DESIGN.md)). Journeys live in `tests/journeys/`. Most run offline on the synthetic demo world; "live" steps run on AWS through Kiro. Terms are in the [SCOPE glossary](SCOPE.md#glossary).
+> **For agents — what this file is:** Acceptance tests written as user journeys (J1–J18). Each step has a check, and a journey passes only if every check passes. Each journey proves the success criteria in [02](02-success-criteria.md) noted beside it, and names the build package that makes it testable (ID §6 "Journeys" table, [design/IMPLEMENTATION-DESIGN.md](design/IMPLEMENTATION-DESIGN.md)). Journeys live in `tests/journeys/`. Most run offline on the synthetic demo world; "live" steps run on AWS through Kiro. J16–J18 are spec-sheet additions; their packages are inferred from ID §7, not from the §6 table. Terms are in the [SCOPE glossary](SCOPE.md#glossary).
 
 > Scope: **ADB agentic eval only**. Captions are a stretch after the ADB stretch goals. Index: [README.md](README.md)
 
@@ -10,7 +10,7 @@
 |---|---|---|
 | 1 | Developer picks a task card and a configuration (model, harness, tool set, evaluator, optional budget) | The run manifest records the task id and card hash, prompt, system prompt, tool list with schemas, model id as returned and its settings, harness, tracer, evaluator, budget settings, the backends that actually ran, and the licence floor |
 | 2 | Harness runs on Bedrock and calls MCP tools through the gateway | Trace has ≥1 MCP tool call, including `stac_search` and `imagery_window`. Every call has a name, arguments, result or error, latency, cost and bytes read. Claims come only from `record_claim`, and each cites a tool result from this run. The run ends with a final output |
-| 3 | Sandbox summarizes the trace | Summary lists the steps in order and points out the failures, retries or dead ends in the trace. Every claim maps to a trace event |
+| 3 | Sandbox summarizes the trace | Summary lists the steps in order and points out the failures, retries or dead ends in the trace. Every claim maps to a trace event. A planted number or missing span id in the summary is rejected by the lint (ID I7; W0) |
 | 4 | Evaluator scores the run | Panel 1 (how it worked) and Panel 2 (understanding) are MEASURED from the trace. Panel 3 (output) is KEYED against the task's key, or shows a `no_grade_reason`. Each number has its evidence. **Latency and cost are not in these panels**: they are Panel 5 (J14, SCOPE D63) |
 | 5 | Sandbox emits a report | Report opens with a verdict line, the plain summary and the trust passport, then the five chipped panels, the claim table, per-run and per-step latency and cost in Panel 5, the full context from step 1, the licence floor, and a path to the raw trace. No image bytes |
 
@@ -30,8 +30,8 @@
 | Step | Action | Verify (test) |
 |---|---|---|
 | 1 | Change the **model** id in config | J1 passes with no code change. The report records the new model. A non-vision model is rejected for a vision task |
-| 2 | Change the **tracer** backend (local JSONL → CloudWatch/OTLP mirror) | J1 passes with no code change. The trace keeps the same schema, and span counts and token totals reconcile |
-| 3 | Change the **harness** (plain Converse loop ↔ Strands) | J1 passes with no code change. The report records the new harness. The same script gives identical request hashes and claim tables under both |
+| 2 | *(Should, W9)* Change the **tracer** backend (local JSONL → CloudWatch/OTLP mirror) | J1 passes with no code change. The trace keeps the same schema, and span counts and token totals reconcile |
+| 3 | *(Should, W2)* Change the **harness** (plain Converse loop ↔ Strands) | J1 passes with no code change. The report records the new harness. The same script gives identical request hashes and claim tables under both |
 | 4 | Change the **trace evaluator** and re-score stored traces | New scores appear for old runs without re-running the agent, appended as a new versioned record. The report records the evaluator version |
 
 ### J4. Errors are caught and logged (SC2, SC21) — P4, P7
@@ -44,7 +44,7 @@
 | 4 | Run the `key-peeker` policy (calls `key_lookup` and a `keys/` path, then claims crossings plus a canary) | Both calls are blocked with `key_access_attempt` spans and never raise. Items without imagery evidence are `probable_leak`. The canary marks the run `INVALID_FOR_ACCURACY` |
 | 5 | Run the `fabricator` policy (cites unfetched results and windows that only overlap the point) | Rule R4 flags 10 fabrications and 10 ungrounded claims |
 
-### J5. Compare configurations (SC8) — W8
+### J5. Compare configurations (SC8) — W8 *(Should; deviation from D3, SCOPE D68)*
 
 | Step | Action | Verify (test) |
 |---|---|---|
@@ -79,9 +79,9 @@
 | Step | Action | Verify (test) |
 |---|---|---|
 | 1 | Read the run/eval spec schema (`treehouse schema`, later the API) | Every option used in J1–J7 (model, harness, tracer, evaluator, tool set, task, trials, budget limits) appears in the schema |
-| 2 | Launch a run using only the API | The run completes. No option needs a code edit |
+| 2 | *(Should, W12)* Launch a run using only the API | The run completes. No option needs a code edit |
 
-### J10. Results over MCP (SC13) — W7
+### J10. Results over MCP (SC13) — W7 *(Must-1, cut first on slip)*
 
 | Step | Action | Verify (test) |
 |---|---|---|
@@ -102,7 +102,7 @@
 | 1 | Take a claim that fails a hard rule (for example R4, fabricated evidence) while the verifier answered "yes" | The check ledger resolves it by the rule (rule fail beats human, key and verifier), and the gate is Do not rely |
 | 2 | Open the trust passport | The process facts (grounding rate and others) appear beside the interval as their own typed numbers. The scorecard has no composite field |
 
-### J13. Trust without an answer key (SC16, SC19) — P8
+### J13. Trust without an answer key (SC16, SC19, SC27) — P8; W3 (step 7); W10 (step 8)
 
 | Step | Action | Verify (test) |
 |---|---|---|
@@ -111,6 +111,9 @@
 | 3 | Read the beat-baseline field | It says "not computable: 1 keyed regime" |
 | 4 | Load gold labels committed after the verifier's verdicts | The tier drops, with the reason `gold-not-precommitted` |
 | 5 | Run `synth/good` as if unkeyed | The passport is followed by a KEYED truth reveal, chipped SYNTHETIC |
+| 6 | Read the controls block on a synthetic run, then on a live keyed run | Synthetic: "verifier accuracy: synthetic controls only, not evidence". Live keyed (Virginia, after K6): sensitivity and specificity with n and an interval (DD1) |
+| 7 | Export the gold sample, then import labels (F26) | No worker label, confidence or verifier verdict in the export; imported labels are sealed with the blind-protocol hash before any verdict is revealed |
+| 8 | *(Should, W10)* Build a passport with the unreported-places frame | Before W10: the passport says "unreported places not sampled (W10)". After W10: a miss-rate estimand over the corridor frame with n and an interval (SC27, SCOPE D74) |
 
 ### J14. Speed and cost are first-class (SC17) — P7
 
@@ -123,7 +126,7 @@
 
 | Step | Action | Verify (test) |
 |---|---|---|
-| 1 | `stac_search` the Nepal AOI on the pinned fixture | Returns the golden scene list from the 33-scene catalog, with phase, cloud and `pan_gsd` |
+| 1 | `stac_search` the Nepal AOI on the pinned fixture | Returns the golden list of the 23 AOI scenes (2 pre, 21 post) from the 33-scene catalog, with phase, cloud and `pan_gsd` |
 | 2 | Score the cloud trap | `synth/good` gets `cannot_assess` correct on 4/4 hidden crossings; `nepal-good` (picks E5610, abstains on obscured windows) scores above `nepal-guesser` |
 | 3 | `treehouse task validate` all four cards | All pass; the India card validates unchanged |
 | 4 | Scan `src/` | No lat/lon literals or place names |
