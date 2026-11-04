@@ -1,5 +1,10 @@
 # MVP Features in Scope
 
+> **LGND/ADB context — minimal agent-evaluation scope confirmed:** read [the report brief](LGND-REPORT-CONTEXT.md).
+> Historical feature/package priorities below are not a new build queue. The confirmed minimal pipeline is the current Kiro scope, not every report task.
+> Suhas confirmed an agent-evaluation sandbox; Strands is part of the workflow being assessed.
+> See the report brief and Kiro prompts for that scope; broader benchmark studies remain future work.
+
 > **For agents — what this file is:** The MVP feature list (F1–F26). Each feature has a priority from the cut line, the build package that delivers it, a pass check, and the SCOPE requirement (S#) or decision (D#) it comes from. Use it to decide what to build and in what order. The F-numbers are referenced from SCOPE.md, 02, 04 and 05. Terms are defined in the [SCOPE glossary](SCOPE.md#glossary). How each feature works in detail is in [design/SYSTEM-DESIGN.md](design/SYSTEM-DESIGN.md) (**SD**) and [design/IMPLEMENTATION-DESIGN.md](design/IMPLEMENTATION-DESIGN.md) (**ID**). **RJ** = the review-1 judge ([reviews/review1-judge.md](reviews/review1-judge.md)).
 
 > Scope: **ADB agentic eval only**. Captions are a stretch after the ADB stretch goals. Index: [README.md](README.md)

@@ -5,6 +5,27 @@ decisions and resulting geospatial database. Current built scope is in [PRODUCT-
 the product definition in [OUTLINE.md](OUTLINE.md), and execution order in [PLAN.md](PLAN.md).
 Older cut-line decisions remain in Git history and the council designs; they are not current delivery promises.
 
+## Report-driven questions — not approved work packages
+
+Suhas confirmed the minimal pipeline in [OUTLINE.md](OUTLINE.md). The broader
+[LGND/ADB report context](LGND-REPORT-CONTEXT.md) raises these gaps for later scoping; the
+confirmation does not commit to all of them:
+
+- Asset/cell/site-aware grading: any-touch cell matching, object IoU, deduplication and dated updates
+  differ from the current point-distance evaluator. Existing grades need their own version/meaning.
+- Reproducible Table 9 workflows: fixed prompts, permitted examples, iterative labeling/refits,
+  classifier choices and optional detector comparisons, with model/source/scale provenance.
+- Review-effort learning curves, labels/seeds and frozen cross-city/cross-country transfer arms;
+  compare like metrics on the same reference population, rather than ranking models from one score.
+- Analyst-facing benchmark views: asset recall, cell precision, ranking/AP, review effort, unresolved
+  areas and transfer gaps alongside the independently assessed agent decisions, confidence and cost.
+- A verified imagery/reference eligibility record. Noncommercial demo sources and incomplete OSM
+  catalogs do not establish permission or complete ground truth for an ADB deliverable.
+
+T2 segmentation/size, T3 inventory updates and T4 post-event screening are report task families,
+not delivery commitments. The first task, region and comparison protocol remain open. Section 5.8
+supports the agent-evaluation focus; it does not supply a validated ready-made agent rubric.
+
 ## Next: Kiro integration and real evidence
 
 | Feature | Why it matters | Required evidence |

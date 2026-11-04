@@ -1,5 +1,10 @@
 # MVP Success Criteria
 
+> **LGND/ADB context — minimal agent-evaluation scope confirmed:** read [the report brief](LGND-REPORT-CONTEXT.md).
+> Distinguish agent-process assessment from asset recall, cell precision, ranking quality and analyst review effort. Report results are not Treehouse scores.
+> Suhas confirmed an agent-evaluation sandbox; Strands is part of the workflow being assessed.
+> See the report brief and Kiro prompts for that scope; broader benchmark studies remain future work.
+
 > **For agents — what this file is:** MVP success criteria (SC1–SC27). These are the outcomes the build must show. SC1–SC7 come from Clay's vision doc (adjusted for team decisions), SC8–SC12 from the team's scope ([SCOPE.md](SCOPE.md)), and SC13–SC27 from S14–S29 as set by the two designs ([design/](design/)). Each one is proven by a journey test in [04](04-user-journeys-tests.md). Terms are in the [SCOPE glossary](SCOPE.md#glossary).
 
 > Scope: **ADB agentic eval only**. Captions are a stretch after the ADB stretch goals. Index: [README.md](README.md)

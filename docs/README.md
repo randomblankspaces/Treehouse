@@ -2,15 +2,21 @@
 
 ## Current product context — November 4, 2026
 
-Start with [OUTLINE.md](OUTLINE.md), [PLAN.md](PLAN.md), [PRODUCT-STATUS.md](PRODUCT-STATUS.md),
+**Latest reading:** [LGND-REPORT-CONTEXT.md](LGND-REPORT-CONTEXT.md) preserves the supplied ADB/LGND
+report, corrected table map, benchmark/data constraints, result caveats and current gaps. It is an
+source-grounded reading. Suhas confirmed an agent-evaluation sandbox; the Strands/embedding/
+classification/marker sequence is a representative workflow, not a required universal strategy. [KIRO-NEXT-PROMPTS.md](KIRO-NEXT-PROMPTS.md) contains the
+requested continuation prompts; broad report experiments are not implicitly approved.
+
+Then read [OUTLINE.md](OUTLINE.md), [PLAN.md](PLAN.md), [PRODUCT-STATUS.md](PRODUCT-STATUS.md),
 [INVESTIGATION.md](INVESTIGATION.md), [UI.md](UI.md), and [KIRO-HANDOFF.md](KIRO-HANDOFF.md).
 The current product evaluates an agent's strategy, exploration, decisions and resulting geospatial
 database. It is task/zone configurable; warehouses in Bangladesh are an example. MCP calls support
 the evidence trail but do not by themselves grade reasoning. Reported confidence, independent
 accuracy and optional model-estimated process review remain separate.
 
-The latest instruction is reviewed merge to Treehouse main, then stop and wait. The intended later sequence is additional user context, Kiro
-clone/AWS integration and live testing, then refinement. Independent acceptance tests use different
+The reviewed investigation implementation is merged. Next is Kiro clone/AWS integration and live
+testing of the confirmed minimal pipeline, then refinement. Independent acceptance tests use different
 agent context from implementation. [FUTURE-WORK.md](FUTURE-WORK.md) is the current roadmap.
 The earlier event notes and package order below are historical context, not the current build queue.
 

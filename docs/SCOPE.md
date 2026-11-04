@@ -1,5 +1,10 @@
 # Team Scope — Clay agent-eval sandbox ("Treehouse")
 
+> **LGND/ADB context — minimal agent-evaluation scope confirmed:** read [the report brief](LGND-REPORT-CONTEXT.md).
+> The report is benchmark context; the confirmed minimal pipeline is recorded in OUTLINE.md, rather than silently renumbering historical S/D requirements.
+> Suhas confirmed an agent-evaluation sandbox; Strands is part of the workflow being assessed.
+> See the report brief and Kiro prompts for that scope; broader benchmark studies remain future work.
+
 > Current context, November 4: Suhas clarified that Treehouse evaluates an agent's complete
 > investigation and the accuracy of its resulting geographic database, across configurable tasks
 > and zones. Agent explanations/confidence are self-reports; held-out evaluation and separate-context

@@ -1,5 +1,11 @@
 # Opt-in investigation sandbox
 
+For the new ADB/LGND benchmark context, read [LGND-REPORT-CONTEXT.md](LGND-REPORT-CONTEXT.md).
+Suhas confirmed the minimal pipeline; see [KIRO-NEXT-PROMPTS.md](KIRO-NEXT-PROMPTS.md).
+This guide describes existing behavior: the
+current point-distance one-to-one grader is not the report's cell/asset any-touch or detector-IoU
+protocol. Plugin seams and synthetic examples do not reproduce its active-learning/transfer results.
+
 The sandbox accepts an injected `ModelProvider` and uses the existing `execute`, `PlainLoop`,
 `ToolGateway`, policy, `BudgetGuard`, `ClaimLedger`, trace chain and seal. The framework does not
 prescribe a search strategy. Existing replay runs retain their original MCP catalog and

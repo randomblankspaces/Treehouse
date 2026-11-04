@@ -1,10 +1,22 @@
 # HANDOFF — overnight job (for whichever agent picks this up)
 
+> **Latest instruction — minimal sandbox confirmed:** read
+> [docs/LGND-REPORT-CONTEXT.md](docs/LGND-REPORT-CONTEXT.md) and
+> [docs/KIRO-NEXT-PROMPTS.md](docs/KIRO-NEXT-PROMPTS.md). Suhas confirmed natural-language target/zone →
+> embeddings/classification/red markers as a representative agent workflow. Evaluate why/how it
+> uses foundation models and components including Strands; keep decision/evidence/confidence/time/cost
+> distinct from independently assessed process/output quality. This Codex update publishes context and Kiro prompts. PR #8's investigation code is merged; inspected
+> main `5941e2f` also includes PR #9's Compliance default. Only write to
+> `randomblankspaces/Treehouse`; old repository names and execution queues below are historical.
+> Preserve the independent-test requirement and existing work. This documentation handoff changes
+> no feature code and makes no AWS calls; Kiro receives the scoped integration work. The report
+> brief preserves the needed context without publishing the private PDF.
+
 > Current handoff: read [docs/KIRO-HANDOFF.md](docs/KIRO-HANDOFF.md),
 > [docs/OUTLINE.md](docs/OUTLINE.md) and [docs/PLAN.md](docs/PLAN.md) first. The product now includes
 > an opt-in decision/evidence investigation sandbox and observatory UI. Local checks do not prove
-> live model/imagery accuracy. Suhas will provide further context after the reviewed main merge;
-> Kiro then handles AWS integration/live testing, followed by refinement. The overnight narrative
+> live model/imagery accuracy. Use the confirmed minimal scope and new Kiro prompts;
+> Kiro later handles AWS integration/live testing, followed by refinement. The overnight narrative
 > below is retained as history and must not be executed blindly.
 
 

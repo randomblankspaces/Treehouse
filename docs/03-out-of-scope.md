@@ -1,5 +1,10 @@
 # MVP Features Explicitly Out of Scope
 
+> **LGND/ADB context — minimal agent-evaluation scope confirmed:** read [the report brief](LGND-REPORT-CONTEXT.md).
+> The report's consultancy scope and exploratory agent section do not prohibit our sandbox or commit us to every task family.
+> Suhas confirmed an agent-evaluation sandbox; Strands is part of the workflow being assessed.
+> See the report brief and Kiro prompts for that scope; broader benchmark studies remain future work.
+
 > **For agents — what this file is:** What we are NOT building in the MVP, and why. It also holds the caption-task stretch reference (rubric, answer key, risks), so that material isn't lost. Check this before adding any feature.
 
 > Scope: **ADB agentic eval only**. Captions are a stretch after the ADB stretch goals. Index: [README.md](README.md)

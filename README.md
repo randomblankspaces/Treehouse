@@ -4,6 +4,14 @@ Treehouse evaluates how a geospatial agent investigates a target area and whethe
 
 **Start here:** [product outline](docs/OUTLINE.md), [current plan](docs/PLAN.md), [implementation status](docs/PRODUCT-STATUS.md), and [documentation index](docs/README.md). Earlier decisions remain in [docs/SCOPE.md](docs/SCOPE.md); the current plan records the user’s November 4 clarification.
 
+**Latest context — documentation only:** Suhas supplied the LGND/ADB inception report. Read
+[the extracted report context](docs/LGND-REPORT-CONTEXT.md) before proposing benchmark, data or
+workflow changes. It covers analyst tasks, asset definitions, cell-versus-asset scoring, imagery
+permissions, transfer results and Section 5.8's agent-evaluation layer. Suhas has confirmed the
+minimal agent-evaluation sandbox. Strands is part of the workflow under evaluation; model choices,
+embeddings, classification and red prediction markers provide inspectable actions/results.
+Use [the Kiro prompts](docs/KIRO-NEXT-PROMPTS.md) to continue that scope in the AWS environment.
+
 ## Agent investigation MVP
 
 ```sh
@@ -30,7 +38,8 @@ The small [USPVDB benchmark](keys/public-benchmark/README.md) has disjoint refer
 and source provenance. It is incomplete and tests reference/evaluator mechanics, not image accuracy.
 Independent tests were authored in a different agent context before implementation; see
 [test provenance](tests/investigation/PROVENANCE.md). AWS and real imagery/model integration are the
-next Kiro step, followed by live testing and refinement. Nothing on page load invokes AWS.
+intended Kiro step for the confirmed minimal pipeline, followed by live testing and refinement.
+Nothing on page load invokes AWS.
 
 ## Living Sky and Constellation Atlas
 

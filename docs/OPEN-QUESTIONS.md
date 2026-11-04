@@ -1,5 +1,10 @@
 # Build Design Decisions (formerly Open Build Questions)
 
+> **LGND/ADB context — minimal agent-evaluation scope confirmed:** read [the report brief](LGND-REPORT-CONTEXT.md).
+> Earlier build decisions remain recorded below. The minimal pipeline is confirmed; first-run data/AOI configuration and broader benchmark comparison scope remain to be pinned.
+> Suhas confirmed an agent-evaluation sandbox; Strands is part of the workflow being assessed.
+> See the report brief and Kiro prompts for that scope; broader benchmark studies remain future work.
+
 > Current context, November 4: Suhas clarified that Treehouse evaluates an agent's complete
 > investigation and the accuracy of its resulting geographic database, across configurable tasks
 > and zones. Agent explanations/confidence are self-reports; held-out evaluation and separate-context

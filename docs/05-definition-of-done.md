@@ -1,5 +1,10 @@
 # MVP Definition of Done
 
+> **LGND/ADB context — minimal agent-evaluation scope confirmed:** read [the report brief](LGND-REPORT-CONTEXT.md).
+> Existing software test passes do not establish a reproduced benchmark, live geospatial accuracy, calibrated confidence or measured analyst savings.
+> Suhas confirmed an agent-evaluation sandbox; Strands is part of the workflow being assessed.
+> See the report brief and Kiro prompts for that scope; broader benchmark studies remain future work.
+
 > **For agents — what this file is:** The MVP is done when every box here is ticked. Each item links to the journey test in [04](04-user-journeys-tests.md) that proves it. Use it as the final gate before demo and submission. Items marked *(Must-1)* or *(Should)* may be cut by the cut line (SCOPE D66), from the bottom; if cut, they move to [FUTURE-WORK.md](FUTURE-WORK.md) instead of being ticked. A tier that deviates from one of Suhas's own decisions is listed in [SCOPE: Decisions Suhas must confirm](SCOPE.md#decisions-suhas-must-confirm).
 
 > Scope: **ADB agentic eval only**. Captions are a stretch after the ADB stretch goals. Index: [README.md](README.md)

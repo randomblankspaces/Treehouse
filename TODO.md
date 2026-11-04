@@ -266,8 +266,27 @@ See docs/PLAN.md and docs/KIRO-HANDOFF.md for the current sequence and actual co
 - [x] Local plugin sandbox, causal decisions, vision-classifier adapter, sealed reports and SQLite/GeoJSON.
 - [x] Investigation UI with actual prediction markers, evidence and confidence links.
 - [x] Local all-extras suite: 733 passed, 2 live skips, 1 deselected; fresh independent repair review passed.
-- [ ] Record successful pushed/main merge and Kiro handoff in the final user report.
-- [ ] Incorporate Suhas's next explanation before further feature work.
+- [x] Reviewed implementation merged via PR #8 (`2fc2461`); subsequent report clarification is recorded below and Kiro prompts are prepared.
+- [x] Incorporate Suhas's report and clarification: evaluate the agent's model choices/workflow and final database; Strands is a workflow component.
 - [ ] Kiro: connect real AWS providers, imagery/embedding sources and classifier under existing guards.
 - [ ] Kiro: independently test real workflow/output, record actual costs/accuracy and remaining failures.
 - [ ] Refine from live evidence; keep simulations, human-baseline claims and unsafe trust wiring deferred.
+
+## Latest context — LGND/ADB report and confirmed minimal sandbox
+
+This supersedes the old overnight execution queue as the next action. See
+[docs/LGND-REPORT-CONTEXT.md](docs/LGND-REPORT-CONTEXT.md) for the source hash, table/page map,
+analyst tasks, asset definitions, workflow alternatives, benchmark protocol, imagery constraints,
+worked results and differences from the implemented sandbox.
+
+- [x] Extract all 30 pages locally; visually inspect the key tables; preserve a source-grounded repo brief.
+- [x] Update active outline, status, constraints, future-work and handoff pointers for another agent.
+- [x] Suhas confirmed the agent-evaluation sandbox; natural-language/AOI, embeddings, classifier and red markers describe a representative workflow, with Strands as one component.
+- [x] Prepare scoped [Kiro continuation prompts](docs/KIRO-NEXT-PROMPTS.md), with existing paths and evidence limits.
+- [ ] Kiro: pin a suitable bounded first task/AOI, eligible data and actual model versions; freeze independent acceptance before feature code.
+
+The report's Section 5.8 is the working agent-evaluation framing. Tables 2–3 are background, Table 17
+is the imagery matrix, Table 8 defines assets, Table 7 fixes the evaluation protocol, Table 11
+explains success metrics and Table 9 describes workflows. These notes are not accepted new S/D/F
+requirements. Only the confirmed minimal integration is the Kiro scope; broader tasks and imagery
+purchases are not implied.

@@ -1,5 +1,10 @@
 # MVP User Journeys as Tests
 
+> **LGND/ADB context — minimal agent-evaluation scope confirmed:** read [the report brief](LGND-REPORT-CONTEXT.md).
+> Future report-comparable checks must declare reference, units, matching, effort and transfer rules before results; acceptance tests remain independently authored before feature code.
+> Suhas confirmed an agent-evaluation sandbox; Strands is part of the workflow being assessed.
+> See the report brief and Kiro prompts for that scope; broader benchmark studies remain future work.
+
 > **For agents — what this file is:** Acceptance tests written as user journeys (J1–J18). Each step has a check, and a journey passes only if every check passes. Each journey proves the success criteria in [02](02-success-criteria.md) noted beside it, and names the build package that makes it testable (ID §6 "Journeys" table, [design/IMPLEMENTATION-DESIGN.md](design/IMPLEMENTATION-DESIGN.md)). Journeys live in `tests/journeys/`. Most run offline on the synthetic demo world; "live" steps run on AWS through Kiro. J16–J18 are spec-sheet additions; their packages are inferred from ID §7, not from the §6 table. Terms are in the [SCOPE glossary](SCOPE.md#glossary).
 
 > Scope: **ADB agentic eval only**. Captions are a stretch after the ADB stretch goals. Index: [README.md](README.md)

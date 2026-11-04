@@ -1,5 +1,14 @@
 # External Dependencies — Clay Earth Dataset Foundry hackathon
 
+> **New report context, November 4:** read [LGND-REPORT-CONTEXT.md](LGND-REPORT-CONTEXT.md) before
+> selecting benchmark models, imagery or reference data. Table 17 distinguishes open embeddings,
+> attribution-required GSI imagery, view-only Esri imagery and noncommercial Maxar data excluded by
+> the report from ADB datasets. Existing demo access does not establish ADB reuse rights. Reference
+> completeness, asset definitions and licenses differ by source/extent; source claims require
+> verification for the intended use. FarSLIP's checkpoint license and some register access/terms are
+> unresolved. The minimal Strands/GeoFM pipeline is confirmed; no new dependency, purchase or cloud
+> call was added by this documentation update. The historical link checks below were not repeated as part of the PDF reading.
+
 > **For agents — what this file is:** Every outside resource: MCP servers, datasets, answer keys, platform and stack. Each has a link, access path, license, MVP/stretch tag, and a link check from 2026-11-03. Access facts and licences were updated on 2026-11-04 from the two designs ([design/SYSTEM-DESIGN.md](design/SYSTEM-DESIGN.md) A4 and fact-check pass 2; [design/IMPLEMENTATION-DESIGN.md](design/IMPLEMENTATION-DESIGN.md) fact-check of r3) and HANDOFF.md. Only reference/geomcp-catalog.csv and the Vantor STAC metadata fixture are committed; the source PDFs and all imagery pixels are kept out of the repo.
 
 All links below were checked on **2026-11-03**. The status column shows the result. "Build container" means the overnight agent's container (no AWS credentials, proxied network), checked 2026-11-04. Links added on 2026-11-04 (the USPVDB V4.0 release) come from the SD fact-check's search results and were not link-checked.

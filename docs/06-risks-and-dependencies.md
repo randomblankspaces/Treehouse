@@ -1,5 +1,10 @@
 # MVP Risks and Dependencies
 
+> **LGND/ADB context — minimal agent-evaluation scope confirmed:** read [the report brief](LGND-REPORT-CONTEXT.md).
+> New source risks include incomplete references, class-definition mismatch, cell/asset metric confusion, transfer degradation and imagery-use restrictions.
+> Suhas confirmed an agent-evaluation sandbox; Strands is part of the workflow being assessed.
+> See the report brief and Kiro prompts for that scope; broader benchmark studies remain future work.
+
 > **For agents — what this file is:** Known risks with their mitigations, the things we depend on (and their status), and the questions to ask Clay. Check it at the start of each work session. Risks come from the review-1 judge (**RJ**), SYSTEM-DESIGN A12 "Risks said out loud" (**SD**) and IMPLEMENTATION-DESIGN §9 (**ID**). Updated 2026-11-04.
 
 > Scope: **ADB agentic eval only**. Captions are a stretch after the ADB stretch goals. Index: [README.md](README.md)

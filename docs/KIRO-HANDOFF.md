@@ -1,8 +1,14 @@
-# Continuation context — wait for Suhas
+# Continuation context — confirmed minimal sandbox
 
-Latest instruction: finish the code, review the PR, merge to Treehouse main only if the code and
-checks pass, then stop and wait for Suhas. This document records context; it does not authorize an
-agent to start AWS integration, deployment or further feature work by reading it.
+Latest instruction: Suhas confirmed an evaluation sandbox that observes why/how an agent uses
+foundation models and other workflow components to build a geospatial database. Strands is part
+of the workflow under evaluation, not a fixed Treehouse architecture. Natural-language target/AOI,
+embeddings, classification and red prediction markers form a representative workflow, with
+inspectable reasons/confidence/evidence/time/cost and independent process/output assessment. He requested Kiro prompts. The previous
+implementation is merged in PR #8; separate PR #9 sets Compliance-mode Object Lock as the default.
+Read [LGND-REPORT-CONTEXT.md](LGND-REPORT-CONTEXT.md) and then use
+[KIRO-NEXT-PROMPTS.md](KIRO-NEXT-PROMPTS.md). The broader benchmark remains source context, not a
+commitment to every report task. This Codex change adds documentation, not a live implementation.
 
 ## Product understanding
 
@@ -60,13 +66,25 @@ Use a fresh destination/run ID; preserve existing sealed outputs. Open http://12
 select the run's Investigation pane. This demonstration uses an explicitly labeled synthetic,
 observation-driven heuristic, not a validated real foundation-model detector.
 
-## What Kiro will need after the user supplies further instructions
+## New benchmark context to preserve
+
+The closest product match is Section 5.8's agentic evaluation layered over workflow benchmarks.
+Observe decisions, adaptations, evidence and limits, and independently score the database. Fix the
+reference, asset/cell/site units, matching, metrics, labeling effort and transfer protocol before
+results. Do not compare our point-distance fixture grades directly with their 160 m cell/asset
+any-touch or detector-IoU results. Table 9 is a set of workflow alternatives, not a required call
+order. Imagery permissions are in Table 17; report licenses/access/results are not independently
+verified. The first task/region remains open; USPVDB is still an evaluator fixture, not the supplied
+warehouse benchmark. Preserve independent test authorship before feature implementation.
+
+## What Kiro needs for the confirmed minimal integration
 
 Clone only `https://github.com/randomblankspaces/Treehouse.git`, inspect clean git status and current
 main, and incorporate Suhas's additional context before extending it. Never modify the upstream
 VishalPatil18 repository or force push. Use a new `kiro/...` branch for integration checkpoints.
 
-Read [OUTLINE.md](OUTLINE.md), [PLAN.md](PLAN.md), [INVESTIGATION.md](INVESTIGATION.md),
+Read [LGND-REPORT-CONTEXT.md](LGND-REPORT-CONTEXT.md), [OUTLINE.md](OUTLINE.md),
+[PLAN.md](PLAN.md), [INVESTIGATION.md](INVESTIGATION.md),
 [PRODUCT-STATUS.md](PRODUCT-STATUS.md), [UI.md](UI.md), and [FUTURE-WORK.md](FUTURE-WORK.md).
 Older overnight TODO prompts contain commands/scope that can be stale; do not execute them blindly.
 
@@ -89,4 +107,6 @@ The current trust reporting path remains an unissued stub; repair the separate t
 cases before wiring a real passport. Manual Windows screen-reader checks and real source/model
 accuracy measurements remain outstanding.
 
-No further action is scheduled here. Await Suhas's next instruction.
+Next action: Kiro follows KIRO-NEXT-PROMPTS.md, establishes the current baseline, freezes independent
+acceptance checks and integrates the confirmed minimal pipeline. Keep AWS work in the authorized
+Workshop environment. Report actual outcomes and blockers; broader report work needs separate scope.

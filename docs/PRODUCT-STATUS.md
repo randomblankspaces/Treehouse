@@ -3,6 +3,13 @@
 The [master UI specification](TREEHOUSE_MASTER_UI_IMPLEMENTATION_SPEC.md) is the product contract.
 This page describes the bounded initial delivery, not completion of the full product vision.
 
+**New source context:** [LGND-REPORT-CONTEXT.md](LGND-REPORT-CONTEXT.md) distinguishes the supplied
+draft's benchmark from this implementation. Suhas confirmed an agent-evaluation sandbox,
+with Strands as one component of an evaluated workflow; [KIRO-NEXT-PROMPTS.md](KIRO-NEXT-PROMPTS.md) carries the integration handoff.
+No benchmark adapter, active-learning loop, transfer experiment or real-data result
+was implemented by the documentation update. The existing master UI specification remains the UI
+reference; the confirmed pipeline clarifies behavior without completing that whole specification.
+
 | Surface | Delivery scope | Limits and next check |
 |---|---|---|
 | Agent investigation sandbox | Trusted ModelProvider/classifier/source plugins, prior decision bindings, partial/final sealed runs, independent post-seal analysis, SQLite/GeoJSON | Default demonstration is synthetic; real AWS/imagery providers need Kiro wiring. Local plugins are not OS isolated. |
