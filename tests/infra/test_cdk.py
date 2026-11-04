@@ -97,3 +97,9 @@ def test_agentcore_can_be_left_out():
     t = Template.from_stack(EvalStack(_app(), "E2", with_agentcore=False))
     t.resource_count_is("AWS::BedrockAgentCore::Evaluator", 0)
     t.resource_count_is("AWS::Lambda::Function", 2)
+
+
+def test_submission_bucket_can_use_compliance_mode():
+    t = Template.from_stack(RunStoreStack(_app(), "C", lock_mode="compliance", retention_days=1))
+    t.has_resource_properties("AWS::S3::Bucket", {
+        "ObjectLockConfiguration": {"Rule": {"DefaultRetention": {"Mode": "COMPLIANCE", "Days": 1}}}})

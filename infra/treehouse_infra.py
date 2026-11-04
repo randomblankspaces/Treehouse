@@ -8,7 +8,8 @@
   DISABLED by default and reads a log group given as a stack parameter.
 
 ``cdk synth`` needs no credentials. Pass ``-c agentcore=false`` to leave out the AgentCore resources where the
-service is unavailable, and ``-c retention_days=N`` to change the default Object Lock retention (1 day).
+service is unavailable, and ``-c retention_days=N`` to change the default Object Lock retention (1 day), and
+``-c lock_mode=compliance`` for the submission bucket (default governance).
 """
 
 from __future__ import annotations
@@ -64,13 +65,17 @@ def evaluator_code() -> lambda_.Code:
 
 
 class RunStoreStack(Stack):
-    def __init__(self, scope: Construct, cid: str, *, retention_days: int = 1, **kw) -> None:
+    def __init__(self, scope: Construct, cid: str, *, retention_days: int = 1, lock_mode: str = "governance",
+                 **kw) -> None:
         super().__init__(scope, cid, **kw)
+        # Compliance: no principal (root included) can delete or shorten retention; use it for the submission
+        # bucket only, with a short retention. Governance: an admin can bypass; use it for dev stacks.
+        lock = {"governance": s3.ObjectLockRetention.governance, "compliance": s3.ObjectLockRetention.compliance}[lock_mode]
         common = dict(block_public_access=s3.BlockPublicAccess.BLOCK_ALL, enforce_ssl=True, versioned=True,
                       removal_policy=RemovalPolicy.RETAIN)
         self.run_store = s3.Bucket(
             self, "RunStore", encryption=s3.BucketEncryption.S3_MANAGED, object_lock_enabled=True,
-            object_lock_default_retention=s3.ObjectLockRetention.governance(Duration.days(retention_days)),
+            object_lock_default_retention=lock(Duration.days(retention_days)),
             **common)
 
         # Sandbox roles: anyone in the account may assume them; their policies, not the trust, do the work.
