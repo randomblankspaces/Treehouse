@@ -244,3 +244,14 @@ uv run treehouse run ... --tracer jsonl,cwlogs   # a 1-trial synthetic live run
 uv run treehouse trace reconcile <run_id>        # span counts and token totals must match between JSONL and CloudWatch
 Commit reconcile.json on kiro/k9-tracer.
 ```
+
+## P5 demo skeleton (pkg/p5-demo-skeleton): merged state and hand-offs
+- `uv sync && uv run treehouse demo` works offline (about 10 s): 9 replayed runs, golden heads, R1/R2/R4,
+  Panel 1 basics + Panel 5, trust STUB (ABSTAINED "trust engine not yet built"), reports, index, verify.
+- After merging pkg/p4-fixes (specs filtered by tools_allowed, effective-GSD floor, tool-cassette changes):
+  rerun `uv run python scripts/make_demo_fixtures.py`, then commit the regenerated cassettes and
+  `fixtures/golden/heads.json`.
+- P7: replace `checks/rules.py` (R1/R2/R4 only) with R1-R9 + keyed match + leaks; fill the understanding and
+  output panels (currently `no_grade_reason`); I1-I3 use the demo runs (fabricator 10/10/16, key-peeker 2 blocked).
+- P8: replace `trust/stub.py`; add verdict/gold fixtures (`fixtures/demo/{verdicts,gold}`) to
+  `scripts/make_demo_fixtures.py` from `keys/synth/*.json`; wire §5.3 steps 5 and 7 into `service.demo`.

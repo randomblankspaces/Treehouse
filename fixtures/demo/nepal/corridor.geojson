@@ -1,0 +1,20 @@
+{
+ "geometry": {
+  "coordinates": [
+   [
+    85.3525,
+    28.15
+   ],
+   [
+    85.3725,
+    28.29
+   ]
+  ],
+  "type": "LineString"
+ },
+ "properties": {
+  "note": "SYNTHETIC corridor (AOI midline); illustrative, not surveyed bridges",
+  "synthetic": true
+ },
+ "type": "Feature"
+}

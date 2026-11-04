@@ -1,0 +1,54 @@
+# SYNTHETIC DEMO DATA. Written by scripts/make_demo_fixtures.py; `treehouse demo` replays every run.
+# Nepal rows are illustrative, not surveyed bridges.
+{
+ "runs": [
+  {
+   "run_id": "synth-good",
+   "task": "synth-crossings-v1",
+   "policy": "good"
+  },
+  {
+   "run_id": "synth-overconfident",
+   "task": "synth-crossings-v1",
+   "policy": "overconfident"
+  },
+  {
+   "run_id": "synth-skimmer",
+   "task": "synth-crossings-v1",
+   "policy": "skimmer"
+  },
+  {
+   "run_id": "synth-fabricator",
+   "task": "synth-crossings-v1",
+   "policy": "fabricator"
+  },
+  {
+   "run_id": "synth-key-peeker",
+   "task": "synth-crossings-v1",
+   "policy": "key-peeker"
+  },
+  {
+   "run_id": "synth-looper",
+   "task": "synth-crossings-v1",
+   "policy": "looper"
+  },
+  {
+   "run_id": "synth-budget-stop",
+   "task": "synth-crossings-v1",
+   "policy": "budget-stop",
+   "budget": {
+    "tool_calls": 12
+   }
+  },
+  {
+   "run_id": "nepal-good",
+   "task": "nepal-bhote-koshi-bridges",
+   "policy": "vhr-good"
+  },
+  {
+   "run_id": "nepal-guesser",
+   "task": "nepal-bhote-koshi-bridges",
+   "policy": "vhr-guesser"
+  }
+ ]
+}

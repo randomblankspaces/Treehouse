@@ -78,9 +78,14 @@ data_allowlist:
       B1200011012B2A10: "95c5f3dd87f27eb26c5f98dec08f7bb9-16"
   - source_id: vantor-nepal-imagery
     kind: imagery
-    access: recorded   # tonight: recorded WindowResults, no pixels; CogSource reads are W1
+    access: recorded   # tonight: recorded WindowResults, no pixels (SYNTHETIC rows); CogSource reads are W1
+    fixture_path: fixtures/demo/nepal/windows.jsonl
+    item_ids: [B1300011011E5610, B1300011011E5810]
+    etags:
+      B1300011011E5610: "fd9a1f40f9de0e8fa18a210118f60708-31"
+      B1300011011E5810: "f30695786bbebf0085dfd44ec6d5de48-31"
     license: CC-BY-NC-4.0
-    status: pending_fixture
+    status: pinned
   - source_id: lgnd-clay-embeddings
     kind: embeddings
     access: s3_listing
@@ -136,7 +141,7 @@ known_limits:
   - Sixteen of the 21 post-event scenes over the AOI are 71-94 % cloud; B1300011011E5610 and B1300011011E5810 are the clear ones.
   - Footbridge decks are 1-2 m wide; status needs windows at 0.5 m effective GSD or finer.
   - Clay embeddings end in April 2026 and predate the flood; they can narrow the corridor, not show damage.
-  - "Placebo control unavailable: 2 pre scenes, about 51 % overlap, 3-5 year gap to the event. Test-retest uses E5610/E5810 only."
+  - "Placebo control unavailable: 2 pre scenes, about 63 % of the AOI covered by both pre scenes, 3-5 year gap to the event. Test-retest uses E5610/E5810 only."
   - Model memory of OSM cannot be excluded by blocking tools.
   - Vantor imagery is CC-BY-NC-4.0; derived datasets are non-commercial.
 sampling_plan:

@@ -14,3 +14,18 @@ jobs:
       - run: uv run ruff check .
       - run: uv run pytest
       - run: uv run treehouse --help
+  clean-clone-demo:
+    # J8: a fresh clone runs the offline demo with the network blocked, in under 60 s.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv python install 3.12
+      - run: uv sync --frozen
+      - name: treehouse demo (sockets blocked, offline uv)
+        env:
+          UV_OFFLINE: "1"
+        run: timeout 60 uv run --offline python scripts/offline.py treehouse demo
+      - run: test -s out/demo/index.html
+      - run: uv run --offline treehouse verify --store out/demo/store

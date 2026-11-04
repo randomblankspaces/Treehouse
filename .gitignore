@@ -58,3 +58,7 @@ temp/
 
 # Treehouse local store (default $TREEHOUSE_STORE)
 .treehouse/
+
+# Treehouse outputs (demo store, cassettes from record mode)
+out/
+.treehouse/
