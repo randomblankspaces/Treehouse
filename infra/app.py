@@ -13,5 +13,8 @@ bootstrapless = str(ctx("bootstrapless")).lower() == "true"
 RunStoreStack(app, "TreehouseRunStore", retention_days=int(ctx("retention_days") or 1), lock_mode=ctx("lock_mode") or "compliance",
               synthesizer=cdk.BootstraplessSynthesizer() if bootstrapless else None)
 if not bootstrapless:
-    EvalStack(app, "TreehouseEval", with_agentcore=str(ctx("agentcore")).lower() != "false")
+    # -c online=true: also create the AgentCore OnlineEvaluationConfig; it requires a hosted-agent log group
+    # that already exists (KA3), so it is off by default and the evaluators + Lambdas deploy without a runtime.
+    EvalStack(app, "TreehouseEval", with_agentcore=str(ctx("agentcore")).lower() != "false",
+              with_online=str(ctx("online")).lower() == "true")
 app.synth()

@@ -5,7 +5,7 @@ Work top to bottom. For each task: branch `kiro/<n>-<slug>`, tests first, `uv ru
 run `uv run treehouse budget status` (stop at exit 2/3). If a task hits a hard AWS blocker, record it in
 `docs/KIRO-STATUS.md` and continue with the next task that does not depend on it.
 
-- [ ] 0. Environment and AWS foundation
+- [x] 0. Environment and AWS foundation
   - `uv sync --locked --all-extras`; `uv run pytest` baseline green; `npm ci && npm run build` in `ui/`.
   - `cd infra && npx -y aws-cdk@2 bootstrap aws://<account>/us-east-1` then `npx -y aws-cdk@2 deploy --all --outputs-file cdk-outputs.json` (run store in Compliance mode, key bucket, Lambda evaluators, AgentCore evaluators). Commit `cdk-outputs.json` with account IDs redacted.
   - Enable CloudWatch Transaction Search for X-Ray spans (AgentCore Observability prerequisite); record the setting.
