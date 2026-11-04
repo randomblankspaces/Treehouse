@@ -14,14 +14,15 @@ Fill this in as the build goes. Start empty, and add a row the moment something 
 
 | # | Feature | What it adds | Source |
 |---|---|---|---|
-| 1 | Sensitivity analysis | Re-run tasks while varying inputs and prompts (beyond the required model/harness/tooling comparisons, D3), and measure how stable both the agent and the eval are | Clay vision doc, Journey 2 (stretch) |
-| 2 | Multi-agent traces | Planner / executor / checker agents, each traced, scored, and summarized | Clay stretch goal |
-| 3 | Dynamic MCP tool discovery | The agent chooses tools from Clay's ~99-server catalog instead of a fixed tool set | Clay stretch goal |
-| 4 | Richer trace-summary dashboard | Full UI on top of the parameter-complete API (UI deferred, D11) | Clay stretch goal · D11 |
-| 5 | Agent-written verification code | The agent writes code that computes a dataset statistic, and the sandbox runs it to check the agent's claim | Team discussion (round 1, Q1 option b) |
-| 6 | Batch trials on AWS (Lambda/ECS) | Run large N-trial evals in parallel in the cloud | OPEN-QUESTIONS OQ9 |
-| 7 | Second Clay task: caption generation | Five-criterion caption rubric, fixed/change tasks, retrieval answer keys. Full reference in [03-out-of-scope.md](03-out-of-scope.md) | Clay vision doc, task 2 |
-| 8 | Third Clay task | The vision doc mentions three tasks but defines only two. Build it once Clay defines it | Clay vision doc |
+| 1 | Flood and bridge-failure simulation | After the agent returns the bridge dataset, the user selects a location and clicks to simulate. Treehouse builds a rough 3D layer from elevation, flood records, soil, pre/post-flood imagery and bridge type, size and condition, then shows a realistic (not over-engineered) failure simulation with every input number visible so it can be recreated. A person verifies each result. Validated against the August 2026 Nepal flood. Candidate data: Copernicus DEM, SoilGrids, Global Flood Database, Copernicus EMS, BIPAD (all unchecked) | Suhas, SCOPE D41 |
+| 2 | Sensitivity analysis | Re-run tasks while varying inputs and prompts (beyond the required model/harness/tooling comparisons, D3), and measure how stable both the agent and the eval are | Clay vision doc, Journey 2 (stretch) |
+| 3 | Multi-agent traces | Planner / executor / checker agents, each traced, scored, and summarized | Clay stretch goal |
+| 4 | Dynamic MCP tool discovery | The agent chooses tools from Clay's ~99-server catalog instead of a fixed tool set | Clay stretch goal |
+| 5 | Richer trace-summary dashboard | Full UI on top of the parameter-complete API (UI deferred, D11) | Clay stretch goal · D11 |
+| 6 | Agent-written verification code | The agent writes code that computes a dataset statistic, and the sandbox runs it to check the agent's claim | Team discussion (round 1, Q1 option b) |
+| 7 | Batch trials on AWS (Lambda/ECS) | Run large N-trial evals in parallel in the cloud | OPEN-QUESTIONS OQ9 |
+| 8 | Second Clay task: caption generation | Five-criterion caption rubric, fixed/change tasks, retrieval answer keys. Full reference in [03-out-of-scope.md](03-out-of-scope.md) | Clay vision doc, task 2 |
+| 9 | Third Clay task | The vision doc mentions three tasks but defines only two. Build it once Clay defines it | Clay vision doc |
 
 ## Beyond the hackathon (outside our 2-day mandate, natural next steps for Clay)
 
