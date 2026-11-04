@@ -14,6 +14,7 @@ anyone who can rewrite the whole store can recompute every hash (S3 Object Lock 
 
 from __future__ import annotations
 
+import errno
 import json
 import os
 import re
@@ -84,7 +85,12 @@ class LocalStore:
         except FileExistsError as e:
             raise AlreadyExists(str(path)) from e
         try:
-            os.write(fd, data)
+            remaining = memoryview(data)
+            while remaining:
+                written = os.write(fd, remaining)
+                if written == 0:
+                    raise OSError(errno.EIO, "write made no progress", str(path))
+                remaining = remaining[written:]
             os.fsync(fd)
         finally:
             os.close(fd)
