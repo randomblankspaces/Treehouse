@@ -50,12 +50,12 @@ class Rig:
 
 
 def make_rig(trace_path: Path, *, task=None, as_of=None, budget: Budget | None = None, zlib_level: int = 6,
-             store=None, clock=None, ids=None) -> Rig:
+             store=None, clock=None, ids=None, base: dict | None = None) -> Rig:
     task = task or card()
     ids = ids or IdSource(7)
     clock = clock or LogicalClock()
     tracer = TrialTracer(ChainedJsonlWriter.for_trial(trace_path, "t-0"), trace_id=ids.trace_id(), clock=clock,
-                         ids=ids, base_attrs={**BASE, "treehouse.task.id": task.id})
+                         ids=ids, base_attrs={**BASE, "treehouse.task.id": task.id, **(base or {})})
     pixels = PixelCache(zlib_level=zlib_level)
     ledger = ClaimLedger(task, run_id="run-0001", trial_id="t-0")
     guard = BudgetGuard(budget or Budget(), clock=clock)

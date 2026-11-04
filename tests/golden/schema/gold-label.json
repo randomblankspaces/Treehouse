@@ -1,6 +1,6 @@
 {
   "additionalProperties": false,
-  "description": "A human ``cannot_assess`` counts as y=0 for precision and is reported as a count.",
+  "description": "A human ``cannot_assess`` counts as y=0 for ``verified_precision`` (a lower bound) and is reported\nas ``TrustPassport.n_gold_cannot_assess``; the estimand ``precision`` applies only when that count is 0.",
   "properties": {
     "blind_protocol_hash": {
       "title": "Blind Protocol Hash",

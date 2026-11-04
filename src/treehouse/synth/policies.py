@@ -14,8 +14,8 @@ fixtures are recorded (``scripts/make_demo_fixtures.py``); the demo replays the 
 | key-peeker    | key_lookup and a keys/ path (2 blocked), then all 40 crossings plus a canary, 20 w/o imagery |
 | looper        | 6 identical stac_search calls, bad args, a nonexistent tool, then gives up with 5 claims    |
 | budget-stop   | good, run under Budget(tool_calls=12)                                                       |
-| nepal-good    | E5610-style clearest scene, 30 windows; 22 status claims and 8 cannot_assess (obscured)     |
-| nepal-guesser | the same windows, but status claims on the 8 obscured windows too                           |
+| vhr-good      | E5610-style clearest scene, 30 windows; 22 status claims and 8 cannot_assess (obscured)     |
+| vhr-guesser   | the same windows, but status claims on the 8 obscured windows too                           |
 """
 
 from __future__ import annotations
@@ -24,7 +24,8 @@ from typing import Any
 
 from treehouse.geo.geom import M_PER_DEG, bbox_of
 from treehouse.schemas.task import TaskCard
-from treehouse.synth import nepal, world
+from treehouse.synth import nepal as vhr
+from treehouse.synth import world
 
 UNDERSTANDING = {
     "goal_restated": "Inventory every river crossing in the AOI and give its post-event status, or "
@@ -199,7 +200,7 @@ def budget_stop() -> list[dict[str, Any]]:
     return good()
 
 
-def _nepal_opening(s: Script, card: TaskCard, scene_id: str) -> None:
+def _vhr_opening(s: Script, card: TaskCard, scene_id: str) -> None:
     s.call("submit_understanding", **{**UNDERSTANDING, "known_limits": [
         *UNDERSTANDING["known_limits"], "imagery is CC-BY-NC (non-commercial)"]})
     s.call("stac_search", aoi_bbox=list(bbox_of(card.aoi.polygons())), start=str(card.time_window[0]),
@@ -208,10 +209,10 @@ def _nepal_opening(s: Script, card: TaskCard, scene_id: str) -> None:
     s.end_turn()
 
 
-def nepal_policy(card: TaskCard, rows: list[dict], points: list[dict], *, guess: bool) -> list[dict[str, Any]]:
+def vhr_policy(card: TaskCard, rows: list[dict], points: list[dict], *, guess: bool) -> list[dict[str, Any]]:
     s = Script()
     scene_id = rows[0]["args"]["scene_id"]
-    _nepal_opening(s, card, scene_id)
+    _vhr_opening(s, card, scene_id)
     rids = [s.call("imagery_window", **r["args"]) for r in rows]
     s.end_turn()
     s.call("note_limitation", text="Some windows are obscured by cloud or haze.", scene_id=scene_id)
@@ -223,7 +224,7 @@ def nepal_policy(card: TaskCard, rows: list[dict], points: list[dict], *, guess:
             status = "intact" if obscured else p["status"]
             _claim(s, "damage", p["lon"], p["lat"], p["cls"], status, 0.9 if not obscured else 0.85,
                    "deck visible" if not obscured else "assumed intact", [r])
-    return s.finish(f"Recorded {len(points)} bridge statuses ({nepal.NOTE}).")
+    return s.finish(f"Recorded {len(points)} bridge statuses ({vhr.NOTE}).")
 
 
 SYNTH = {"good": good, "overconfident": overconfident, "skimmer": skimmer, "fabricator": fabricator,
@@ -234,11 +235,11 @@ def build(name: str, card: TaskCard, *, recorded_windows: list[dict] | None = No
     """The FakeProvider script for policy ``name`` on ``card``."""
     if name in SYNTH:
         return SYNTH[name]()
-    if name in ("nepal-good", "nepal-guesser"):
+    if name in ("vhr-good", "vhr-guesser"):
         items = _items(card)
-        scene = nepal.clearest_post_scene(card, items)
-        return nepal_policy(card, recorded_windows or nepal.recorded_windows(card, scene),
-                            nepal.points(card, scene), guess=name == "nepal-guesser")
+        scene = vhr.clearest_post_scene(card, items)
+        return vhr_policy(card, recorded_windows or vhr.recorded_windows(card, scene),
+                            vhr.points(card, scene), guess=name == "vhr-guesser")
     raise KeyError(f"unknown policy {name!r}")
 
 

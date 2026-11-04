@@ -4,6 +4,8 @@
       "additionalProperties": false,
       "properties": {
         "bright_lowvar_fraction": {
+          "maximum": 1,
+          "minimum": 0,
           "title": "Bright Lowvar Fraction",
           "type": "number"
         },
@@ -14,6 +16,8 @@
           "type": "string"
         },
         "nodata_fraction": {
+          "maximum": 1,
+          "minimum": 0,
           "title": "Nodata Fraction",
           "type": "number"
         }
@@ -27,7 +31,7 @@
     }
   },
   "additionalProperties": false,
-  "description": "One image window. ``pixel_sha256`` hashes the decoded C-order uint8 array plus its shape.\n``effective_gsd_m`` = side_m / out_px. ``bytes_read`` may be modelled (see the reader).",
+  "description": "One image window. ``pixel_sha256`` hashes the decoded C-order uint8 array plus its shape\n(one implementation: ``treehouse.pixels.array_sha256``). ``effective_gsd_m`` = side_m / out_px.\n\n``detail.bytes_model`` (required) says whether ``bytes_read`` was measured or comes from the declared\n``synthetic-overview-block-v1`` model (RS-B1); the synthetic reader always models its bytes and is\nalways synthetic, and a rasterio reader always measures.",
   "properties": {
     "bbox_read": {
       "maxItems": 4,
@@ -74,6 +78,7 @@
       "type": "integer"
     },
     "bytes_read": {
+      "minimum": 0,
       "title": "Bytes Read",
       "type": "integer"
     },
@@ -94,7 +99,6 @@
           }
         ]
       },
-      "default": {},
       "title": "Detail",
       "type": "object"
     },
@@ -115,6 +119,8 @@
       "title": "Etag"
     },
     "footprint_coverage_fraction": {
+      "maximum": 1,
+      "minimum": 0,
       "title": "Footprint Coverage Fraction",
       "type": "number"
     },
@@ -188,6 +194,7 @@
       "title": "Phase"
     },
     "pixel_sha256": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
       "title": "Pixel Sha256",
       "type": "string"
     },
@@ -200,6 +207,7 @@
       "type": "string"
     },
     "requests": {
+      "minimum": 0,
       "title": "Requests",
       "type": "integer"
     },
@@ -212,6 +220,8 @@
       "type": "string"
     },
     "scene_cloud_pct": {
+      "maximum": 100,
+      "minimum": 0,
       "title": "Scene Cloud Pct",
       "type": "number"
     },
@@ -255,7 +265,8 @@
     "reader",
     "obscuration",
     "license",
-    "synthetic"
+    "synthetic",
+    "detail"
   ],
   "title": "WindowResult",
   "type": "object"

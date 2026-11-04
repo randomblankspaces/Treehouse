@@ -75,7 +75,7 @@ def points(card: TaskCard, scene: Item) -> list[dict]:
 
 def truth(card: TaskCard, scene: Item) -> dict:
     """The synthetic truth the recorded fake verifier and synthetic gold are drawn from (keys/synth/)."""
-    body = {"id": "nepal-demo-truth", "task": card.id, "synthetic": True, "note": NOTE, "scene_id": scene.id,
+    body = {"id": "corridor-demo-truth", "task": card.id, "synthetic": True, "note": NOTE, "scene_id": scene.id,
             "points": points(card, scene)}
     return {**body, "version_hash": sha256_json(body)}
 
@@ -104,9 +104,9 @@ def recorded_windows(card: TaskCard, scene: Item) -> list[dict]:
                 round(p["lat"] + dlat / 2, 7))
         bright = round(float(rng.uniform(0.45, 0.8) if p["obscured"] else rng.uniform(0.0, 0.08)), 4)
         header = k == 0
-        wid = f"nepal-{p['point_id']}"
+        wid = f"vhr-{p['point_id']}"
         result = {
-            "result_id": "", "source_id": "vantor-nepal-imagery", "scene_id": scene.id, "etag": scene.etag,
+            "result_id": "", "source_id": next(d.source_id for d in card.data_allowlist if d.kind == "imagery"), "scene_id": scene.id, "etag": scene.etag,
             "bbox_requested": bbox, "bbox_read": bbox, "footprint_coverage_fraction": 1.0,
             "scene_datetime": p_["datetime"], "phase": "post", "nominal_gsd_m": gsd, "pixel_spacing_m": gsd,
             "effective_gsd_m": round(SIDE_M / OUT_PX, 6), "overview_level": level,

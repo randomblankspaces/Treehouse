@@ -72,9 +72,17 @@ class FakeProvider:
 
     @classmethod
     def from_yaml(cls, text_or_path: str | Path) -> FakeProvider:
-        p = Path(text_or_path) if not str(text_or_path).lstrip().startswith("-") else None
-        text = p.read_text() if p is not None and p.is_file() else str(text_or_path)
-        return cls(yaml.safe_load(text) or [])
+        """A ``Path`` or a one-line string is a file path (which must exist); multi-line text is YAML."""
+        s = str(text_or_path)
+        if isinstance(text_or_path, Path) or ("\n" not in s.strip() and not s.lstrip().startswith(("-", "["))):
+            p = Path(s)
+            if not p.is_file():
+                raise FileNotFoundError(f"fake script not found: {s}")
+            s = p.read_text(encoding="utf-8")
+        steps = yaml.safe_load(s) or []
+        if not isinstance(steps, list):
+            raise ValueError("a fake script is a YAML list of {expect, respond} steps")
+        return cls(steps)
 
     async def complete(self, req: ModelRequest, *, role: str, trial_index: int, turn: int) -> ModelResponse:
         if self._fn is not None:
@@ -87,6 +95,9 @@ class FakeProvider:
             out = step["respond"]
         if isinstance(out, ModelResponse):
             return out
+        bad = set(out) - RESPOND_KEYS if isinstance(out, dict) else {"<not a dict>"}
+        if bad:
+            raise ValueError(f"turn {turn}: script response has unknown keys {sorted(bad)}")
         return self._response(req, out, trial_index, turn)
 
     @staticmethod

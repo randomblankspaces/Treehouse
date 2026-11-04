@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Literal
 
+from pydantic import Field
+
 from treehouse.schemas.base import Frozen
 
 
@@ -12,15 +14,20 @@ class SampledUnit(Frozen):
     kind: Literal["claim", "control_pos", "control_neg", "placebo", "retest", "unreported"]  # sealed
     ref: str  # sealed; never shown to the verifier
     stratum: str
-    pi: float
+    pi: float = Field(gt=0, le=1)
     order: int
 
 
 class SampleDesign(Frozen):
+    """``numpy_version`` records ``numpy.__version__`` at draw time (F8): numpy does not promise stable
+    Generator streams across versions, so a design drawn under another numpy is recognisable as such.
+    ``strat-srswor-v1`` selects by sorted ``bit_generator.random_raw()`` keys, never ``choice``."""
+
     design_id: str
     seed: int
     rng: Literal["numpy.PCG64"] = "numpy.PCG64"
     algorithm: Literal["strat-srswor-v1"] = "strat-srswor-v1"
+    numpy_version: str
     frame_hash: str
     N_h: dict[str, int]
     n_h: dict[str, int]

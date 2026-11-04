@@ -103,7 +103,7 @@ Fields:
 - Model registry: id, provider, family, vision flag, tool-use flag, reasoning-trace flag, dated price per 1k tokens, region.
 - **Bedrock Converse is the default.** An OpenAI-compatible adapter (Ollama, vLLM, OpenRouter) is the "other providers" path (Could). Strands already ships OpenAI, Anthropic, Ollama, LiteLLM and a custom `Model` base class, so the adapter is only needed for the plain loop (fact-check pass 2).
 - Worker and verifier configured independently. Config validation rejects non-vision models on imagery tasks.
-- **Model choice by smoke test** on real Vantor windows (STAC `pan_gsd` 0.43-0.71 m across the 33 scenes; confirm which band set and GSD the delivered `.tif` has) ("bridge visible or not"), run before anything else. If no available model can see a footbridge at that resolution, the Nepal flagship reports that as a finding (`cannot_assess` dominates) rather than burning budget.
+- **Model choice by smoke test** on real Vantor windows (STAC `pan_gsd` 0.31-0.77 m across the 33 scenes, 0.31-0.69 m over the 23 that intersect the Nepal AOI; confirm which band set and GSD the delivered `.tif` has) ("bridge visible or not"), run before anything else. If no available model can see a footbridge at that resolution, the Nepal flagship reports that as a finding (`cannot_assess` dominates) rather than burning budget.
 - Record model id as returned, parameters, prompt hash. Never promise identical re-runs.
 - **Quotas.** New-sandbox Bedrock quotas (vision TPM, image throttling) can silently cap trials. The gateway and model adapter use exponential backoff and a concurrency cap; N is sized from observed throughput as well as dollars.
 - Strands provider matrix: it differs by doc version and between Python and TypeScript. The current Python docs list Bedrock, Anthropic, OpenAI, Ollama, LiteLLM and others, plus a custom `Model` base class (fact-check pass 2). Confirm the installed version at hour 0.
@@ -607,7 +607,7 @@ Data and licensing:
 - https://arxiv.org/pdf/1911.09296 (xBD)
 
 Local:
-- Vantor STAC items, checked 2026-11-04: 33 scenes, 4 pre / 29 post by `phase`; `pan_gsd` 0.43-0.71 m (council-brief.md and review1 say 28 post; superseded).
+- Vantor STAC items, checked 2026-11-04: 33 scenes, 4 pre / 29 post by `phase`; `pan_gsd` 0.31-0.77 m, 0.31-0.69 m over the 23 Nepal AOI scenes (council-brief.md and review1 say 28 post; superseded).
 - Kathmandu Post and ekantipur, 2025-07-08 (Bhote Koshi flood destroyed the Miteri bridge at Rasuwagadhi): https://kathmandupost.com/national/2025/07/08/flood-in-bhotekoshi-river-washes-away-nepal-china-border-bridge-at-rasuwagadhi ; https://ekantipur.com/news/2025/07/08/en/severe-flood-in-bhotekoshi-miteri-bridge-of-rasuwagadhi-crossing-was-washed-away-cars-kept-at-the-port-were-washed-away-08-17.html
 - council-brief.md (Vantor CC-BY-NC-4.0, scene-level cloud only; LGND 1.28 km, 256-d, Jan 2017 to Apr 2026, CC BY 4.0)
 - review1-judge.md, review1-verifier.md, clay-vision-doc.txt, SCOPE.md@a23dec5
@@ -647,3 +647,15 @@ A second fact-checker covered the items the first pass could not reach, using we
 - **Decision affected:** NAIP is Requester Pays, so window reads need signed requests with `AWS_REQUEST_PAYER=requester`. That works in either A10 locus, but the overnight build has no AWS credentials at all, so tonight's offline build cannot read NAIP. Virginia stays demo task 1 and runs live once credentials exist. The offline build **adds** a SYNTHETIC keyed task for replay and method tests; it never counts as a keyed regime and never backs a KEYED number (A12 demo task 1). This needs Suhas's confirmation.
 - **Judge pass on these edits:** a doubter raised 36 doubts against this pass and A13; the rulings and changes are in council-1-log.md, section "Doubter/judge pass on the overnight edits".
 
+
+---
+
+## Post-adoption factual corrections (2026-11-04)
+
+These edits came from the spec-sheet doubter/judge pass ([reviews/review2-spec-sheet.md](../reviews/review2-spec-sheet.md)). They fix facts only. **The council's decisions are unchanged.**
+
+| Where | Change | Why |
+|---|---|---|
+| A3 model choice, Sources (Vantor STAC) | `pan_gsd` "0.43-0.71 m" → "0.31-0.77 m across the 33 scenes, 0.31-0.69 m over the 23 that intersect the Nepal AOI" | Measured on the pinned STAC fixture (`wip/fixtures/nepal-flooding-aug-2026.stac.json`). |
+| A12 H10 checkpoint | No text change. Note only: IMPLEMENTATION-DESIGN's checkpoints C1–C3 replace it (SCOPE D66), because Virginia ships `pending_fetch` and the overnight build has no AWS credentials | The checkpoint can't be met as written. Suhas to confirm. |
+| A12 cut line | No text change. Note only: the spec sheet now follows A12's tiers, and it flags as deviations the tiers that defer Suhas's own decisions: D3 (paired comparison, Should 7), D8 (CloudWatch tracer, Should 5) and D23 (UI, Should 2) | See SCOPE "Decisions Suhas must confirm". |

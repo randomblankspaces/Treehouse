@@ -7,6 +7,7 @@ Answer keys live under ``keys/``, outside every tool root. Nothing a tool serves
 from __future__ import annotations
 
 import os
+import unicodedata
 from pathlib import Path
 
 
@@ -49,6 +50,32 @@ def is_under(path: Path | str, root: Path | str) -> bool:
     return Path(path).resolve().is_relative_to(Path(root).resolve())
 
 
+def _fold(p: Path) -> str:
+    return unicodedata.normalize("NFC", str(p)).casefold()
+
+
+def may_be_under(path: Path | str, root: Path | str) -> bool:
+    """Conservative ``is_under`` for deny checks: also true when ``path`` matches ``root`` only up to
+    case or Unicode normalisation (case-insensitive APFS/NTFS), or when an existing ancestor of ``path``
+    is the same directory as ``root`` (``os.path.samefile``)."""
+    p, r = Path(path).resolve(), Path(root).resolve()
+    if p.is_relative_to(r):
+        return True
+    fp, fr = _fold(p), _fold(r)
+    if fp == fr or fp.startswith(fr.rstrip(os.sep) + os.sep):
+        return True
+    if r.exists():
+        for anc in (p, *p.parents):
+            try:
+                if anc.exists() and os.path.samefile(anc, r):
+                    return True
+            except OSError:
+                continue
+    return False
+
+
 def assert_not_key_path(path: Path | str) -> None:
-    if is_under(path, keys_root()):
+    """Deny any path that is, or may be (case/normalisation variants), inside ``keys/``. Gateways should
+    also allow-list with ``is_under(path, tool_root)``, which fails safe under case variation."""
+    if may_be_under(path, keys_root()):
         raise KeyPathError(f"path resolves into keys/: {path}")

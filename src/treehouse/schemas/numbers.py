@@ -5,7 +5,7 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import Literal
 
-from pydantic import model_validator
+from pydantic import Field, model_validator
 
 from treehouse.schemas.base import Frozen
 
@@ -34,7 +34,6 @@ IntervalMethod = Literal[
     "rg-bootstrap-inflated-v1",
 ]
 
-SYNTHETIC_BYTES_MODEL = "synthetic-overview-block-v1"
 CHIP_LABELS = {
     Tier.KEYED: "Checked",
     Tier.GOLD_ANCHORED: "Estimated from a random check",
@@ -42,6 +41,23 @@ CHIP_LABELS = {
     Tier.MODEL_ESTIMATED: "Rough model guess",
     Tier.ABSTAINED: "Not issued",
     Tier.MEASURED: "Measured from trace",
+}
+BYTES_MODEL_SYNTHETIC = "synthetic-overview-block-v1"
+BYTES_MODELS = {BYTES_MODEL_SYNTHETIC, "measured"}
+MODELLED_BYTES_CHIP = "modelled bytes"
+MODELLED_BYTES_HOVER = "declared overview-block model, not measured"
+
+# Allowed range of ``value`` (and of an interval's endpoints) per number type, and whether it is integral.
+TYPE_RANGE: dict[str, tuple[float | None, float | None, bool]] = {
+    "proportion": (0.0, 1.0, False),
+    "count": (0.0, None, True),
+    "flag": (0.0, 1.0, True),
+    "usd": (0.0, None, False),
+    "seconds": (0.0, None, False),
+    "bytes": (0.0, None, True),
+    "tokens": (0.0, None, True),
+    "ratio": (0.0, None, False),
+    "kappa": (-1.0, 1.0, False),
 }
 
 
@@ -73,10 +89,10 @@ class TypedNumber(Frozen):
     tier: Tier
     panel: PanelName
     rung: Literal["L1", "L2", "L3", "L4"] | None = None
-    n: int | None
-    n_gold: int | None = None
-    n_verified: int | None = None
-    abstention_rate: float | None = None
+    n: int | None = Field(ge=0)
+    n_gold: int | None = Field(default=None, ge=0)
+    n_verified: int | None = Field(default=None, ge=0)
+    abstention_rate: float | None = Field(default=None, ge=0, le=1)
     interval: Interval | None = None
     estimator_version: str
     config_hash: str | None = None
@@ -96,6 +112,8 @@ class TypedNumber(Frozen):
                 raise ValueError("value may be None only when ABSTAINED with reasons, or MEASURED and unpriced")
         if t == Tier.ABSTAINED and not self.reasons:
             raise ValueError("ABSTAINED requires non-empty reasons")
+        if t == Tier.ABSTAINED and self.value is not None:
+            raise ValueError("an ABSTAINED number carries no value")
         if t == Tier.KEYED and ("key_version" not in self.detail or self.n is None):
             raise ValueError("KEYED requires detail.key_version and n")
         if t == Tier.GOLD_ANCHORED and (
@@ -109,22 +127,38 @@ class TypedNumber(Frozen):
                 raise ValueError("MEASURED numbers belong only to process, understanding, cost or controls")
             if self.interval is not None and "aggregate_over" not in self.detail:
                 raise ValueError("a MEASURED interval requires detail.aggregate_over")
-        if self.type == "proportion" and self.value is not None and not 0 <= self.value <= 1:
-            raise ValueError("a proportion must lie in [0, 1]")
+        lo, hi, integral = TYPE_RANGE[self.type]
+        if self.value is not None:
+            if (lo is not None and self.value < lo) or (hi is not None and self.value > hi):
+                raise ValueError(f"a {self.type} must lie in [{lo}, {hi if hi is not None else 'inf'}]")
+            if integral and not float(self.value).is_integer():
+                raise ValueError(f"a {self.type} must be integral")
+            if self.type == "flag" and self.value not in (0, 1):
+                raise ValueError("a flag is 0 or 1")
+        if self.interval is not None and (
+            (lo is not None and self.interval.lo < lo) or (hi is not None and self.interval.hi > hi)
+        ):
+            raise ValueError(f"the interval of a {self.type} must lie within its range")
+        bm = self.detail.get("bytes_model")
+        if bm is not None and bm not in BYTES_MODELS:
+            raise ValueError(f"detail.bytes_model must be one of {sorted(BYTES_MODELS)}")
         return self
 
+    @property
+    def modelled_bytes(self) -> bool:
+        return self.detail.get("bytes_model") == BYTES_MODEL_SYNTHETIC
+
     def chip(self) -> str:
+        """Plain-English chip, e.g. "Measured from trace · SYNTHETIC · modelled bytes"."""
         parts = [CHIP_LABELS[self.tier]]
         if self.synthetic:
             parts.append("SYNTHETIC")
         if self.replayed:
             parts.append("recorded")
-        if self.detail.get("bytes_model") == SYNTHETIC_BYTES_MODEL:
-            parts.append("modelled bytes")
+        if self.modelled_bytes:
+            parts.append(MODELLED_BYTES_CHIP)
         return " · ".join(parts)
 
-    def chip_hover(self) -> str:
-        """Hover text for the chip (RS-B1: modelled bytes are declared, not measured)."""
-        if self.detail.get("bytes_model") == SYNTHETIC_BYTES_MODEL:
-            return "declared overview-block model, not measured"
-        return "; ".join(self.reasons) if self.reasons else self.tier.value
+    def chip_hover(self) -> str | None:
+        """Hover text for the chip, or None (RS-B1: modelled bytes are declared, not measured)."""
+        return MODELLED_BYTES_HOVER if self.modelled_bytes else None
