@@ -17,6 +17,8 @@ IO_INTERNAL = {"providers", "harness", "gateway", "tools", "store", "runner"}
 IO_EXTERNAL = {"boto3", "botocore", "httpx", "strands", "mcp", "rasterio", "socket",
                "requests", "urllib3", "aiohttp", "ssl", "urllib.request", "http.client"}  # last 5: beyond §1
 LAZY = ["boto3", "botocore", "strands", "rasterio"]
+# Modules that by design need an optional extra; skipped only when that extra is not installed.
+EXTRA_ONLY = {"treehouse.judge.web": "fastapi"}
 _DYNAMIC = {"import_module", "__import__"}
 
 
@@ -104,12 +106,13 @@ def test_planted_violations_are_caught(tmp_path):
 
 def _import_all_without_lazy(package: str, extra_path: Path | None = None) -> subprocess.CompletedProcess:
     code = (
-        "import sys, pkgutil, importlib\n"
+        "import sys, pkgutil, importlib, importlib.util\n"
         + (f"sys.path.insert(0, {str(extra_path)!r})\n" if extra_path else "")
         + f"for m in {LAZY!r}: sys.modules[m] = None\n"
         f"import {package}\n"
+        f"skip = {{m for m, dep in {EXTRA_ONLY!r}.items() if importlib.util.find_spec(dep) is None}}\n"
         f"for info in pkgutil.walk_packages({package}.__path__, '{package}.'):\n"
-        "    importlib.import_module(info.name)\n"
+        "    if info.name not in skip: importlib.import_module(info.name)\n"
     )
     return subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=120)
 
