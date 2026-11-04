@@ -1,0 +1,70 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "answer": {
+      "enum": [
+        "yes",
+        "no",
+        "cannot_assess"
+      ],
+      "title": "Answer",
+      "type": "string"
+    },
+    "created_seq": {
+      "title": "Created Seq",
+      "type": "integer"
+    },
+    "question_id": {
+      "enum": [
+        "exists",
+        "damaged"
+      ],
+      "title": "Question Id",
+      "type": "string"
+    },
+    "recorded": {
+      "title": "Recorded",
+      "type": "boolean"
+    },
+    "request_hash": {
+      "title": "Request Hash",
+      "type": "string"
+    },
+    "span_ref": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Span Ref"
+    },
+    "synthetic": {
+      "title": "Synthetic",
+      "type": "boolean"
+    },
+    "unit_id": {
+      "title": "Unit Id",
+      "type": "string"
+    },
+    "verifier_config_hash": {
+      "title": "Verifier Config Hash",
+      "type": "string"
+    }
+  },
+  "required": [
+    "unit_id",
+    "question_id",
+    "answer",
+    "verifier_config_hash",
+    "request_hash",
+    "recorded",
+    "synthetic",
+    "created_seq"
+  ],
+  "title": "VerifierVerdict",
+  "type": "object"
+}

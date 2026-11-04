@@ -1,0 +1,78 @@
+# Keyed test example: solar farms in Sentinel-2 tile 18STH. The key (USPVDB) is fetched later.
+id: virginia-solar-18sth
+version: 1.0.0
+title: Solar farms in central Virginia (Sentinel-2 tile 18STH)
+family: solar-farm-s2
+synthetic: true
+synthetic_notice: >-
+  SYNTHETIC TASK: a test example written by the Treehouse team, not from ADB or any partner.
+  The imagery and the USPVDB key are real public data.
+goal: >-
+  (Synthetic task.) List every utility-scale solar farm (at least 1 ha) visible in the AOI in
+  Sentinel-2 imagery from June 2024. Give each one as a point inside the facility, with the image
+  windows you used.
+aoi:   # inside tile 18STH (Louisa/Spotsylvania); exact farm counts UNVERIFIED
+  type: Polygon
+  coordinates: [[[-77.95, 38.05], [-77.70, 38.05], [-77.70, 38.25], [-77.95, 38.25], [-77.95, 38.05]]]
+smoke_aoi: [-77.95, 38.05, -77.85, 38.15]
+time_window: [2024-06-01, 2024-06-30]
+as_of: 2024-06-30T23:59:00Z
+data_allowlist:
+  - source_id: sentinel-2-l2a-18sth
+    kind: stac
+    access: static_catalog
+    fixture_path: fixtures/stac/sentinel-2-18sth-2024-06
+    license: LicenseRef-copernicus-sentinel
+    status: pending_fixture
+  - source_id: sentinel-2-l2a-cogs
+    kind: imagery
+    access: s3_listing
+    license: LicenseRef-copernicus-sentinel
+    status: unpinned
+  - source_id: lgnd-clay-embeddings
+    kind: embeddings
+    access: s3_listing
+    license: CC-BY-4.0
+    status: unpinned
+tools_allowed: [stac_search, scene_info, imagery_window, clay_search, record_claim, note_limitation, submit_understanding]
+needs_vision: true
+classes:
+  solar_farm:
+    min_size_m: 100
+    max_effective_gsd_for_existence_m: 10
+    max_effective_gsd_for_status_m: 10
+    match_tolerance_m: 60
+    key_geometry: polygon
+windows: {max_side_m: 5000, max_out_px: 512, max_bytes_per_run: 500000000}
+steps:
+  - step_id: inventory
+    question_id: exists
+    statuses_allowed: [present, absent, cannot_assess]
+    keying:
+      mode: keyed
+      key_source: USGS USPVDB, clipped to the AOI; install year <= 2024 and area >= 1 ha
+      key_path: keys/uspvdb/virginia-18sth.json
+      license: LicenseRef-public-domain
+      reference_quality: complete
+      completeness_caveat: Only facilities in USPVDB; small or rooftop arrays are out of scope.
+      match_rule: {tolerance_m: {solar_farm: 60}, one_to_one: true}
+      status: pending_fetch   # usgs.gov is unreachable from the build container; scripts/fetch_uspvdb.py runs at wake
+forbidden_sources:
+  - {kind: host, pattern: eerscmap.usgs.gov}
+  - {kind: host, pattern: "*.usgs.gov"}
+  - {kind: dataset_id, pattern: uspvdb}
+  - {kind: path, pattern: keys/}
+  - {kind: tool, pattern: key_lookup}
+must_notice:
+  - {id: resolution, kind: mentions_any, terms: [10 m, resolution, gsd]}
+  - {id: cloud, kind: mentions_any, terms: [cloud]}
+  - {id: uses-imagery, kind: plans_tool, tool: imagery_window}
+known_limits:
+  - Sentinel-2 is 10 m; facilities under about 1 ha are not reliably visible.
+  - Model memory of USPVDB cannot be excluded by blocking tools.
+sampling_plan:
+  strata_keys: [conf_tercile]
+  n_total: 40
+  seed: 20261104
+thresholds: {rely_lo: 0.8}
+budget: {enabled: true, usd: 20, tool_calls: 200, bytes: 500000000, wall_s: 1800, tokens: 3000000}

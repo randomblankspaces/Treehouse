@@ -1,0 +1,13 @@
+# Pre-registered trust-engine constants. Must equal treehouse.schemas.config.TrustConfig defaults (tested).
+level: 0.90
+B: 2000
+pseudo_weight: 0.5
+lam_fixed_below: 50
+j_min: 0.2
+tau_floor: 0.5
+kappa0: 10
+min_runs_mle: 3
+g_min_label: 5
+max_abstention_for_rely: 0.3
+placebo_far_max: 0.10
+anecdotal_below: 10

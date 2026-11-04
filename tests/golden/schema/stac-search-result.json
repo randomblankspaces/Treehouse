@@ -1,0 +1,180 @@
+{
+  "$defs": {
+    "Polygon": {
+      "additionalProperties": false,
+      "description": "A Polygon (list of rings) or MultiPolygon (list of polygons). Rings must be closed.",
+      "properties": {
+        "coordinates": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "maxItems": 2,
+                  "minItems": 2,
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "type": "array"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "items": {
+                "items": {
+                  "items": {
+                    "maxItems": 2,
+                    "minItems": 2,
+                    "prefixItems": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ],
+                    "type": "array"
+                  },
+                  "type": "array"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            }
+          ],
+          "title": "Coordinates"
+        },
+        "type": {
+          "enum": [
+            "Polygon",
+            "MultiPolygon"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "coordinates"
+      ],
+      "title": "Polygon",
+      "type": "object"
+    },
+    "SceneSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "aoi_coverage_fraction": {
+          "title": "Aoi Coverage Fraction",
+          "type": "number"
+        },
+        "cloud_pct": {
+          "title": "Cloud Pct",
+          "type": "number"
+        },
+        "datetime": {
+          "format": "date-time",
+          "title": "Datetime",
+          "type": "string"
+        },
+        "footprint": {
+          "$ref": "#/$defs/Polygon"
+        },
+        "license": {
+          "title": "License",
+          "type": "string"
+        },
+        "off_nadir_deg": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Off Nadir Deg"
+        },
+        "pan_gsd_m": {
+          "title": "Pan Gsd M",
+          "type": "number"
+        },
+        "phase": {
+          "anyOf": [
+            {
+              "enum": [
+                "pre",
+                "post"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Phase"
+        },
+        "scene_id": {
+          "title": "Scene Id",
+          "type": "string"
+        },
+        "sun_elevation_deg": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sun Elevation Deg"
+        }
+      },
+      "required": [
+        "scene_id",
+        "datetime",
+        "cloud_pct",
+        "pan_gsd_m",
+        "footprint",
+        "aoi_coverage_fraction",
+        "license"
+      ],
+      "title": "SceneSummary",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "as_of_applied": {
+      "format": "date-time",
+      "title": "As Of Applied",
+      "type": "string"
+    },
+    "dropped_after_as_of": {
+      "title": "Dropped After As Of",
+      "type": "integer"
+    },
+    "scenes": {
+      "items": {
+        "$ref": "#/$defs/SceneSummary"
+      },
+      "title": "Scenes",
+      "type": "array"
+    }
+  },
+  "required": [
+    "scenes",
+    "as_of_applied",
+    "dropped_after_as_of"
+  ],
+  "title": "StacSearchResult",
+  "type": "object"
+}

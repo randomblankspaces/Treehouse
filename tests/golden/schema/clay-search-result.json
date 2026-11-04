@@ -1,0 +1,135 @@
+{
+  "$defs": {
+    "ClayCell": {
+      "additionalProperties": false,
+      "properties": {
+        "cell_id": {
+          "title": "Cell Id",
+          "type": "string"
+        },
+        "center": {
+          "$ref": "#/$defs/Point"
+        },
+        "similarity": {
+          "title": "Similarity",
+          "type": "number"
+        }
+      },
+      "required": [
+        "cell_id",
+        "center",
+        "similarity"
+      ],
+      "title": "ClayCell",
+      "type": "object"
+    },
+    "ClayCoverage": {
+      "additionalProperties": false,
+      "properties": {
+        "aoi_cells_expected": {
+          "title": "Aoi Cells Expected",
+          "type": "integer"
+        },
+        "aoi_cells_present": {
+          "title": "Aoi Cells Present",
+          "type": "integer"
+        },
+        "cell_m": {
+          "title": "Cell M",
+          "type": "number"
+        },
+        "date_range": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "title": "Date Range",
+          "type": "array"
+        },
+        "predates_event": {
+          "title": "Predates Event",
+          "type": "boolean"
+        },
+        "smallest_resolvable_m": {
+          "title": "Smallest Resolvable M",
+          "type": "number"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "synthetic": {
+          "title": "Synthetic",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "source",
+        "cell_m",
+        "date_range",
+        "predates_event",
+        "aoi_cells_expected",
+        "aoi_cells_present",
+        "smallest_resolvable_m",
+        "synthetic"
+      ],
+      "title": "ClayCoverage",
+      "type": "object"
+    },
+    "Point": {
+      "additionalProperties": false,
+      "properties": {
+        "coordinates": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Coordinates",
+          "type": "array"
+        },
+        "type": {
+          "const": "Point",
+          "default": "Point",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "coordinates"
+      ],
+      "title": "Point",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "cells": {
+      "items": {
+        "$ref": "#/$defs/ClayCell"
+      },
+      "title": "Cells",
+      "type": "array"
+    },
+    "coverage": {
+      "$ref": "#/$defs/ClayCoverage"
+    }
+  },
+  "required": [
+    "cells",
+    "coverage"
+  ],
+  "title": "ClaySearchResult",
+  "type": "object"
+}

@@ -1,0 +1,55 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "committed_ref": {
+      "title": "Committed Ref",
+      "type": "string"
+    },
+    "committed_seq": {
+      "title": "Committed Seq",
+      "type": "integer"
+    },
+    "design_id": {
+      "title": "Design Id",
+      "type": "string"
+    },
+    "draw_id": {
+      "title": "Draw Id",
+      "type": "string"
+    },
+    "n_gold": {
+      "title": "N Gold",
+      "type": "integer"
+    },
+    "pi2": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "title": "Pi2",
+      "type": "object"
+    },
+    "seed": {
+      "title": "Seed",
+      "type": "integer"
+    },
+    "unit_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Unit Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "draw_id",
+    "design_id",
+    "seed",
+    "n_gold",
+    "unit_ids",
+    "pi2",
+    "committed_ref",
+    "committed_seq"
+  ],
+  "title": "GoldDraw",
+  "type": "object"
+}

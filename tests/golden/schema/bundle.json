@@ -1,0 +1,1289 @@
+{
+  "$defs": {
+    "CheckLedger": {
+      "additionalProperties": false,
+      "description": "Resolution order: rule fail > human > key > verifier > unchecked.",
+      "properties": {
+        "claim_id": {
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "resolved": {
+          "enum": [
+            "correct",
+            "incorrect",
+            "fabrication",
+            "ungrounded",
+            "contaminated",
+            "to_adjudicate",
+            "unchecked"
+          ],
+          "title": "Resolved",
+          "type": "string"
+        },
+        "resolved_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resolved By"
+        },
+        "results": {
+          "items": {
+            "$ref": "#/$defs/CheckResult"
+          },
+          "title": "Results",
+          "type": "array"
+        }
+      },
+      "required": [
+        "claim_id",
+        "results",
+        "resolved"
+      ],
+      "title": "CheckLedger",
+      "type": "object"
+    },
+    "CheckResult": {
+      "additionalProperties": false,
+      "properties": {
+        "check_id": {
+          "title": "Check Id",
+          "type": "string"
+        },
+        "claim_id": {
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Code"
+        },
+        "detail": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "default": {},
+          "title": "Detail",
+          "type": "object"
+        },
+        "layer": {
+          "enum": [
+            "rules",
+            "key",
+            "verifier",
+            "human",
+            "overlap",
+            "leak"
+          ],
+          "title": "Layer",
+          "type": "string"
+        },
+        "record_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Record Ref"
+        },
+        "result": {
+          "enum": [
+            "pass",
+            "fail",
+            "flag",
+            "n/a"
+          ],
+          "title": "Result",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "claim_id",
+        "layer",
+        "check_id",
+        "version",
+        "result"
+      ],
+      "title": "CheckResult",
+      "type": "object"
+    },
+    "Claim": {
+      "additionalProperties": false,
+      "properties": {
+        "bbox": {
+          "anyOf": [
+            {
+              "maxItems": 4,
+              "minItems": 4,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bbox"
+        },
+        "claim_id": {
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "cls": {
+          "title": "Cls",
+          "type": "string"
+        },
+        "confidence": {
+          "title": "Confidence",
+          "type": "number"
+        },
+        "contaminated": {
+          "default": false,
+          "title": "Contaminated",
+          "type": "boolean"
+        },
+        "evidence_refs": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/EvidenceRef"
+          },
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "geometry": {
+          "$ref": "#/$defs/Point"
+        },
+        "grounded": {
+          "title": "Grounded",
+          "type": "boolean"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "span_id": {
+          "title": "Span Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "present",
+            "absent",
+            "intact",
+            "damaged",
+            "destroyed",
+            "cannot_assess"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "step_id": {
+          "title": "Step Id",
+          "type": "string"
+        },
+        "synthetic": {
+          "title": "Synthetic",
+          "type": "boolean"
+        },
+        "trial_id": {
+          "title": "Trial Id",
+          "type": "string"
+        },
+        "unresolved_refs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Unresolved Refs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "claim_id",
+        "run_id",
+        "trial_id",
+        "step_id",
+        "geometry",
+        "cls",
+        "status",
+        "confidence",
+        "reason",
+        "span_id",
+        "grounded",
+        "synthetic"
+      ],
+      "title": "Claim",
+      "type": "object"
+    },
+    "ControlsReport": {
+      "additionalProperties": false,
+      "properties": {
+        "placebo_far": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TypedNumber"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "relabel_kappa": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TypedNumber"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "retest_kappa": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TypedNumber"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "se": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TypedNumber"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "sp": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TypedNumber"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "unavailable": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Unavailable",
+          "type": "array"
+        }
+      },
+      "title": "ControlsReport",
+      "type": "object"
+    },
+    "Estimand": {
+      "additionalProperties": false,
+      "description": "``verified_precision`` is the trust headline: a lower bound on precision, since a claim\nnobody could verify never counts as correct.",
+      "properties": {
+        "kind": {
+          "enum": [
+            "precision",
+            "verified_precision",
+            "count",
+            "miss_rate"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "population": {
+          "enum": [
+            "claim_table",
+            "unreported_frame"
+          ],
+          "title": "Population",
+          "type": "string"
+        },
+        "question_id": {
+          "enum": [
+            "exists",
+            "damaged"
+          ],
+          "title": "Question Id",
+          "type": "string"
+        },
+        "step_id": {
+          "title": "Step Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "kind",
+        "step_id",
+        "question_id",
+        "population"
+      ],
+      "title": "Estimand",
+      "type": "object"
+    },
+    "EvidenceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "result_id": {
+          "title": "Result Id",
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "pre",
+            "post",
+            "existence"
+          ],
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result_id",
+        "role"
+      ],
+      "title": "EvidenceRef",
+      "type": "object"
+    },
+    "Interval": {
+      "additionalProperties": false,
+      "properties": {
+        "B": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "B"
+        },
+        "fpc": {
+          "default": false,
+          "title": "Fpc",
+          "type": "boolean"
+        },
+        "hi": {
+          "title": "Hi",
+          "type": "number"
+        },
+        "level": {
+          "title": "Level",
+          "type": "number"
+        },
+        "lo": {
+          "title": "Lo",
+          "type": "number"
+        },
+        "method": {
+          "enum": [
+            "wilson",
+            "clopper-pearson",
+            "hypergeom-exact",
+            "ppi-2phase-rbs-v1",
+            "cluster-bootstrap",
+            "betabinom-predictive",
+            "poisson-binomial",
+            "kappa-bootstrap",
+            "rg-bootstrap-inflated-v1"
+          ],
+          "title": "Method",
+          "type": "string"
+        },
+        "seed": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Seed"
+        }
+      },
+      "required": [
+        "lo",
+        "hi",
+        "level",
+        "method"
+      ],
+      "title": "Interval",
+      "type": "object"
+    },
+    "Panel": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_span_ids": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "default": {},
+          "title": "Evidence Span Ids",
+          "type": "object"
+        },
+        "name": {
+          "enum": [
+            "process",
+            "understanding",
+            "output",
+            "trust",
+            "controls",
+            "cost"
+          ],
+          "title": "Name",
+          "type": "string"
+        },
+        "no_grade_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "No Grade Reason"
+        },
+        "numbers": {
+          "additionalProperties": {
+            "$ref": "#/$defs/TypedNumber"
+          },
+          "default": {},
+          "title": "Numbers",
+          "type": "object"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "title": "Panel",
+      "type": "object"
+    },
+    "Point": {
+      "additionalProperties": false,
+      "properties": {
+        "coordinates": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Coordinates",
+          "type": "array"
+        },
+        "type": {
+          "const": "Point",
+          "default": "Point",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "coordinates"
+      ],
+      "title": "Point",
+      "type": "object"
+    },
+    "Scorecard": {
+      "additionalProperties": false,
+      "properties": {
+        "cost": {
+          "$ref": "#/$defs/Panel"
+        },
+        "output": {
+          "$ref": "#/$defs/Panel"
+        },
+        "process": {
+          "$ref": "#/$defs/Panel"
+        },
+        "run_ref": {
+          "title": "Run Ref",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "treehouse.scorecard/1",
+          "default": "treehouse.scorecard/1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "trust_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Trust Ref"
+        },
+        "understanding": {
+          "$ref": "#/$defs/Panel"
+        },
+        "versions": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "default": {},
+          "title": "Versions",
+          "type": "object"
+        }
+      },
+      "required": [
+        "run_ref",
+        "process",
+        "understanding",
+        "output",
+        "cost"
+      ],
+      "title": "Scorecard",
+      "type": "object"
+    },
+    "SpanError": {
+      "additionalProperties": false,
+      "properties": {
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "agent",
+            "tool",
+            "infra",
+            "budget",
+            "policy"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "type": {
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "type",
+        "message"
+      ],
+      "title": "SpanError",
+      "type": "object"
+    },
+    "SpanEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "attributes": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            ]
+          },
+          "default": {},
+          "title": "Attributes",
+          "type": "object"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "ts_ns": {
+          "title": "Ts Ns",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name",
+        "ts_ns"
+      ],
+      "title": "SpanEvent",
+      "type": "object"
+    },
+    "SpanRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "attributes": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            ]
+          },
+          "default": {},
+          "title": "Attributes",
+          "type": "object"
+        },
+        "end_ns": {
+          "title": "End Ns",
+          "type": "integer"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SpanError"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "events": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/SpanEvent"
+          },
+          "title": "Events",
+          "type": "array"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "op": {
+          "enum": [
+            "invoke_agent",
+            "chat",
+            "execute_tool"
+          ],
+          "title": "Op",
+          "type": "string"
+        },
+        "parent_span_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Span Id"
+        },
+        "span_id": {
+          "title": "Span Id",
+          "type": "string"
+        },
+        "start_ns": {
+          "title": "Start Ns",
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "ok",
+            "error"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "trace_id": {
+          "title": "Trace Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id",
+        "span_id",
+        "name",
+        "op",
+        "start_ns",
+        "end_ns",
+        "status"
+      ],
+      "title": "SpanRecord",
+      "type": "object"
+    },
+    "SummaryLint": {
+      "additionalProperties": false,
+      "properties": {
+        "errors": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Errors",
+          "type": "array"
+        },
+        "ok": {
+          "title": "Ok",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "title": "SummaryLint",
+      "type": "object"
+    },
+    "Tier": {
+      "enum": [
+        "KEYED",
+        "GOLD-ANCHORED",
+        "CALIBRATED-TRANSFER",
+        "MODEL-ESTIMATED",
+        "ABSTAINED",
+        "MEASURED"
+      ],
+      "title": "Tier",
+      "type": "string"
+    },
+    "TrustPassport": {
+      "additionalProperties": false,
+      "properties": {
+        "alternatives": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/TypedNumber"
+          },
+          "title": "Alternatives",
+          "type": "array"
+        },
+        "beat_baseline": {
+          "title": "Beat Baseline",
+          "type": "string"
+        },
+        "code_sha": {
+          "title": "Code Sha",
+          "type": "string"
+        },
+        "controls": {
+          "$ref": "#/$defs/ControlsReport"
+        },
+        "disagreement": {
+          "default": [],
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "type": "array"
+          },
+          "title": "Disagreement",
+          "type": "array"
+        },
+        "estimand": {
+          "$ref": "#/$defs/Estimand"
+        },
+        "estimator_version": {
+          "title": "Estimator Version",
+          "type": "string"
+        },
+        "gate": {
+          "enum": [
+            "Rely",
+            "Spot-check",
+            "Do not rely"
+          ],
+          "title": "Gate",
+          "type": "string"
+        },
+        "gate_reasons": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Gate Reasons",
+          "type": "array"
+        },
+        "gold_draw_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Gold Draw Id"
+        },
+        "headline": {
+          "$ref": "#/$defs/TypedNumber"
+        },
+        "manifest_ref": {
+          "title": "Manifest Ref",
+          "type": "string"
+        },
+        "process_facts": {
+          "additionalProperties": {
+            "$ref": "#/$defs/TypedNumber"
+          },
+          "default": {},
+          "title": "Process Facts",
+          "type": "object"
+        },
+        "sample_design_id": {
+          "title": "Sample Design Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "treehouse.passport/1",
+          "default": "treehouse.passport/1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "shift": {
+          "additionalProperties": {
+            "$ref": "#/$defs/TypedNumber"
+          },
+          "default": {},
+          "title": "Shift",
+          "type": "object"
+        },
+        "synthetic": {
+          "title": "Synthetic",
+          "type": "boolean"
+        },
+        "trust_config_hash": {
+          "title": "Trust Config Hash",
+          "type": "string"
+        },
+        "truth_reveal": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TypedNumber"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "estimand",
+        "headline",
+        "gate",
+        "controls",
+        "beat_baseline",
+        "sample_design_id",
+        "trust_config_hash",
+        "estimator_version",
+        "code_sha",
+        "manifest_ref",
+        "synthetic"
+      ],
+      "title": "TrustPassport",
+      "type": "object"
+    },
+    "TypedNumber": {
+      "additionalProperties": false,
+      "description": "A reported number. ``detail`` may carry e.g. ``key_version``, ``aggregate_over``,\n``width_ratio_vs_classical`` or ``bytes_model`` (modelled, not measured, bytes).",
+      "properties": {
+        "abstention_rate": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Abstention Rate"
+        },
+        "config_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Config Hash"
+        },
+        "detail": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "default": {},
+          "title": "Detail",
+          "type": "object"
+        },
+        "estimator_version": {
+          "title": "Estimator Version",
+          "type": "string"
+        },
+        "interval": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Interval"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "manifest_ref": {
+          "title": "Manifest Ref",
+          "type": "string"
+        },
+        "metric": {
+          "title": "Metric",
+          "type": "string"
+        },
+        "n": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "N"
+        },
+        "n_gold": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "N Gold"
+        },
+        "n_verified": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "N Verified"
+        },
+        "panel": {
+          "enum": [
+            "process",
+            "understanding",
+            "output",
+            "trust",
+            "controls",
+            "cost"
+          ],
+          "title": "Panel",
+          "type": "string"
+        },
+        "reasons": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Reasons",
+          "type": "array"
+        },
+        "replayed": {
+          "default": false,
+          "title": "Replayed",
+          "type": "boolean"
+        },
+        "rung": {
+          "anyOf": [
+            {
+              "enum": [
+                "L1",
+                "L2",
+                "L3",
+                "L4"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rung"
+        },
+        "synthetic": {
+          "title": "Synthetic",
+          "type": "boolean"
+        },
+        "tier": {
+          "$ref": "#/$defs/Tier"
+        },
+        "type": {
+          "enum": [
+            "proportion",
+            "count",
+            "flag",
+            "usd",
+            "seconds",
+            "bytes",
+            "tokens",
+            "ratio",
+            "kappa"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "metric",
+        "value",
+        "type",
+        "tier",
+        "panel",
+        "n",
+        "estimator_version",
+        "manifest_ref",
+        "synthetic"
+      ],
+      "title": "TypedNumber",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "card_ref": {
+      "title": "Card Ref",
+      "type": "string"
+    },
+    "card_summary": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Card Summary",
+      "type": "object"
+    },
+    "claims": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Claim"
+      },
+      "title": "Claims",
+      "type": "array"
+    },
+    "facts": {
+      "additionalProperties": {
+        "$ref": "#/$defs/TypedNumber"
+      },
+      "default": {},
+      "title": "Facts",
+      "type": "object"
+    },
+    "ledgers": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/CheckLedger"
+      },
+      "title": "Ledgers",
+      "type": "array"
+    },
+    "lint": {
+      "$ref": "#/$defs/SummaryLint"
+    },
+    "manifest_ref": {
+      "title": "Manifest Ref",
+      "type": "string"
+    },
+    "manifest_summary": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Manifest Summary",
+      "type": "object"
+    },
+    "passports": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/TrustPassport"
+      },
+      "title": "Passports",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "treehouse.bundle/1",
+      "default": "treehouse.bundle/1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scorecard": {
+      "$ref": "#/$defs/Scorecard"
+    },
+    "summary": {
+      "title": "Summary",
+      "type": "string"
+    },
+    "synthetic": {
+      "title": "Synthetic",
+      "type": "boolean"
+    },
+    "trace_rows": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/SpanRecord"
+      },
+      "title": "Trace Rows",
+      "type": "array"
+    }
+  },
+  "required": [
+    "manifest_ref",
+    "manifest_summary",
+    "card_ref",
+    "card_summary",
+    "scorecard",
+    "summary",
+    "lint",
+    "synthetic"
+  ],
+  "title": "ReportBundle",
+  "type": "object"
+}

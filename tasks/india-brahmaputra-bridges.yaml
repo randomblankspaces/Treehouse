@@ -1,0 +1,48 @@
+# Stub card: the Nepal card's shape on a Brahmaputra reach, with Sentinel-2 at 10 m. It exists to show
+# the same schema validates elsewhere. A different family, so trust never transfers from Nepal VHR.
+id: india-brahmaputra-bridges
+version: 0.1.0
+title: Brahmaputra bridges near Guwahati (stub)
+family: river-crossings-s2
+synthetic: true
+synthetic_notice: >-
+  SYNTHETIC TASK: a stub written by the Treehouse team to show the card format generalises; not from
+  ADB or any partner, and never run in the demo.
+goal: >-
+  (Synthetic task.) List the large road and rail bridges across the Brahmaputra in the AOI from
+  Sentinel-2 imagery, citing the image windows used.
+aoi:   # small reach near Guwahati; UNVERIFIED
+  type: Polygon
+  coordinates: [[[91.60, 26.13], [91.80, 26.13], [91.80, 26.22], [91.60, 26.22], [91.60, 26.13]]]
+time_window: [2026-01-01, 2026-06-30]
+as_of: 2026-06-30T23:59:00Z
+data_allowlist:
+  - source_id: sentinel-2-l2a
+    kind: stac
+    access: static_catalog
+    license: LicenseRef-copernicus-sentinel
+    status: unpinned
+tools_allowed: [stac_search, scene_info, imagery_window, record_claim, note_limitation, submit_understanding]
+needs_vision: true
+classes:
+  road_rail_bridge:
+    min_size_m: 15
+    max_effective_gsd_for_existence_m: 10
+    max_effective_gsd_for_status_m: 10
+    match_tolerance_m: 50
+    key_geometry: line
+windows: {max_side_m: 5000, max_out_px: 512, max_bytes_per_run: 200000000}
+steps:
+  - step_id: inventory
+    question_id: exists
+    statuses_allowed: [present, absent, cannot_assess]
+    keying: {mode: unkeyed, status: none}
+forbidden_sources: []
+known_limits:
+  - "10 m imagery: only large road and rail bridges are visible; footbridges are not."
+sampling_plan:
+  strata_keys: [conf_tercile]
+  n_total: 20
+  seed: 20261104
+thresholds: {rely_lo: 0.8}
+budget: {enabled: true, usd: 5, tool_calls: 100}

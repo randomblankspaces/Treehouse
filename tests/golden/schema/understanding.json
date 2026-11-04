@@ -1,0 +1,40 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "goal_restated": {
+      "title": "Goal Restated",
+      "type": "string"
+    },
+    "known_limits": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Known Limits",
+      "type": "array"
+    },
+    "planned_data": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Planned Data",
+      "type": "array"
+    },
+    "scope": {
+      "title": "Scope",
+      "type": "string"
+    },
+    "span_id": {
+      "title": "Span Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "goal_restated",
+    "scope",
+    "span_id"
+  ],
+  "title": "UnderstandingStatement",
+  "type": "object"
+}

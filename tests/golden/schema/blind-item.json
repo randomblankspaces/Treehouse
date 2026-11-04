@@ -1,0 +1,47 @@
+{
+  "additionalProperties": false,
+  "description": "Everything the verifier or human labeller sees. Nothing else, ever.",
+  "properties": {
+    "lat": {
+      "title": "Lat",
+      "type": "number"
+    },
+    "lon": {
+      "title": "Lon",
+      "type": "number"
+    },
+    "object_definition": {
+      "title": "Object Definition",
+      "type": "string"
+    },
+    "question_id": {
+      "enum": [
+        "exists",
+        "damaged"
+      ],
+      "title": "Question Id",
+      "type": "string"
+    },
+    "scene_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Scene Ids",
+      "type": "array"
+    },
+    "unit_id": {
+      "title": "Unit Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "unit_id",
+    "lon",
+    "lat",
+    "object_definition",
+    "question_id",
+    "scene_ids"
+  ],
+  "title": "BlindItem",
+  "type": "object"
+}

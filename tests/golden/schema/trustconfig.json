@@ -1,0 +1,68 @@
+{
+  "additionalProperties": false,
+  "description": "Pre-registered trust-engine constants (copied verbatim to ``prereg/trust-config.yaml``).",
+  "properties": {
+    "B": {
+      "default": 2000,
+      "title": "B",
+      "type": "integer"
+    },
+    "anecdotal_below": {
+      "default": 10,
+      "title": "Anecdotal Below",
+      "type": "integer"
+    },
+    "g_min_label": {
+      "default": 5,
+      "title": "G Min Label",
+      "type": "integer"
+    },
+    "j_min": {
+      "default": 0.2,
+      "title": "J Min",
+      "type": "number"
+    },
+    "kappa0": {
+      "default": 10,
+      "title": "Kappa0",
+      "type": "number"
+    },
+    "lam_fixed_below": {
+      "default": 50,
+      "title": "Lam Fixed Below",
+      "type": "integer"
+    },
+    "level": {
+      "default": 0.9,
+      "title": "Level",
+      "type": "number"
+    },
+    "max_abstention_for_rely": {
+      "default": 0.3,
+      "title": "Max Abstention For Rely",
+      "type": "number"
+    },
+    "min_runs_mle": {
+      "default": 3,
+      "title": "Min Runs Mle",
+      "type": "integer"
+    },
+    "placebo_far_max": {
+      "default": 0.1,
+      "title": "Placebo Far Max",
+      "type": "number"
+    },
+    "pseudo_weight": {
+      "default": 0.5,
+      "title": "Pseudo Weight",
+      "type": "number"
+    },
+    "tau_floor": {
+      "default": 0.5,
+      "title": "Tau Floor",
+      "type": "number"
+    }
+  },
+  "title": "TrustConfig",
+  "type": "object"
+}

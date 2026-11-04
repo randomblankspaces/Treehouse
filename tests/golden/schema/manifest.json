@@ -1,0 +1,866 @@
+{
+  "$defs": {
+    "BackendResolution": {
+      "additionalProperties": false,
+      "properties": {
+        "degraded_from": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Degraded From"
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "ran": {
+          "title": "Ran",
+          "type": "string"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        },
+        "requested": {
+          "title": "Requested",
+          "type": "string"
+        },
+        "statement": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Statement"
+        }
+      },
+      "required": [
+        "requested",
+        "ran"
+      ],
+      "title": "BackendResolution",
+      "type": "object"
+    },
+    "Backends": {
+      "additionalProperties": false,
+      "properties": {
+        "allow_degrade": {
+          "default": true,
+          "title": "Allow Degrade",
+          "type": "boolean"
+        },
+        "key_isolation": {
+          "default": "local",
+          "enum": [
+            "local",
+            "iam"
+          ],
+          "title": "Key Isolation",
+          "type": "string"
+        },
+        "store": {
+          "default": "local",
+          "enum": [
+            "local",
+            "s3"
+          ],
+          "title": "Store",
+          "type": "string"
+        },
+        "tool_locus": {
+          "const": "inproc",
+          "default": "inproc",
+          "title": "Tool Locus",
+          "type": "string"
+        },
+        "tracer": {
+          "default": [
+            "jsonl"
+          ],
+          "items": {
+            "enum": [
+              "jsonl",
+              "otlp",
+              "cwlogs"
+            ],
+            "type": "string"
+          },
+          "title": "Tracer",
+          "type": "array"
+        }
+      },
+      "title": "Backends",
+      "type": "object"
+    },
+    "Budget": {
+      "additionalProperties": false,
+      "description": "Per-run limits; ``None`` means no limit on that axis. ``enabled=False`` disables all limits.",
+      "properties": {
+        "bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bytes"
+        },
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "tokens": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tokens"
+        },
+        "tool_calls": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Calls"
+        },
+        "usd": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Usd"
+        },
+        "wall_s": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Wall S"
+        }
+      },
+      "title": "Budget",
+      "type": "object"
+    },
+    "Cassettes": {
+      "additionalProperties": false,
+      "properties": {
+        "model_sha": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model Sha"
+        },
+        "tool_sha": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Sha"
+        }
+      },
+      "title": "Cassettes",
+      "type": "object"
+    },
+    "ChainHead": {
+      "additionalProperties": false,
+      "properties": {
+        "file_sha256": {
+          "title": "File Sha256",
+          "type": "string"
+        },
+        "head": {
+          "title": "Head",
+          "type": "string"
+        },
+        "n_lines": {
+          "title": "N Lines",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "head",
+        "n_lines",
+        "file_sha256"
+      ],
+      "title": "ChainHead",
+      "type": "object"
+    },
+    "DataPointer": {
+      "additionalProperties": false,
+      "properties": {
+        "bbox": {
+          "maxItems": 4,
+          "minItems": 4,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Bbox",
+          "type": "array"
+        },
+        "datetime": {
+          "format": "date-time",
+          "title": "Datetime",
+          "type": "string"
+        },
+        "etag": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Etag"
+        },
+        "href": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Href"
+        },
+        "license": {
+          "title": "License",
+          "type": "string"
+        },
+        "scene_id": {
+          "title": "Scene Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "scene_id",
+        "bbox",
+        "datetime",
+        "license"
+      ],
+      "title": "DataPointer",
+      "type": "object"
+    },
+    "InferenceParams": {
+      "additionalProperties": false,
+      "properties": {
+        "max_tokens": {
+          "title": "Max Tokens",
+          "type": "integer"
+        },
+        "seed": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Seed"
+        },
+        "temperature": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Temperature"
+        },
+        "top_p": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Top P"
+        }
+      },
+      "required": [
+        "max_tokens"
+      ],
+      "title": "InferenceParams",
+      "type": "object"
+    },
+    "RoleConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "cassette": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cassette"
+        },
+        "family": {
+          "title": "Family",
+          "type": "string"
+        },
+        "model_key": {
+          "title": "Model Key",
+          "type": "string"
+        },
+        "params": {
+          "$ref": "#/$defs/InferenceParams"
+        },
+        "provider": {
+          "enum": [
+            "fake",
+            "replay",
+            "bedrock",
+            "openai_compat"
+          ],
+          "title": "Provider",
+          "type": "string"
+        },
+        "script": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Script"
+        },
+        "tools": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Tools",
+          "type": "array"
+        }
+      },
+      "required": [
+        "provider",
+        "model_key",
+        "family",
+        "params"
+      ],
+      "title": "RoleConfig",
+      "type": "object"
+    },
+    "RunConfig": {
+      "additionalProperties": false,
+      "description": "One run of a task. The ``needs_vision`` registry check lands with the model registry (P6).",
+      "properties": {
+        "allow_same_family": {
+          "default": false,
+          "title": "Allow Same Family",
+          "type": "boolean"
+        },
+        "backends": {
+          "$ref": "#/$defs/Backends",
+          "default": {
+            "allow_degrade": true,
+            "key_isolation": "local",
+            "store": "local",
+            "tool_locus": "inproc",
+            "tracer": [
+              "jsonl"
+            ]
+          }
+        },
+        "budget": {
+          "$ref": "#/$defs/Budget",
+          "default": {
+            "bytes": null,
+            "enabled": true,
+            "tokens": null,
+            "tool_calls": null,
+            "usd": null,
+            "wall_s": null
+          }
+        },
+        "clock": {
+          "default": "wall",
+          "enum": [
+            "wall",
+            "logical"
+          ],
+          "title": "Clock",
+          "type": "string"
+        },
+        "harness": {
+          "default": "plain_loop",
+          "enum": [
+            "plain_loop",
+            "strands"
+          ],
+          "title": "Harness",
+          "type": "string"
+        },
+        "max_turns": {
+          "default": 40,
+          "title": "Max Turns",
+          "type": "integer"
+        },
+        "mode": {
+          "enum": [
+            "fake",
+            "replay",
+            "record",
+            "live"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "treehouse.runconfig/1",
+          "default": "treehouse.runconfig/1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "seed": {
+          "title": "Seed",
+          "type": "integer"
+        },
+        "summarizer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RoleConfig"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "task_ref": {
+          "title": "Task Ref",
+          "type": "string"
+        },
+        "tool_executor": {
+          "const": "sequential",
+          "default": "sequential",
+          "title": "Tool Executor",
+          "type": "string"
+        },
+        "tool_mode": {
+          "default": "live",
+          "enum": [
+            "live",
+            "verify"
+          ],
+          "title": "Tool Mode",
+          "type": "string"
+        },
+        "trials": {
+          "default": 1,
+          "title": "Trials",
+          "type": "integer"
+        },
+        "verifier": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RoleConfig"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "worker": {
+          "$ref": "#/$defs/RoleConfig"
+        }
+      },
+      "required": [
+        "task_ref",
+        "mode",
+        "worker",
+        "seed"
+      ],
+      "title": "RunConfig",
+      "type": "object"
+    },
+    "TaskRef": {
+      "additionalProperties": false,
+      "properties": {
+        "hash": {
+          "title": "Hash",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "hash"
+      ],
+      "title": "TaskRef",
+      "type": "object"
+    },
+    "TrialHead": {
+      "additionalProperties": false,
+      "properties": {
+        "claims_sha256": {
+          "title": "Claims Sha256",
+          "type": "string"
+        },
+        "head": {
+          "$ref": "#/$defs/ChainHead"
+        },
+        "role": {
+          "title": "Role",
+          "type": "string"
+        },
+        "stop": {
+          "enum": [
+            "completed",
+            "max_turns",
+            "budget",
+            "error"
+          ],
+          "title": "Stop",
+          "type": "string"
+        },
+        "trace_file": {
+          "title": "Trace File",
+          "type": "string"
+        },
+        "trial_id": {
+          "title": "Trial Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trial_id",
+        "role",
+        "trace_file",
+        "head",
+        "claims_sha256",
+        "stop"
+      ],
+      "title": "TrialHead",
+      "type": "object"
+    },
+    "Versions": {
+      "additionalProperties": false,
+      "properties": {
+        "git_sha": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Git Sha"
+        },
+        "harness": {
+          "title": "Harness",
+          "type": "string"
+        },
+        "price_table": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Price Table"
+        },
+        "prompts_sha": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Prompts Sha"
+        },
+        "python": {
+          "title": "Python",
+          "type": "string"
+        },
+        "registry": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Registry"
+        },
+        "semconv_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Semconv Ref"
+        },
+        "treehouse": {
+          "title": "Treehouse",
+          "type": "string"
+        },
+        "uv_lock_sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Uv Lock Sha256"
+        }
+      },
+      "required": [
+        "treehouse",
+        "python",
+        "harness"
+      ],
+      "title": "Versions",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "backends_resolved": {
+      "additionalProperties": {
+        "$ref": "#/$defs/BackendResolution"
+      },
+      "propertyNames": {
+        "enum": [
+          "store",
+          "key_isolation",
+          "model.worker",
+          "model.verifier",
+          "tracer"
+        ]
+      },
+      "title": "Backends Resolved",
+      "type": "object"
+    },
+    "cassettes": {
+      "$ref": "#/$defs/Cassettes",
+      "default": {
+        "model_sha": null,
+        "tool_sha": null
+      }
+    },
+    "config": {
+      "$ref": "#/$defs/RunConfig"
+    },
+    "config_hash": {
+      "title": "Config Hash",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "data_pointers": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/DataPointer"
+      },
+      "title": "Data Pointers",
+      "type": "array"
+    },
+    "key_isolation_statement": {
+      "title": "Key Isolation Statement",
+      "type": "string"
+    },
+    "license_floor": {
+      "title": "License Floor",
+      "type": "string"
+    },
+    "manifest_hash": {
+      "title": "Manifest Hash",
+      "type": "string"
+    },
+    "mode": {
+      "enum": [
+        "fake",
+        "replay",
+        "record",
+        "live"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "nc_notice": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Nc Notice"
+    },
+    "prev_manifest_hash": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Prev Manifest Hash"
+    },
+    "run_id": {
+      "title": "Run Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "treehouse.manifest/1",
+      "default": "treehouse.manifest/1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "synthetic_data": {
+      "title": "Synthetic Data",
+      "type": "boolean"
+    },
+    "task": {
+      "$ref": "#/$defs/TaskRef"
+    },
+    "trials": {
+      "items": {
+        "$ref": "#/$defs/TrialHead"
+      },
+      "title": "Trials",
+      "type": "array"
+    },
+    "versions": {
+      "$ref": "#/$defs/Versions"
+    }
+  },
+  "required": [
+    "run_id",
+    "created_at",
+    "task",
+    "config_hash",
+    "config",
+    "mode",
+    "backends_resolved",
+    "versions",
+    "trials",
+    "key_isolation_statement",
+    "license_floor",
+    "synthetic_data",
+    "manifest_hash"
+  ],
+  "title": "Manifest",
+  "type": "object"
+}

@@ -1,0 +1,155 @@
+# Synthetic ADB-style task on a real event (IMPLEMENTATION-DESIGN §5.2). The flood and the Vantor scene
+# metadata are real; the task itself was written by the Treehouse team and is not from ADB.
+id: nepal-bhote-koshi-bridges
+version: 1.0.0
+title: Bhote Koshi corridor bridges after the August 2026 flash flood
+family: river-crossings-vhr
+synthetic: true
+synthetic_notice: >-
+  SYNTHETIC TASK: this is a synthetic task written by the Treehouse team to exercise the pipeline;
+  it is not from ADB and ADB has not reviewed it. The flood event and the Vantor scene metadata are
+  real. Demo points, verdicts and gold labels shown with this card are illustrative, not surveyed bridges.
+goal: >-
+  (Synthetic task, not from ADB.) Build an inventory of the road bridges and suspension footbridges
+  across the Bhote Koshi in the AOI, and give each bridge's status after the 2026-08-26 flash flood:
+  intact, damaged, destroyed, or cannot_assess where no clear post-event imagery shows it. Cite the
+  image windows you used for every claim.
+aoi:   # RS parallelogram along the corridor; UNVERIFIED, to be confirmed at K2b
+  type: Polygon
+  coordinates: [[[85.330, 28.150], [85.375, 28.150], [85.400, 28.290], [85.345, 28.290], [85.330, 28.150]]]
+smoke_aoi: [85.33, 28.14, 85.37, 28.18]
+time_window: [2021-10-01, 2026-09-18]
+as_of: 2026-09-18T23:59:00Z
+event: {date: 2026-08-26, footprint_ref: fixtures/stac/vantor-nepal-aug-2026/event.json}
+data_allowlist:
+  - source_id: vantor-nepal-aug-2026
+    kind: stac
+    access: static_catalog
+    fixture_path: fixtures/stac/vantor-nepal-aug-2026
+    license: CC-BY-NC-4.0
+    status: pending_fixture   # scripts/build_vantor_fixture.py writes it (P4); then status: pinned
+    item_ids:
+      - 10300100C86CED00  # pre 2021-10-16, cloud 22 %
+      - 10500100364E8400  # pre 2023-09-17, cloud 46 %
+      - B040001100881410  # post 2026-08-27, cloud 73 %
+      - B040001100881610  # post 2026-08-27, cloud 71 %
+      - B040001100882F10  # post 2026-08-27, cloud 79 %
+      - B040001100881710  # post 2026-08-27, cloud 72 %
+      - B030001100CF1110  # post 2026-08-28, cloud 81 %
+      - B030001100CF1310  # post 2026-08-28, cloud 78 %
+      - B030001100CF1610  # post 2026-08-28, cloud 79 %
+      - B110001101165110  # post 2026-08-28, cloud 78 %
+      - B130001101153A10  # post 2026-08-31, cloud 94 %
+      - B1400011010A2910  # post 2026-09-01, cloud 71 %
+      - B1400011010A2E10  # post 2026-09-01, cloud 78 %
+      - B120001101226410  # post 2026-09-05, cloud 94 %
+      - B0500011006DC010  # post 2026-09-06, cloud 85 %
+      - B1300011011E5610  # post 2026-09-07, cloud 18 %
+      - B1300011011E5810  # post 2026-09-07, cloud 19 %
+      - B120001101250A10  # post 2026-09-07, cloud 93 %
+      - B1300011011F4F10  # post 2026-09-08, cloud 44 %
+      - B030001100EF5910  # post 2026-09-08, cloud 48 %
+      - B14000110116A310  # post 2026-09-08, cloud 71 %
+      - B0400011009ECD10  # post 2026-09-09, cloud 84 %
+      - B1200011012B2A10  # post 2026-09-12, cloud 59 %
+    etags:
+      10300100C86CED00: "0db7680fe5d3b26ed6a39e1853d64462-169"
+      10500100364E8400: "cf92cad3d48722ecc5299246772756b8-193"
+      B040001100881410: "f501a1ddaddd7e8e40c567ab109c5c54-35"
+      B040001100881610: "c9539445fcdbaff03ba8ff90126a6f85-38"
+      B040001100882F10: "13fb59208ecd55d22be58d2c8e6f0d0e-104"
+      B040001100881710: "3eb9154d9d8bb499d7e6c1b3a8333e13-21"
+      B030001100CF1110: "c4368f6c637b2a6ed98a72d745287e11-12"
+      B030001100CF1310: "8a1c759cc46a871d648ef01b4c99e6d7-15"
+      B030001100CF1610: "c6c1917fcf8a5884419d8ef2163c3108-17"
+      B110001101165110: "287425e63cd505c41916ba84881f7b78-57"
+      B130001101153A10: "ec7849a56a424a52ee1454f9e49029c0-7"
+      B1400011010A2910: "ed106d06d23079fcdeb035cfd1d6e748-21"
+      B1400011010A2E10: "d1ce892a30fed1c364517992fb71b36f-12"
+      B120001101226410: "9bea9de7c4bc5406cc6ecabf4f1321d4-9"
+      B0500011006DC010: "07a038543fcfecdda08c24d55a802038-14"
+      B1300011011E5610: "fd9a1f40f9de0e8fa18a210118f60708-31"
+      B1300011011E5810: "f30695786bbebf0085dfd44ec6d5de48-31"
+      B120001101250A10: "ecb28ddb266dd6e82ae4857927b392f5-4"
+      B1300011011F4F10: "1656787e26e4a750045aeb69a13bf5cf-18"
+      B030001100EF5910: "a01517fc546ac6e7ed85ad7f52b6cc33-18"
+      B14000110116A310: "b255ba12de13ded08a3d82c7647593b6-14"
+      B0400011009ECD10: "3df0015fcb1c022bb3f5c8b5d1449ed6-12"
+      B1200011012B2A10: "95c5f3dd87f27eb26c5f98dec08f7bb9-16"
+  - source_id: vantor-nepal-imagery
+    kind: imagery
+    access: recorded   # tonight: recorded WindowResults, no pixels; CogSource reads are W1
+    license: CC-BY-NC-4.0
+    status: pending_fixture
+  - source_id: lgnd-clay-embeddings
+    kind: embeddings
+    access: s3_listing
+    license: CC-BY-4.0
+    status: unpinned
+tools_allowed: [stac_search, scene_info, imagery_window, clay_search, record_claim, note_limitation, submit_understanding]
+needs_vision: true
+classes:
+  road_bridge:
+    min_size_m: 4
+    max_effective_gsd_for_existence_m: 2.0
+    max_effective_gsd_for_status_m: 1.0
+    match_tolerance_m: 20
+    key_geometry: line
+  footbridge:
+    min_size_m: 1
+    max_effective_gsd_for_existence_m: 1.0
+    max_effective_gsd_for_status_m: 0.5
+    match_tolerance_m: 20
+    key_geometry: line
+windows: {max_side_m: 1000, max_out_px: 512, max_bytes_per_run: 500000000}
+steps:
+  - step_id: inventory
+    question_id: exists
+    statuses_allowed: [present, absent, cannot_assess]
+    keying:
+      mode: partly_keyed
+      key_source: OpenStreetMap bridge ways (snapshot to be pinned when fetched)
+      key_path: keys/osm/nepal-bhote-koshi-bridges.json
+      license: ODbL-1.0
+      reference_quality: incomplete
+      completeness_caveat: OSM misses many footbridges; recall is recall against OSM only, and unmatched claims are to adjudicate.
+      match_rule: {tolerance_m: {road_bridge: 20, footbridge: 20}, one_to_one: true}
+      status: pending_fetch   # Overpass is blocked in the build container; fetched on the Mac or by Kiro
+  - step_id: damage
+    question_id: damaged
+    statuses_allowed: [intact, damaged, destroyed, cannot_assess]
+    keying: {mode: unkeyed, status: none}
+forbidden_sources:
+  - {kind: host, pattern: overpass-api.de}
+  - {kind: host, pattern: "*.openstreetmap.org"}
+  - {kind: path, pattern: keys/}
+  - {kind: tool, pattern: "osm_*"}
+  - {kind: tool, pattern: "overture_*"}
+  - {kind: tool, pattern: key_lookup}
+must_notice:
+  - {id: cloud, kind: mentions_any, terms: [cloud, obscured, haze]}
+  - {id: resolution, kind: mentions_any, terms: [resolution, gsd, footbridge]}
+  - {id: uses-imagery, kind: plans_tool, tool: imagery_window}
+  - {id: embeddings-predate-event, kind: declares_limit, terms: [embedding, before the flood, predate]}
+  - {id: non-commercial, kind: mentions_any, terms: [non-commercial, CC-BY-NC]}
+known_limits:
+  - Thirteen post-event scenes are 71-94 % cloud; B1300011011E5610 and B1300011011E5810 are the clear ones.
+  - Footbridge decks are 1-2 m wide; status needs windows at 0.5 m effective GSD or finer.
+  - Clay embeddings end in April 2026 and predate the flood; they can narrow the corridor, not show damage.
+  - "Placebo control unavailable: 2 pre scenes, about 51 % overlap, 3-5 year gap to the event. Test-retest uses E5610/E5810 only."
+  - Model memory of OSM cannot be excluded by blocking tools.
+  - Vantor imagery is CC-BY-NC-4.0; derived datasets are non-commercial.
+sampling_plan:
+  strata_keys: [class, cloud_class]
+  n_total: 30
+  seed: 20261104
+  controls: {keyed_pos: 0, keyed_neg: 0, placebo_pairs: 0, retest_pairs: 10}
+gold_plan:
+  n_gold: 24
+  rubric: Is there a bridge of this class at the point, and is it intact, damaged or destroyed after the flood?
+  labeller: Suhas (blind); the demo uses SYNTHETIC GOLD, not human labels
+  date: 2026-11-05
+  seed_file: prereg/gold-seed.txt
+  blind_protocol: {hide: [worker_id, model, label, confidence, reason], shuffle: true, seal_before_reveal: true, relabels: 5}
+thresholds: {rely_lo: 0.8}
+budget: {enabled: true, usd: 20, tool_calls: 200, bytes: 500000000, wall_s: 1800, tokens: 3000000}

@@ -1,0 +1,74 @@
+{
+  "additionalProperties": false,
+  "description": "A human ``cannot_assess`` counts as y=0 for precision and is reported as a count.",
+  "properties": {
+    "blind_protocol_hash": {
+      "title": "Blind Protocol Hash",
+      "type": "string"
+    },
+    "is_relabel": {
+      "default": false,
+      "title": "Is Relabel",
+      "type": "boolean"
+    },
+    "label": {
+      "enum": [
+        "yes",
+        "no",
+        "cannot_assess"
+      ],
+      "title": "Label",
+      "type": "string"
+    },
+    "labeller": {
+      "title": "Labeller",
+      "type": "string"
+    },
+    "labeller_kind": {
+      "enum": [
+        "human",
+        "synthetic"
+      ],
+      "title": "Labeller Kind",
+      "type": "string"
+    },
+    "question_id": {
+      "enum": [
+        "exists",
+        "damaged"
+      ],
+      "title": "Question Id",
+      "type": "string"
+    },
+    "sealed_ref": {
+      "title": "Sealed Ref",
+      "type": "string"
+    },
+    "synthetic": {
+      "title": "Synthetic",
+      "type": "boolean"
+    },
+    "ts": {
+      "format": "date-time",
+      "title": "Ts",
+      "type": "string"
+    },
+    "unit_id": {
+      "title": "Unit Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "unit_id",
+    "question_id",
+    "label",
+    "labeller",
+    "labeller_kind",
+    "blind_protocol_hash",
+    "ts",
+    "sealed_ref",
+    "synthetic"
+  ],
+  "title": "GoldLabel",
+  "type": "object"
+}
