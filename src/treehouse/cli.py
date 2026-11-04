@@ -47,7 +47,7 @@ def schema(
 @task_app.command("validate")
 def task_validate(path: Path) -> None:
     """Validate a task card. Exits 1 on any error; warnings do not fail."""
-    from treehouse.cards import validate_card
+    from treehouse.cards import describe_obligations, validate_card
 
     report = validate_card(path)
     for e in report.errors:
@@ -57,6 +57,7 @@ def task_validate(path: Path) -> None:
     if report.errors:
         raise typer.Exit(1)
     typer.echo(f"ok {path}\ncard hash: {report.card_hash}\nlicense floor: {report.license_floor}")
+    typer.echo(f"license obligations: {describe_obligations(report.license_obligations)}")
 
 
 if __name__ == "__main__":  # pragma: no cover

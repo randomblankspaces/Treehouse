@@ -70,10 +70,14 @@
   "additionalProperties": false,
   "properties": {
     "aoi_coverage_fraction": {
+      "maximum": 1,
+      "minimum": 0,
       "title": "Aoi Coverage Fraction",
       "type": "number"
     },
     "cloud_pct": {
+      "maximum": 100,
+      "minimum": 0,
       "title": "Cloud Pct",
       "type": "number"
     },
@@ -136,6 +140,10 @@
       ],
       "default": null,
       "title": "Sun Elevation Deg"
+    },
+    "synthetic": {
+      "title": "Synthetic",
+      "type": "boolean"
     }
   },
   "required": [
@@ -145,7 +153,8 @@
     "pan_gsd_m",
     "footprint",
     "aoi_coverage_fraction",
-    "license"
+    "license",
+    "synthetic"
   ],
   "title": "SceneSummary",
   "type": "object"

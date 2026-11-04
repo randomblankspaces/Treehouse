@@ -728,6 +728,7 @@
     }
   },
   "additionalProperties": false,
+  "description": "``license_floor`` is the most restrictive input licence; ``license_obligations`` lists every input\nlicence that carries an obligation (attribution, share-alike, non-commercial), so none is lost.\n\n``manifest_hash`` covers everything, including the volatile ``created_at``, ``versions.git_sha``,\n``versions.python`` and ``versions.uv_lock_sha256``. Golden tests compare ``canon.stable_view`` of a\nrecord, which drops those fields (and ``manifest_ref`` / ``code_sha`` wherever they appear).",
   "properties": {
     "backends_resolved": {
       "additionalProperties": {
@@ -779,6 +780,14 @@
     "license_floor": {
       "title": "License Floor",
       "type": "string"
+    },
+    "license_obligations": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "License Obligations",
+      "type": "array"
     },
     "manifest_hash": {
       "title": "Manifest Hash",

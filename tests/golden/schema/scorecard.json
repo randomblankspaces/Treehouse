@@ -71,6 +71,7 @@
     },
     "Panel": {
       "additionalProperties": false,
+      "description": "A score panel. Every number in it belongs to it (``number.panel == name``); output and trust\npanels never hold MEASURED numbers (the container half of the MEASURED fence).",
       "properties": {
         "evidence_span_ids": {
           "additionalProperties": {
@@ -146,6 +147,8 @@
         "abstention_rate": {
           "anyOf": [
             {
+              "maximum": 1,
+              "minimum": 0,
               "type": "number"
             },
             {
@@ -214,6 +217,7 @@
         "n": {
           "anyOf": [
             {
+              "minimum": 0,
               "type": "integer"
             },
             {
@@ -225,6 +229,7 @@
         "n_gold": {
           "anyOf": [
             {
+              "minimum": 0,
               "type": "integer"
             },
             {
@@ -237,6 +242,7 @@
         "n_verified": {
           "anyOf": [
             {
+              "minimum": 0,
               "type": "integer"
             },
             {

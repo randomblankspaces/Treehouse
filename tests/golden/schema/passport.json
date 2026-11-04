@@ -72,7 +72,7 @@
     },
     "Estimand": {
       "additionalProperties": false,
-      "description": "``verified_precision`` is the trust headline: a lower bound on precision, since a claim\nnobody could verify never counts as correct.",
+      "description": "``verified_precision`` is the trust headline whenever any gold label is ``cannot_assess``: a lower\nbound on precision, since a claim nobody could verify never counts as correct. ``precision`` is used\nonly when ``n_gold_cannot_assess == 0`` (the passport validator enforces both directions).",
       "properties": {
         "kind": {
           "enum": [
@@ -207,6 +207,8 @@
         "abstention_rate": {
           "anyOf": [
             {
+              "maximum": 1,
+              "minimum": 0,
               "type": "number"
             },
             {
@@ -275,6 +277,7 @@
         "n": {
           "anyOf": [
             {
+              "minimum": 0,
               "type": "integer"
             },
             {
@@ -286,6 +289,7 @@
         "n_gold": {
           "anyOf": [
             {
+              "minimum": 0,
               "type": "integer"
             },
             {
@@ -298,6 +302,7 @@
         "n_verified": {
           "anyOf": [
             {
+              "minimum": 0,
               "type": "integer"
             },
             {
@@ -400,6 +405,7 @@
     }
   },
   "additionalProperties": false,
+  "description": "The trust panel for one estimand.\n\nContainer fence (\u00a72): ``headline``, ``alternatives`` and ``truth_reveal`` are trust-panel numbers and\nare never MEASURED; every ``controls`` number sits on the controls panel. ``narrowing_note`` is plain\ntext rendered inside the headline's chip element; any count it mentions repeats ``headline.n_gold``.\nGolden comparisons use ``canon.stable_view`` (``code_sha`` and ``manifest_ref`` are volatile).",
   "properties": {
     "alternatives": {
       "default": [],
@@ -481,6 +487,23 @@
       "title": "Manifest Ref",
       "type": "string"
     },
+    "n_gold_cannot_assess": {
+      "minimum": 0,
+      "title": "N Gold Cannot Assess",
+      "type": "integer"
+    },
+    "narrowing_note": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Narrowing Note"
+    },
     "process_facts": {
       "additionalProperties": {
         "$ref": "#/$defs/TypedNumber"
@@ -530,6 +553,7 @@
   "required": [
     "estimand",
     "headline",
+    "n_gold_cannot_assess",
     "gate",
     "controls",
     "beat_baseline",

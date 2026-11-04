@@ -74,6 +74,13 @@ class Cassettes(Frozen):
 
 
 class Manifest(Frozen):
+    """``license_floor`` is the most restrictive input licence; ``license_obligations`` lists every input
+    licence that carries an obligation (attribution, share-alike, non-commercial), so none is lost.
+
+    ``manifest_hash`` covers everything, including the volatile ``created_at``, ``versions.git_sha``,
+    ``versions.python`` and ``versions.uv_lock_sha256``. Golden tests compare ``canon.stable_view`` of a
+    record, which drops those fields (and ``manifest_ref`` / ``code_sha`` wherever they appear)."""
+
     schema_version: Literal["treehouse.manifest/1"] = "treehouse.manifest/1"
     run_id: str
     created_at: AwareDatetime
@@ -89,6 +96,7 @@ class Manifest(Frozen):
     key_isolation_statement: str
     license_floor: str
     nc_notice: str | None = None
+    license_obligations: list[str] = []
     synthetic_data: bool
     prev_manifest_hash: str | None = None
     manifest_hash: str

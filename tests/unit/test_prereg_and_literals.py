@@ -16,6 +16,7 @@ PLACE_NAMES = [
     "nepal", "bhote", "koshi", "rasuwa", "syabrubesi", "timure", "rasuwagadhi", "trishuli", "kathmandu",
     "virginia", "india", "brahmaputra", "assam", "guwahati", "tibet", "china",
 ]
+COORD_IN_STR = re.compile(r"(?<![\d.])-?(\d{2,3}\.\d{2,})(?![\d.])")
 PLACE_RE = re.compile(r"\b(" + "|".join(PLACE_NAMES) + r")\b", re.IGNORECASE)
 
 
@@ -36,7 +37,8 @@ def _docstrings(tree: ast.AST) -> set[int]:
 
 
 def region_constants(path: Path) -> list[str]:
-    """Coordinate-like float literals (10 <= |x| <= 180 with >= 2 decimals) and place names in code."""
+    """Coordinate-like literals (10 <= |x| <= 180 with >= 2 decimals, as floats or inside strings) and
+    place names in code. One-decimal floats and integers are not flagged: too many legitimate uses."""
     tree = ast.parse(path.read_text())
     docs = _docstrings(tree)
     found = []
@@ -48,6 +50,8 @@ def region_constants(path: Path) -> list[str]:
         elif isinstance(node, ast.Constant) and isinstance(node.value, str) and id(node) not in docs:
             if PLACE_RE.search(node.value):
                 found.append(f"{path.name}:{node.lineno}: place name in {node.value!r}")
+            if any(10 <= float(m) <= 180 for m in COORD_IN_STR.findall(node.value)):
+                found.append(f"{path.name}:{node.lineno}: coordinate-like text in {node.value!r}")
         elif isinstance(node, ast.Name | ast.Attribute):
             name = node.id if isinstance(node, ast.Name) else node.attr
             if PLACE_RE.search(name.replace("_", " ")):
@@ -62,6 +66,7 @@ def test_no_region_constants_in_src():
 
 def test_region_scan_can_fail(tmp_path):
     p = tmp_path / "bad.py"
-    p.write_text('"""Docstrings may mention Nepal."""\nAOI = [85.33, 28.15]\nNAME = "Bhote Koshi"\nnepal_aoi = 1\nZ = 1.96\n')
+    p.write_text('"""Docstrings may mention Nepal."""\nAOI = [85.33, 28.15]\nNAME = "Bhote Koshi"\nnepal_aoi = 1\nZ = 1.96\n'
+                 'BBOX = "85.33,28.15"\nVERSION = "1.43.2"\n')
     found = region_constants(p)
-    assert len(found) == 4, found
+    assert len(found) == 5, found
