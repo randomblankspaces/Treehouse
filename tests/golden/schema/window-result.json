@@ -1,0 +1,273 @@
+{
+  "$defs": {
+    "Obscuration": {
+      "additionalProperties": false,
+      "properties": {
+        "bright_lowvar_fraction": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Bright Lowvar Fraction",
+          "type": "number"
+        },
+        "method": {
+          "const": "heuristic:v1",
+          "default": "heuristic:v1",
+          "title": "Method",
+          "type": "string"
+        },
+        "nodata_fraction": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Nodata Fraction",
+          "type": "number"
+        }
+      },
+      "required": [
+        "bright_lowvar_fraction",
+        "nodata_fraction"
+      ],
+      "title": "Obscuration",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "One image window. ``pixel_sha256`` hashes the decoded C-order uint8 array plus its shape\n(one implementation: ``treehouse.pixels.array_sha256``). ``effective_gsd_m`` = side_m / out_px.\n\n``detail.bytes_model`` (required) says whether ``bytes_read`` was measured or comes from the declared\n``synthetic-overview-block-v1`` model (RS-B1); the synthetic reader always models its bytes and is\nalways synthetic, and a rasterio reader always measures.",
+  "properties": {
+    "bbox_read": {
+      "maxItems": 4,
+      "minItems": 4,
+      "prefixItems": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        }
+      ],
+      "title": "Bbox Read",
+      "type": "array"
+    },
+    "bbox_requested": {
+      "maxItems": 4,
+      "minItems": 4,
+      "prefixItems": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        }
+      ],
+      "title": "Bbox Requested",
+      "type": "array"
+    },
+    "block_size": {
+      "title": "Block Size",
+      "type": "integer"
+    },
+    "bytes_read": {
+      "minimum": 0,
+      "title": "Bytes Read",
+      "type": "integer"
+    },
+    "detail": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          }
+        ]
+      },
+      "title": "Detail",
+      "type": "object"
+    },
+    "effective_gsd_m": {
+      "title": "Effective Gsd M",
+      "type": "number"
+    },
+    "etag": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Etag"
+    },
+    "footprint_coverage_fraction": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Footprint Coverage Fraction",
+      "type": "number"
+    },
+    "gdal_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Gdal Version"
+    },
+    "license": {
+      "title": "License",
+      "type": "string"
+    },
+    "nominal_gsd_m": {
+      "title": "Nominal Gsd M",
+      "type": "number"
+    },
+    "obscuration": {
+      "$ref": "#/$defs/Obscuration"
+    },
+    "off_nadir_deg": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Off Nadir Deg"
+    },
+    "out_shape": {
+      "maxItems": 2,
+      "minItems": 2,
+      "prefixItems": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "integer"
+        }
+      ],
+      "title": "Out Shape",
+      "type": "array"
+    },
+    "overview_level": {
+      "title": "Overview Level",
+      "type": "integer"
+    },
+    "phase": {
+      "anyOf": [
+        {
+          "enum": [
+            "pre",
+            "post"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Phase"
+    },
+    "pixel_sha256": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "title": "Pixel Sha256",
+      "type": "string"
+    },
+    "pixel_spacing_m": {
+      "title": "Pixel Spacing M",
+      "type": "number"
+    },
+    "reader": {
+      "title": "Reader",
+      "type": "string"
+    },
+    "requests": {
+      "minimum": 0,
+      "title": "Requests",
+      "type": "integer"
+    },
+    "resampling": {
+      "title": "Resampling",
+      "type": "string"
+    },
+    "result_id": {
+      "title": "Result Id",
+      "type": "string"
+    },
+    "scene_cloud_pct": {
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Scene Cloud Pct",
+      "type": "number"
+    },
+    "scene_datetime": {
+      "format": "date-time",
+      "title": "Scene Datetime",
+      "type": "string"
+    },
+    "scene_id": {
+      "title": "Scene Id",
+      "type": "string"
+    },
+    "source_id": {
+      "title": "Source Id",
+      "type": "string"
+    },
+    "synthetic": {
+      "title": "Synthetic",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "result_id",
+    "source_id",
+    "scene_id",
+    "bbox_requested",
+    "bbox_read",
+    "footprint_coverage_fraction",
+    "scene_datetime",
+    "nominal_gsd_m",
+    "pixel_spacing_m",
+    "effective_gsd_m",
+    "overview_level",
+    "scene_cloud_pct",
+    "out_shape",
+    "resampling",
+    "pixel_sha256",
+    "bytes_read",
+    "requests",
+    "block_size",
+    "reader",
+    "obscuration",
+    "license",
+    "synthetic",
+    "detail"
+  ],
+  "title": "WindowResult",
+  "type": "object"
+}

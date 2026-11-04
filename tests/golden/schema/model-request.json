@@ -1,0 +1,371 @@
+{
+  "$defs": {
+    "Image": {
+      "additionalProperties": false,
+      "description": "An image block. ``sha256`` hashes the decoded C-order uint8 pixel array plus its shape,\nnot the encoded bytes, so re-encoding never changes it. ``bytes_`` is transport only and is\nexcluded from request keys and cassettes.",
+      "properties": {
+        "bytes_": {
+          "anyOf": [
+            {
+              "format": "base64url",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bytes"
+        },
+        "format": {
+          "enum": [
+            "png",
+            "jpeg"
+          ],
+          "title": "Format",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "type": {
+          "const": "image",
+          "default": "image",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "format",
+        "sha256"
+      ],
+      "title": "Image",
+      "type": "object"
+    },
+    "InferenceParams": {
+      "additionalProperties": false,
+      "properties": {
+        "max_tokens": {
+          "title": "Max Tokens",
+          "type": "integer"
+        },
+        "seed": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Seed"
+        },
+        "temperature": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Temperature"
+        },
+        "top_p": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Top P"
+        }
+      },
+      "required": [
+        "max_tokens"
+      ],
+      "title": "InferenceParams",
+      "type": "object"
+    },
+    "Json": {
+      "additionalProperties": false,
+      "properties": {
+        "json_": {
+          "additionalProperties": true,
+          "title": "Json",
+          "type": "object"
+        },
+        "type": {
+          "const": "json",
+          "default": "json",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "json_"
+      ],
+      "title": "Json",
+      "type": "object"
+    },
+    "Message": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "image": "#/$defs/Image",
+                "reasoning": "#/$defs/Reasoning",
+                "text": "#/$defs/Text",
+                "tool_result": "#/$defs/ToolResult",
+                "tool_use": "#/$defs/ToolUse"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/Text"
+              },
+              {
+                "$ref": "#/$defs/Image"
+              },
+              {
+                "$ref": "#/$defs/ToolUse"
+              },
+              {
+                "$ref": "#/$defs/ToolResult"
+              },
+              {
+                "$ref": "#/$defs/Reasoning"
+              }
+            ]
+          },
+          "title": "Content",
+          "type": "array"
+        },
+        "role": {
+          "enum": [
+            "user",
+            "assistant"
+          ],
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "content"
+      ],
+      "title": "Message",
+      "type": "object"
+    },
+    "Reasoning": {
+      "additionalProperties": false,
+      "properties": {
+        "signature": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Signature"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "type": {
+          "const": "reasoning",
+          "default": "reasoning",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "title": "Reasoning",
+      "type": "object"
+    },
+    "Text": {
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "type": {
+          "const": "text",
+          "default": "text",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "title": "Text",
+      "type": "object"
+    },
+    "ToolResult": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "image": "#/$defs/Image",
+                "json": "#/$defs/Json",
+                "text": "#/$defs/Text"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/Text"
+              },
+              {
+                "$ref": "#/$defs/Image"
+              },
+              {
+                "$ref": "#/$defs/Json"
+              }
+            ]
+          },
+          "title": "Content",
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "success",
+            "error"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "tool_use_id": {
+          "title": "Tool Use Id",
+          "type": "string"
+        },
+        "type": {
+          "const": "tool_result",
+          "default": "tool_result",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "tool_use_id",
+        "status",
+        "content"
+      ],
+      "title": "ToolResult",
+      "type": "object"
+    },
+    "ToolSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "input_schema": {
+          "additionalProperties": true,
+          "title": "Input Schema",
+          "type": "object"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "description",
+        "input_schema"
+      ],
+      "title": "ToolSpec",
+      "type": "object"
+    },
+    "ToolUse": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "input": {
+          "additionalProperties": true,
+          "title": "Input",
+          "type": "object"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "type": {
+          "const": "tool_use",
+          "default": "tool_use",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "input"
+      ],
+      "title": "ToolUse",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "messages": {
+      "items": {
+        "$ref": "#/$defs/Message"
+      },
+      "title": "Messages",
+      "type": "array"
+    },
+    "model_id": {
+      "title": "Model Id",
+      "type": "string"
+    },
+    "params": {
+      "$ref": "#/$defs/InferenceParams"
+    },
+    "system": {
+      "title": "System",
+      "type": "string"
+    },
+    "tools": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ToolSpec"
+      },
+      "title": "Tools",
+      "type": "array"
+    }
+  },
+  "required": [
+    "model_id",
+    "system",
+    "messages",
+    "params"
+  ],
+  "title": "ModelRequest",
+  "type": "object"
+}

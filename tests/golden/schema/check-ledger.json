@@ -1,0 +1,137 @@
+{
+  "$defs": {
+    "CheckResult": {
+      "additionalProperties": false,
+      "properties": {
+        "check_id": {
+          "title": "Check Id",
+          "type": "string"
+        },
+        "claim_id": {
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Code"
+        },
+        "detail": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "default": {},
+          "title": "Detail",
+          "type": "object"
+        },
+        "layer": {
+          "enum": [
+            "rules",
+            "key",
+            "verifier",
+            "human",
+            "overlap",
+            "leak"
+          ],
+          "title": "Layer",
+          "type": "string"
+        },
+        "record_ref": {
+          "title": "Record Ref",
+          "type": "string"
+        },
+        "result": {
+          "enum": [
+            "pass",
+            "fail",
+            "flag",
+            "n/a"
+          ],
+          "title": "Result",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "claim_id",
+        "layer",
+        "check_id",
+        "version",
+        "result",
+        "record_ref"
+      ],
+      "title": "CheckResult",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Resolution order: rule fail > human > key > verifier > unchecked.",
+  "properties": {
+    "claim_id": {
+      "title": "Claim Id",
+      "type": "string"
+    },
+    "resolved": {
+      "enum": [
+        "correct",
+        "incorrect",
+        "fabrication",
+        "ungrounded",
+        "contaminated",
+        "to_adjudicate",
+        "unchecked"
+      ],
+      "title": "Resolved",
+      "type": "string"
+    },
+    "resolved_by": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Resolved By"
+    },
+    "results": {
+      "items": {
+        "$ref": "#/$defs/CheckResult"
+      },
+      "title": "Results",
+      "type": "array"
+    }
+  },
+  "required": [
+    "claim_id",
+    "results",
+    "resolved"
+  ],
+  "title": "CheckLedger",
+  "type": "object"
+}

@@ -1,0 +1,980 @@
+{
+  "$defs": {
+    "BlindProtocol": {
+      "additionalProperties": false,
+      "properties": {
+        "hide": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Hide",
+          "type": "array"
+        },
+        "relabels": {
+          "default": 5,
+          "title": "Relabels",
+          "type": "integer"
+        },
+        "seal_before_reveal": {
+          "const": true,
+          "default": true,
+          "title": "Seal Before Reveal",
+          "type": "boolean"
+        },
+        "shuffle": {
+          "const": true,
+          "default": true,
+          "title": "Shuffle",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "hide"
+      ],
+      "title": "BlindProtocol",
+      "type": "object"
+    },
+    "Budget": {
+      "additionalProperties": false,
+      "description": "Per-run limits; ``None`` means no limit on that axis. ``enabled=False`` disables all limits.",
+      "properties": {
+        "bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bytes"
+        },
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "tokens": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tokens"
+        },
+        "tool_calls": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Calls"
+        },
+        "usd": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Usd"
+        },
+        "wall_s": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Wall S"
+        }
+      },
+      "title": "Budget",
+      "type": "object"
+    },
+    "ClassSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "key_geometry": {
+          "enum": [
+            "point",
+            "line",
+            "polygon"
+          ],
+          "title": "Key Geometry",
+          "type": "string"
+        },
+        "match_tolerance_m": {
+          "title": "Match Tolerance M",
+          "type": "number"
+        },
+        "max_effective_gsd_for_existence_m": {
+          "title": "Max Effective Gsd For Existence M",
+          "type": "number"
+        },
+        "max_effective_gsd_for_status_m": {
+          "title": "Max Effective Gsd For Status M",
+          "type": "number"
+        },
+        "min_size_m": {
+          "title": "Min Size M",
+          "type": "number"
+        }
+      },
+      "required": [
+        "min_size_m",
+        "max_effective_gsd_for_existence_m",
+        "max_effective_gsd_for_status_m",
+        "match_tolerance_m",
+        "key_geometry"
+      ],
+      "title": "ClassSpec",
+      "type": "object"
+    },
+    "Controls": {
+      "additionalProperties": false,
+      "properties": {
+        "keyed_neg": {
+          "default": 0,
+          "title": "Keyed Neg",
+          "type": "integer"
+        },
+        "keyed_pos": {
+          "default": 0,
+          "title": "Keyed Pos",
+          "type": "integer"
+        },
+        "placebo_pairs": {
+          "default": 0,
+          "title": "Placebo Pairs",
+          "type": "integer"
+        },
+        "retest_pairs": {
+          "default": 0,
+          "title": "Retest Pairs",
+          "type": "integer"
+        }
+      },
+      "title": "Controls",
+      "type": "object"
+    },
+    "DataSource": {
+      "additionalProperties": false,
+      "properties": {
+        "access": {
+          "enum": [
+            "static_catalog",
+            "s3_listing",
+            "synthetic",
+            "recorded"
+          ],
+          "title": "Access",
+          "type": "string"
+        },
+        "etags": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "default": {},
+          "title": "Etags",
+          "type": "object"
+        },
+        "fixture_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fixture Path"
+        },
+        "item_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Item Ids",
+          "type": "array"
+        },
+        "kind": {
+          "enum": [
+            "stac",
+            "imagery",
+            "embeddings",
+            "vector"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "license": {
+          "title": "License",
+          "type": "string"
+        },
+        "source_id": {
+          "title": "Source Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "pinned",
+            "unpinned",
+            "pending_fixture"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_id",
+        "kind",
+        "access",
+        "license",
+        "status"
+      ],
+      "title": "DataSource",
+      "type": "object"
+    },
+    "Event": {
+      "additionalProperties": false,
+      "properties": {
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "footprint_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Footprint Ref"
+        }
+      },
+      "required": [
+        "date"
+      ],
+      "title": "Event",
+      "type": "object"
+    },
+    "ForbiddenSource": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "host",
+            "url_prefix",
+            "s3_prefix",
+            "dataset_id",
+            "tool",
+            "path"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "pattern": {
+          "title": "Pattern",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "pattern"
+      ],
+      "title": "ForbiddenSource",
+      "type": "object"
+    },
+    "GoldPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "blind_protocol": {
+          "$ref": "#/$defs/BlindProtocol"
+        },
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "labeller": {
+          "title": "Labeller",
+          "type": "string"
+        },
+        "n_gold": {
+          "minimum": 1,
+          "title": "N Gold",
+          "type": "integer"
+        },
+        "rubric": {
+          "title": "Rubric",
+          "type": "string"
+        },
+        "seed_file": {
+          "title": "Seed File",
+          "type": "string"
+        }
+      },
+      "required": [
+        "n_gold",
+        "rubric",
+        "labeller",
+        "date",
+        "seed_file",
+        "blind_protocol"
+      ],
+      "title": "GoldPlan",
+      "type": "object"
+    },
+    "Keying": {
+      "additionalProperties": false,
+      "properties": {
+        "completeness_caveat": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Completeness Caveat"
+        },
+        "key_coverage_mask": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Polygon"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "key_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Key Path"
+        },
+        "key_source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Key Source"
+        },
+        "license": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "License"
+        },
+        "match_rule": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MatchRule"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "mode": {
+          "enum": [
+            "keyed",
+            "partly_keyed",
+            "unkeyed"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "reference_quality": {
+          "anyOf": [
+            {
+              "enum": [
+                "complete",
+                "incomplete",
+                "synthetic"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reference Quality"
+        },
+        "status": {
+          "enum": [
+            "present",
+            "pending_fetch",
+            "pending_generation",
+            "none"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "version_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Version Hash"
+        }
+      },
+      "required": [
+        "mode",
+        "status"
+      ],
+      "title": "Keying",
+      "type": "object"
+    },
+    "MatchRule": {
+      "additionalProperties": false,
+      "properties": {
+        "one_to_one": {
+          "const": true,
+          "default": true,
+          "title": "One To One",
+          "type": "boolean"
+        },
+        "tolerance_m": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Tolerance M",
+          "type": "object"
+        }
+      },
+      "required": [
+        "tolerance_m"
+      ],
+      "title": "MatchRule",
+      "type": "object"
+    },
+    "NoticeItem": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "mentions_any",
+            "plans_tool",
+            "declares_limit"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "terms": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Terms",
+          "type": "array"
+        },
+        "tool": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool"
+        },
+        "weight": {
+          "default": 1.0,
+          "title": "Weight",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "kind"
+      ],
+      "title": "NoticeItem",
+      "type": "object"
+    },
+    "Polygon": {
+      "additionalProperties": false,
+      "description": "A Polygon (list of rings) or MultiPolygon (list of polygons). Rings must be closed.",
+      "properties": {
+        "coordinates": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "maxItems": 2,
+                  "minItems": 2,
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "type": "array"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "items": {
+                "items": {
+                  "items": {
+                    "maxItems": 2,
+                    "minItems": 2,
+                    "prefixItems": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ],
+                    "type": "array"
+                  },
+                  "type": "array"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            }
+          ],
+          "title": "Coordinates"
+        },
+        "type": {
+          "enum": [
+            "Polygon",
+            "MultiPolygon"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "coordinates"
+      ],
+      "title": "Polygon",
+      "type": "object"
+    },
+    "SamplingPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "census_if_N_le": {
+          "default": 60,
+          "minimum": 0,
+          "title": "Census If N Le",
+          "type": "integer"
+        },
+        "controls": {
+          "$ref": "#/$defs/Controls",
+          "default": {
+            "keyed_neg": 0,
+            "keyed_pos": 0,
+            "placebo_pairs": 0,
+            "retest_pairs": 0
+          }
+        },
+        "min_N_h": {
+          "default": 4,
+          "minimum": 1,
+          "title": "Min N H",
+          "type": "integer"
+        },
+        "n_total": {
+          "minimum": 1,
+          "title": "N Total",
+          "type": "integer"
+        },
+        "seed": {
+          "title": "Seed",
+          "type": "integer"
+        },
+        "strata_keys": {
+          "items": {
+            "enum": [
+              "class",
+              "conf_tercile",
+              "cloud_class"
+            ],
+            "type": "string"
+          },
+          "title": "Strata Keys",
+          "type": "array"
+        },
+        "unreported_frame": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unreported Frame"
+        }
+      },
+      "required": [
+        "strata_keys",
+        "n_total",
+        "seed"
+      ],
+      "title": "SamplingPlan",
+      "type": "object"
+    },
+    "Step": {
+      "additionalProperties": false,
+      "properties": {
+        "keying": {
+          "$ref": "#/$defs/Keying"
+        },
+        "question_id": {
+          "enum": [
+            "exists",
+            "damaged"
+          ],
+          "title": "Question Id",
+          "type": "string"
+        },
+        "statuses_allowed": {
+          "items": {
+            "enum": [
+              "present",
+              "absent",
+              "intact",
+              "damaged",
+              "destroyed",
+              "cannot_assess"
+            ],
+            "type": "string"
+          },
+          "title": "Statuses Allowed",
+          "type": "array"
+        },
+        "step_id": {
+          "title": "Step Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "step_id",
+        "question_id",
+        "statuses_allowed",
+        "keying"
+      ],
+      "title": "Step",
+      "type": "object"
+    },
+    "Thresholds": {
+      "additionalProperties": false,
+      "properties": {
+        "rely_lo": {
+          "title": "Rely Lo",
+          "type": "number"
+        }
+      },
+      "required": [
+        "rely_lo"
+      ],
+      "title": "Thresholds",
+      "type": "object"
+    },
+    "Windows": {
+      "additionalProperties": false,
+      "properties": {
+        "max_bytes_per_run": {
+          "minimum": 0,
+          "title": "Max Bytes Per Run",
+          "type": "integer"
+        },
+        "max_out_px": {
+          "minimum": 1,
+          "title": "Max Out Px",
+          "type": "integer"
+        },
+        "max_side_m": {
+          "exclusiveMinimum": 0,
+          "title": "Max Side M",
+          "type": "number"
+        }
+      },
+      "required": [
+        "max_side_m",
+        "max_out_px",
+        "max_bytes_per_run"
+      ],
+      "title": "Windows",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "A task card.\n\n``synthetic`` means *synthetic task* (written by the team, not a partner's), which requires\n``synthetic_notice``. It does not decide the per-number ``synthetic`` flag: that comes from the data\na number was computed on (a source with ``access: synthetic``, a synthetic key or labeller, or a\n``WindowResult.synthetic``), so a real-data run of a synthetic task is not chipped SYNTHETIC.\n\nThe worker sees ``goal``, the AOI, the time window and the tools only. ``known_limits``,\n``must_notice``, keys and plans are grader-side and never enter a worker prompt. ``as_of`` is\nnormalised to UTC so the card hash does not depend on the offset it was written with.",
+  "properties": {
+    "aoi": {
+      "$ref": "#/$defs/Polygon"
+    },
+    "as_of": {
+      "format": "date-time",
+      "title": "As Of",
+      "type": "string"
+    },
+    "budget": {
+      "$ref": "#/$defs/Budget"
+    },
+    "classes": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ClassSpec"
+      },
+      "title": "Classes",
+      "type": "object"
+    },
+    "data_allowlist": {
+      "items": {
+        "$ref": "#/$defs/DataSource"
+      },
+      "title": "Data Allowlist",
+      "type": "array"
+    },
+    "event": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Event"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "family": {
+      "title": "Family",
+      "type": "string"
+    },
+    "forbidden_sources": {
+      "items": {
+        "$ref": "#/$defs/ForbiddenSource"
+      },
+      "title": "Forbidden Sources",
+      "type": "array"
+    },
+    "goal": {
+      "title": "Goal",
+      "type": "string"
+    },
+    "gold_plan": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/GoldPlan"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "known_limits": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Known Limits",
+      "type": "array"
+    },
+    "must_notice": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/NoticeItem"
+      },
+      "title": "Must Notice",
+      "type": "array"
+    },
+    "needs_vision": {
+      "title": "Needs Vision",
+      "type": "boolean"
+    },
+    "sampling_plan": {
+      "$ref": "#/$defs/SamplingPlan"
+    },
+    "schema_version": {
+      "const": "treehouse.task/1",
+      "default": "treehouse.task/1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "smoke_aoi": {
+      "anyOf": [
+        {
+          "maxItems": 4,
+          "minItems": 4,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Smoke Aoi"
+    },
+    "steps": {
+      "items": {
+        "$ref": "#/$defs/Step"
+      },
+      "title": "Steps",
+      "type": "array"
+    },
+    "synthetic": {
+      "title": "Synthetic",
+      "type": "boolean"
+    },
+    "synthetic_notice": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Synthetic Notice"
+    },
+    "thresholds": {
+      "$ref": "#/$defs/Thresholds"
+    },
+    "time_window": {
+      "maxItems": 2,
+      "minItems": 2,
+      "prefixItems": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "format": "date",
+          "type": "string"
+        }
+      ],
+      "title": "Time Window",
+      "type": "array"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "tools_allowed": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Tools Allowed",
+      "type": "array"
+    },
+    "version": {
+      "title": "Version",
+      "type": "string"
+    },
+    "windows": {
+      "$ref": "#/$defs/Windows"
+    }
+  },
+  "required": [
+    "id",
+    "version",
+    "title",
+    "family",
+    "synthetic",
+    "goal",
+    "aoi",
+    "time_window",
+    "as_of",
+    "data_allowlist",
+    "tools_allowed",
+    "needs_vision",
+    "classes",
+    "windows",
+    "steps",
+    "forbidden_sources",
+    "sampling_plan",
+    "thresholds",
+    "budget"
+  ],
+  "title": "TaskCard",
+  "type": "object"
+}

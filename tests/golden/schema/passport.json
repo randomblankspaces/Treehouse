@@ -1,0 +1,569 @@
+{
+  "$defs": {
+    "ControlsReport": {
+      "additionalProperties": false,
+      "properties": {
+        "placebo_far": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TypedNumber"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "relabel_kappa": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TypedNumber"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "retest_kappa": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TypedNumber"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "se": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TypedNumber"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "sp": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TypedNumber"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "unavailable": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Unavailable",
+          "type": "array"
+        }
+      },
+      "title": "ControlsReport",
+      "type": "object"
+    },
+    "Estimand": {
+      "additionalProperties": false,
+      "description": "``verified_precision`` is the trust headline whenever any gold label is ``cannot_assess``: a lower\nbound on precision, since a claim nobody could verify never counts as correct. ``precision`` is used\nonly when ``n_gold_cannot_assess == 0`` (the passport validator enforces both directions).",
+      "properties": {
+        "kind": {
+          "enum": [
+            "precision",
+            "verified_precision",
+            "count",
+            "miss_rate"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "population": {
+          "enum": [
+            "claim_table",
+            "unreported_frame"
+          ],
+          "title": "Population",
+          "type": "string"
+        },
+        "question_id": {
+          "enum": [
+            "exists",
+            "damaged"
+          ],
+          "title": "Question Id",
+          "type": "string"
+        },
+        "step_id": {
+          "title": "Step Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "kind",
+        "step_id",
+        "question_id",
+        "population"
+      ],
+      "title": "Estimand",
+      "type": "object"
+    },
+    "Interval": {
+      "additionalProperties": false,
+      "properties": {
+        "B": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "B"
+        },
+        "fpc": {
+          "default": false,
+          "title": "Fpc",
+          "type": "boolean"
+        },
+        "hi": {
+          "title": "Hi",
+          "type": "number"
+        },
+        "level": {
+          "title": "Level",
+          "type": "number"
+        },
+        "lo": {
+          "title": "Lo",
+          "type": "number"
+        },
+        "method": {
+          "enum": [
+            "wilson",
+            "clopper-pearson",
+            "hypergeom-exact",
+            "ppi-2phase-rbs-v1",
+            "cluster-bootstrap",
+            "betabinom-predictive",
+            "poisson-binomial",
+            "kappa-bootstrap",
+            "rg-bootstrap-inflated-v1"
+          ],
+          "title": "Method",
+          "type": "string"
+        },
+        "seed": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Seed"
+        }
+      },
+      "required": [
+        "lo",
+        "hi",
+        "level",
+        "method"
+      ],
+      "title": "Interval",
+      "type": "object"
+    },
+    "Tier": {
+      "enum": [
+        "KEYED",
+        "GOLD-ANCHORED",
+        "CALIBRATED-TRANSFER",
+        "MODEL-ESTIMATED",
+        "ABSTAINED",
+        "MEASURED"
+      ],
+      "title": "Tier",
+      "type": "string"
+    },
+    "TypedNumber": {
+      "additionalProperties": false,
+      "description": "A reported number. ``detail`` may carry e.g. ``key_version``, ``aggregate_over``,\n``width_ratio_vs_classical`` or ``bytes_model`` (modelled, not measured, bytes).",
+      "properties": {
+        "abstention_rate": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Abstention Rate"
+        },
+        "config_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Config Hash"
+        },
+        "detail": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "default": {},
+          "title": "Detail",
+          "type": "object"
+        },
+        "estimator_version": {
+          "title": "Estimator Version",
+          "type": "string"
+        },
+        "interval": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Interval"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "manifest_ref": {
+          "title": "Manifest Ref",
+          "type": "string"
+        },
+        "metric": {
+          "title": "Metric",
+          "type": "string"
+        },
+        "n": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "N"
+        },
+        "n_gold": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "N Gold"
+        },
+        "n_verified": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "N Verified"
+        },
+        "panel": {
+          "enum": [
+            "process",
+            "understanding",
+            "output",
+            "trust",
+            "controls",
+            "cost"
+          ],
+          "title": "Panel",
+          "type": "string"
+        },
+        "reasons": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Reasons",
+          "type": "array"
+        },
+        "replayed": {
+          "default": false,
+          "title": "Replayed",
+          "type": "boolean"
+        },
+        "rung": {
+          "anyOf": [
+            {
+              "enum": [
+                "L1",
+                "L2",
+                "L3",
+                "L4"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rung"
+        },
+        "synthetic": {
+          "title": "Synthetic",
+          "type": "boolean"
+        },
+        "tier": {
+          "$ref": "#/$defs/Tier"
+        },
+        "type": {
+          "enum": [
+            "proportion",
+            "count",
+            "flag",
+            "usd",
+            "seconds",
+            "bytes",
+            "tokens",
+            "ratio",
+            "kappa"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "metric",
+        "value",
+        "type",
+        "tier",
+        "panel",
+        "n",
+        "estimator_version",
+        "manifest_ref",
+        "synthetic"
+      ],
+      "title": "TypedNumber",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "The trust panel for one estimand.\n\nContainer fence (\u00a72): ``headline``, ``alternatives`` and ``truth_reveal`` are trust-panel numbers and\nare never MEASURED; every ``controls`` number sits on the controls panel. ``narrowing_note`` is plain\ntext rendered inside the headline's chip element; any count it mentions repeats ``headline.n_gold``.\nGolden comparisons use ``canon.stable_view`` (``code_sha`` and ``manifest_ref`` are volatile).",
+  "properties": {
+    "alternatives": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/TypedNumber"
+      },
+      "title": "Alternatives",
+      "type": "array"
+    },
+    "beat_baseline": {
+      "title": "Beat Baseline",
+      "type": "string"
+    },
+    "code_sha": {
+      "title": "Code Sha",
+      "type": "string"
+    },
+    "controls": {
+      "$ref": "#/$defs/ControlsReport"
+    },
+    "disagreement": {
+      "default": [],
+      "items": {
+        "maxItems": 2,
+        "minItems": 2,
+        "prefixItems": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "type": "array"
+      },
+      "title": "Disagreement",
+      "type": "array"
+    },
+    "estimand": {
+      "$ref": "#/$defs/Estimand"
+    },
+    "estimator_version": {
+      "title": "Estimator Version",
+      "type": "string"
+    },
+    "gate": {
+      "enum": [
+        "Rely",
+        "Spot-check",
+        "Do not rely"
+      ],
+      "title": "Gate",
+      "type": "string"
+    },
+    "gate_reasons": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Gate Reasons",
+      "type": "array"
+    },
+    "gold_draw_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Gold Draw Id"
+    },
+    "headline": {
+      "$ref": "#/$defs/TypedNumber"
+    },
+    "manifest_ref": {
+      "title": "Manifest Ref",
+      "type": "string"
+    },
+    "n_gold_cannot_assess": {
+      "minimum": 0,
+      "title": "N Gold Cannot Assess",
+      "type": "integer"
+    },
+    "narrowing_note": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Narrowing Note"
+    },
+    "process_facts": {
+      "additionalProperties": {
+        "$ref": "#/$defs/TypedNumber"
+      },
+      "default": {},
+      "title": "Process Facts",
+      "type": "object"
+    },
+    "sample_design_id": {
+      "title": "Sample Design Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "treehouse.passport/1",
+      "default": "treehouse.passport/1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "shift": {
+      "additionalProperties": {
+        "$ref": "#/$defs/TypedNumber"
+      },
+      "default": {},
+      "title": "Shift",
+      "type": "object"
+    },
+    "synthetic": {
+      "title": "Synthetic",
+      "type": "boolean"
+    },
+    "trust_config_hash": {
+      "title": "Trust Config Hash",
+      "type": "string"
+    },
+    "truth_reveal": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TypedNumber"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "estimand",
+    "headline",
+    "n_gold_cannot_assess",
+    "gate",
+    "controls",
+    "beat_baseline",
+    "sample_design_id",
+    "trust_config_hash",
+    "estimator_version",
+    "code_sha",
+    "manifest_ref",
+    "synthetic"
+  ],
+  "title": "TrustPassport",
+  "type": "object"
+}

@@ -1,0 +1,190 @@
+{
+  "$defs": {
+    "SpanError": {
+      "additionalProperties": false,
+      "properties": {
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "agent",
+            "tool",
+            "infra",
+            "budget",
+            "policy"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "type": {
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "type",
+        "message"
+      ],
+      "title": "SpanError",
+      "type": "object"
+    },
+    "SpanEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "attributes": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            ]
+          },
+          "default": {},
+          "title": "Attributes",
+          "type": "object"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "ts_ns": {
+          "title": "Ts Ns",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name",
+        "ts_ns"
+      ],
+      "title": "SpanEvent",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "attributes": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        ]
+      },
+      "default": {},
+      "title": "Attributes",
+      "type": "object"
+    },
+    "end_ns": {
+      "title": "End Ns",
+      "type": "integer"
+    },
+    "error": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SpanError"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "events": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/SpanEvent"
+      },
+      "title": "Events",
+      "type": "array"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "op": {
+      "enum": [
+        "invoke_agent",
+        "chat",
+        "execute_tool"
+      ],
+      "title": "Op",
+      "type": "string"
+    },
+    "parent_span_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Parent Span Id"
+    },
+    "span_id": {
+      "title": "Span Id",
+      "type": "string"
+    },
+    "start_ns": {
+      "title": "Start Ns",
+      "type": "integer"
+    },
+    "status": {
+      "enum": [
+        "ok",
+        "error"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "trace_id": {
+      "title": "Trace Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "trace_id",
+    "span_id",
+    "name",
+    "op",
+    "start_ns",
+    "end_ns",
+    "status"
+  ],
+  "title": "SpanRecord",
+  "type": "object"
+}

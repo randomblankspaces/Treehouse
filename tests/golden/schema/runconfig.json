@@ -1,0 +1,376 @@
+{
+  "$defs": {
+    "Backends": {
+      "additionalProperties": false,
+      "properties": {
+        "allow_degrade": {
+          "default": true,
+          "title": "Allow Degrade",
+          "type": "boolean"
+        },
+        "key_isolation": {
+          "default": "local",
+          "enum": [
+            "local",
+            "iam"
+          ],
+          "title": "Key Isolation",
+          "type": "string"
+        },
+        "store": {
+          "default": "local",
+          "enum": [
+            "local",
+            "s3"
+          ],
+          "title": "Store",
+          "type": "string"
+        },
+        "tool_locus": {
+          "const": "inproc",
+          "default": "inproc",
+          "title": "Tool Locus",
+          "type": "string"
+        },
+        "tracer": {
+          "default": [
+            "jsonl"
+          ],
+          "items": {
+            "enum": [
+              "jsonl",
+              "otlp",
+              "cwlogs"
+            ],
+            "type": "string"
+          },
+          "title": "Tracer",
+          "type": "array"
+        }
+      },
+      "title": "Backends",
+      "type": "object"
+    },
+    "Budget": {
+      "additionalProperties": false,
+      "description": "Per-run limits; ``None`` means no limit on that axis. ``enabled=False`` disables all limits.",
+      "properties": {
+        "bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bytes"
+        },
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "tokens": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tokens"
+        },
+        "tool_calls": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Calls"
+        },
+        "usd": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Usd"
+        },
+        "wall_s": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Wall S"
+        }
+      },
+      "title": "Budget",
+      "type": "object"
+    },
+    "InferenceParams": {
+      "additionalProperties": false,
+      "properties": {
+        "max_tokens": {
+          "title": "Max Tokens",
+          "type": "integer"
+        },
+        "seed": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Seed"
+        },
+        "temperature": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Temperature"
+        },
+        "top_p": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Top P"
+        }
+      },
+      "required": [
+        "max_tokens"
+      ],
+      "title": "InferenceParams",
+      "type": "object"
+    },
+    "RoleConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "cassette": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cassette"
+        },
+        "family": {
+          "title": "Family",
+          "type": "string"
+        },
+        "model_key": {
+          "title": "Model Key",
+          "type": "string"
+        },
+        "params": {
+          "$ref": "#/$defs/InferenceParams"
+        },
+        "provider": {
+          "enum": [
+            "fake",
+            "replay",
+            "bedrock",
+            "openai_compat"
+          ],
+          "title": "Provider",
+          "type": "string"
+        },
+        "script": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Script"
+        },
+        "tools": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Tools",
+          "type": "array"
+        }
+      },
+      "required": [
+        "provider",
+        "model_key",
+        "family",
+        "params"
+      ],
+      "title": "RoleConfig",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "One run of a task. The ``needs_vision`` registry check lands with the model registry (P6).",
+  "properties": {
+    "allow_same_family": {
+      "default": false,
+      "title": "Allow Same Family",
+      "type": "boolean"
+    },
+    "backends": {
+      "$ref": "#/$defs/Backends",
+      "default": {
+        "allow_degrade": true,
+        "key_isolation": "local",
+        "store": "local",
+        "tool_locus": "inproc",
+        "tracer": [
+          "jsonl"
+        ]
+      }
+    },
+    "budget": {
+      "$ref": "#/$defs/Budget",
+      "default": {
+        "bytes": null,
+        "enabled": true,
+        "tokens": null,
+        "tool_calls": null,
+        "usd": null,
+        "wall_s": null
+      }
+    },
+    "clock": {
+      "default": "wall",
+      "enum": [
+        "wall",
+        "logical"
+      ],
+      "title": "Clock",
+      "type": "string"
+    },
+    "harness": {
+      "default": "plain_loop",
+      "enum": [
+        "plain_loop",
+        "strands"
+      ],
+      "title": "Harness",
+      "type": "string"
+    },
+    "max_turns": {
+      "default": 40,
+      "title": "Max Turns",
+      "type": "integer"
+    },
+    "mode": {
+      "enum": [
+        "fake",
+        "replay",
+        "record",
+        "live"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "treehouse.runconfig/1",
+      "default": "treehouse.runconfig/1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "seed": {
+      "title": "Seed",
+      "type": "integer"
+    },
+    "summarizer": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RoleConfig"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "task_ref": {
+      "title": "Task Ref",
+      "type": "string"
+    },
+    "tool_executor": {
+      "const": "sequential",
+      "default": "sequential",
+      "title": "Tool Executor",
+      "type": "string"
+    },
+    "tool_mode": {
+      "default": "live",
+      "enum": [
+        "live",
+        "verify"
+      ],
+      "title": "Tool Mode",
+      "type": "string"
+    },
+    "trials": {
+      "default": 1,
+      "title": "Trials",
+      "type": "integer"
+    },
+    "verifier": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RoleConfig"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "worker": {
+      "$ref": "#/$defs/RoleConfig"
+    }
+  },
+  "required": [
+    "task_ref",
+    "mode",
+    "worker",
+    "seed"
+  ],
+  "title": "RunConfig",
+  "type": "object"
+}

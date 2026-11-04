@@ -1,0 +1,30 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "h": {
+      "title": "H",
+      "type": "string"
+    },
+    "prev": {
+      "title": "Prev",
+      "type": "string"
+    },
+    "rec": {
+      "additionalProperties": true,
+      "title": "Rec",
+      "type": "object"
+    },
+    "seq": {
+      "title": "Seq",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "seq",
+    "prev",
+    "rec",
+    "h"
+  ],
+  "title": "ChainLine",
+  "type": "object"
+}

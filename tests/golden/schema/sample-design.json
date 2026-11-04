@@ -1,0 +1,122 @@
+{
+  "$defs": {
+    "SampledUnit": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "claim",
+            "control_pos",
+            "control_neg",
+            "placebo",
+            "retest",
+            "unreported"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "order": {
+          "title": "Order",
+          "type": "integer"
+        },
+        "pi": {
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Pi",
+          "type": "number"
+        },
+        "ref": {
+          "title": "Ref",
+          "type": "string"
+        },
+        "stratum": {
+          "title": "Stratum",
+          "type": "string"
+        },
+        "unit_id": {
+          "title": "Unit Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "unit_id",
+        "kind",
+        "ref",
+        "stratum",
+        "pi",
+        "order"
+      ],
+      "title": "SampledUnit",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "``numpy_version`` records ``numpy.__version__`` at draw time (F8): numpy does not promise stable\nGenerator streams across versions, so a design drawn under another numpy is recognisable as such.\n``strat-srswor-v1`` selects by sorted ``bit_generator.random_raw()`` keys, never ``choice``.",
+  "properties": {
+    "N_h": {
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "title": "N H",
+      "type": "object"
+    },
+    "algorithm": {
+      "const": "strat-srswor-v1",
+      "default": "strat-srswor-v1",
+      "title": "Algorithm",
+      "type": "string"
+    },
+    "created_seq": {
+      "title": "Created Seq",
+      "type": "integer"
+    },
+    "design_id": {
+      "title": "Design Id",
+      "type": "string"
+    },
+    "frame_hash": {
+      "title": "Frame Hash",
+      "type": "string"
+    },
+    "n_h": {
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "title": "N H",
+      "type": "object"
+    },
+    "numpy_version": {
+      "title": "Numpy Version",
+      "type": "string"
+    },
+    "rng": {
+      "const": "numpy.PCG64",
+      "default": "numpy.PCG64",
+      "title": "Rng",
+      "type": "string"
+    },
+    "seed": {
+      "title": "Seed",
+      "type": "integer"
+    },
+    "units": {
+      "items": {
+        "$ref": "#/$defs/SampledUnit"
+      },
+      "title": "Units",
+      "type": "array"
+    }
+  },
+  "required": [
+    "design_id",
+    "seed",
+    "numpy_version",
+    "frame_hash",
+    "N_h",
+    "n_h",
+    "units",
+    "created_seq"
+  ],
+  "title": "SampleDesign",
+  "type": "object"
+}

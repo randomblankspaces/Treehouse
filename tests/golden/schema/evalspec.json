@@ -1,0 +1,115 @@
+{
+  "$defs": {
+    "GoldRef": {
+      "additionalProperties": false,
+      "properties": {
+        "draw_ref": {
+          "title": "Draw Ref",
+          "type": "string"
+        },
+        "labels_path": {
+          "title": "Labels Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "labels_path",
+        "draw_ref"
+      ],
+      "title": "GoldRef",
+      "type": "object"
+    },
+    "VerifierSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "config": {
+          "additionalProperties": true,
+          "default": {},
+          "title": "Config",
+          "type": "object"
+        },
+        "mode": {
+          "enum": [
+            "recorded",
+            "agent"
+          ],
+          "title": "Mode",
+          "type": "string"
+        }
+      },
+      "required": [
+        "mode"
+      ],
+      "title": "VerifierSpec",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "estimator_version": {
+      "title": "Estimator Version",
+      "type": "string"
+    },
+    "gold": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/GoldRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "key_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Key Version"
+    },
+    "run_ref": {
+      "title": "Run Ref",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "treehouse.evalspec/1",
+      "default": "treehouse.evalspec/1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scorers": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Scorers",
+      "type": "object"
+    },
+    "seed": {
+      "title": "Seed",
+      "type": "integer"
+    },
+    "trust_config_hash": {
+      "title": "Trust Config Hash",
+      "type": "string"
+    },
+    "verifier": {
+      "$ref": "#/$defs/VerifierSpec"
+    }
+  },
+  "required": [
+    "run_ref",
+    "scorers",
+    "verifier",
+    "trust_config_hash",
+    "estimator_version",
+    "seed"
+  ],
+  "title": "EvalSpec",
+  "type": "object"
+}

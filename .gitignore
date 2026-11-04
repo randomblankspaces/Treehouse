@@ -54,3 +54,4 @@ build/
 tmp/
 temp/
 *.tmp
+.hypothesis/

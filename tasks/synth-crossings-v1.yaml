@@ -1,0 +1,97 @@
+# SYNTHETIC demo task (IMPLEMENTATION-DESIGN §5.1). A generated world at "Null Island"; no real place.
+id: synth-crossings-v1
+version: 1.0.0
+title: Synthetic river crossings, inventory and post-event status
+family: synthetic-river-crossings   # never transfers trust to a real family
+synthetic: true
+synthetic_notice: >-
+  SYNTHETIC DEMO DATA. This is a synthetic task in a generated world (seed 20261104); no real place,
+  imagery, partner or answer key is involved.
+goal: >-
+  (Synthetic task.) List every river crossing (road bridges and footbridges) in the AOI, and give each
+  crossing's status after the 2026-08-26 event: intact, damaged, destroyed, or cannot_assess where no
+  clear post-event imagery shows it. Cite the image windows you used for every claim.
+aoi:
+  type: Polygon
+  coordinates: [[[0.0, 0.0], [0.0108, 0.0], [0.0108, 0.0108], [0.0, 0.0108], [0.0, 0.0]]]
+smoke_aoi: [0.0, 0.0, 0.0054, 0.0054]
+time_window: [2026-07-01, 2026-09-15]
+as_of: 2026-09-15T23:59:00Z
+event: {date: 2026-08-26, footprint_ref: null}
+data_allowlist:
+  - source_id: synth-stac
+    kind: stac
+    access: synthetic
+    fixture_path: fixtures/stac/synth-crossings-v1
+    item_ids: [SYN-PRE-1, SYN-PRE-2, SYN-POST-A, SYN-POST-B, SYN-POST-C]
+    license: LicenseRef-synthetic
+    status: pending_fixture   # written by P4
+  - source_id: synth-imagery
+    kind: imagery
+    access: synthetic
+    license: LicenseRef-synthetic
+    status: pending_fixture
+  - source_id: synth-embeddings
+    kind: embeddings
+    access: synthetic
+    fixture_path: fixtures/embeddings/synth-crossings-v1.npz
+    license: LicenseRef-synthetic
+    status: pending_fixture
+tools_allowed: [stac_search, scene_info, imagery_window, clay_search, record_claim, note_limitation, submit_understanding]
+needs_vision: true
+classes:
+  road_bridge:
+    min_size_m: 6
+    max_effective_gsd_for_existence_m: 2.0
+    max_effective_gsd_for_status_m: 1.0
+    match_tolerance_m: 6
+    key_geometry: line
+  footbridge:
+    min_size_m: 2
+    max_effective_gsd_for_existence_m: 1.0
+    max_effective_gsd_for_status_m: 0.5
+    match_tolerance_m: 6
+    key_geometry: line
+windows: {max_side_m: 1000, max_out_px: 512, max_bytes_per_run: 200000000}
+steps:
+  - step_id: inventory
+    question_id: exists
+    statuses_allowed: [present, absent, cannot_assess]
+    keying: &synth_key
+      mode: keyed
+      key_source: synthetic world generator (seed 20261104)
+      key_path: keys/synth/synth-crossings-v1.key.json
+      license: LicenseRef-synthetic
+      reference_quality: synthetic
+      match_rule: {tolerance_m: {road_bridge: 6, footbridge: 6}, one_to_one: true}
+      status: pending_generation   # scripts/make_demo_fixtures.py (P5) generates it; then status: present + version_hash
+  - step_id: status
+    question_id: damaged
+    statuses_allowed: [intact, damaged, destroyed, cannot_assess]
+    keying: *synth_key
+forbidden_sources:
+  - {kind: path, pattern: keys/}
+  - {kind: tool, pattern: key_lookup}
+must_notice:
+  - {id: cloud, kind: mentions_any, terms: [cloud, obscured, haze]}
+  - {id: resolution, kind: mentions_any, terms: [resolution, gsd, footbridge]}
+  - {id: uses-imagery, kind: plans_tool, tool: imagery_window}
+  - {id: embeddings-coarse, kind: declares_limit, terms: [embedding, cell]}
+known_limits:
+  - SYN-POST-B is 70 % cloud and misses the eastern 20 % of the AOI; four crossings show in no clear post scene.
+  - Footbridge decks are 2 m wide; status needs windows at 0.5 m effective GSD or finer.
+  - Synthetic embeddings use 64 m cells (real LGND cells are 1280 m) and cannot show individual crossings.
+sampling_plan:
+  strata_keys: [class, cloud_class]
+  n_total: 60
+  seed: 20261104
+  controls: {keyed_pos: 6, keyed_neg: 6, placebo_pairs: 10, retest_pairs: 10}
+gold_plan:
+  n_gold: 24
+  rubric: Is there a crossing of this class at the point, and is it intact, damaged or destroyed?
+  labeller: synthetic (key with 3 % flips); SYNTHETIC GOLD, not human labels
+  date: 2026-11-04
+  seed_file: fixtures/demo/prereg/gold-seed.txt
+  blind_protocol: {hide: [worker_id, model, label, confidence, reason], shuffle: true, seal_before_reveal: true, relabels: 5}
+thresholds: {rely_lo: 0.8}
+budget: {enabled: true, usd: 5, tool_calls: 200, bytes: 200000000, wall_s: 600, tokens: 2000000}

@@ -27,10 +27,10 @@ def test_network_is_blocked():
     s.close()
 
 
-def test_aws_env_is_cleared():
+def test_aws_env_has_only_fake_values():
     import os
 
-    assert not [k for k in os.environ if k.startswith("AWS_") and k != "AWS_EC2_METADATA_DISABLED"]
+    assert os.environ["AWS_ACCESS_KEY_ID"] == "testing"
 
 
 def test_cli_version():

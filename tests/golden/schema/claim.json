@@ -1,0 +1,183 @@
+{
+  "$defs": {
+    "EvidenceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "result_id": {
+          "title": "Result Id",
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "pre",
+            "post",
+            "existence"
+          ],
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result_id",
+        "role"
+      ],
+      "title": "EvidenceRef",
+      "type": "object"
+    },
+    "Point": {
+      "additionalProperties": false,
+      "properties": {
+        "coordinates": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Coordinates",
+          "type": "array"
+        },
+        "type": {
+          "const": "Point",
+          "default": "Point",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "coordinates"
+      ],
+      "title": "Point",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "bbox": {
+      "anyOf": [
+        {
+          "maxItems": 4,
+          "minItems": 4,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Bbox"
+    },
+    "claim_id": {
+      "title": "Claim Id",
+      "type": "string"
+    },
+    "cls": {
+      "title": "Cls",
+      "type": "string"
+    },
+    "confidence": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Confidence",
+      "type": "number"
+    },
+    "contaminated": {
+      "default": false,
+      "title": "Contaminated",
+      "type": "boolean"
+    },
+    "evidence_refs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/EvidenceRef"
+      },
+      "title": "Evidence Refs",
+      "type": "array"
+    },
+    "geometry": {
+      "$ref": "#/$defs/Point"
+    },
+    "grounded": {
+      "title": "Grounded",
+      "type": "boolean"
+    },
+    "reason": {
+      "title": "Reason",
+      "type": "string"
+    },
+    "run_id": {
+      "title": "Run Id",
+      "type": "string"
+    },
+    "span_id": {
+      "title": "Span Id",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "present",
+        "absent",
+        "intact",
+        "damaged",
+        "destroyed",
+        "cannot_assess"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "step_id": {
+      "title": "Step Id",
+      "type": "string"
+    },
+    "synthetic": {
+      "title": "Synthetic",
+      "type": "boolean"
+    },
+    "trial_id": {
+      "title": "Trial Id",
+      "type": "string"
+    },
+    "unresolved_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Unresolved Refs",
+      "type": "array"
+    }
+  },
+  "required": [
+    "claim_id",
+    "run_id",
+    "trial_id",
+    "step_id",
+    "geometry",
+    "cls",
+    "status",
+    "confidence",
+    "reason",
+    "span_id",
+    "grounded",
+    "synthetic"
+  ],
+  "title": "Claim",
+  "type": "object"
+}
