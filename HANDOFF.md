@@ -62,9 +62,17 @@ For each method, give what it catches, what it misses, its cost, and how the met
 - Network: Vantor bucket HTTPS **works**; data.source.coop and overpass-api.de are **blocked**; arxiv.org is blocked for fetch.
 - Vantor Nepal event: 33 scenes, **4 pre + 29 post** (STAC `phase`). Items carry `eo:cloud_cover`, `pan_gsd`, `view:off_nadir`, `view:sun_*`. There is no cloud mask.
 
-## Current state (update this as you go)
-- [x] Step 1: SYSTEM-DESIGN.md (an earlier session's council, unanimous in round 2) merged to main as `22f0400`. This session ran fact-check pass 2, added A13 and a log addendum on branch `docs/system-design-factcheck` (doubter → judge in progress).
-- [ ] Step 2: implementation council. Round (a) proposals are being written in the agent scratchpad. They are not in the repo, so a new agent restarts council 2 from SYSTEM-DESIGN.md.
+## Current state (update this as you go) — checkpoint 1, ~00:45 EST Wed Nov 4
+- [x] Step 1: SYSTEM-DESIGN.md (an earlier session's council, unanimous in round 2) is on main (`22f0400`). Branch `docs/system-design-factcheck` has: fact-check pass 2; scene count corrected to 4 pre + 29 post; §A13 unkeyed-methods comparison; council-1 log addendum. A doubter raised 36 doubts (`wip/doubt-sd.md`). A **judge agent** is applying the valid ones on that branch. When its commit lands, merge the branch to main.
+- [ ] Step 2: implementation council. Rounds (a) and (b) are done (`wip/council2/`). A neutral moderator is merging into `c-design-r1.md`. Next: all 5 seats vote with blocking objections; revise until unanimous; fact-check library/API claims; write `docs/design/IMPLEMENTATION-DESIGN.md` and `docs/design/council-2-log.md` (from `log-draft.md`).
+  - Consensus after round (b):
+    - The demo skeleton comes before the trust maths, with a 04:30 checkpoint. The plain tool loop is Must-0 and is the demo engine.
+    - A MEASURED tier for exact trace-derived numbers.
+    - One synthetic world: RS's `synth-crossings` structure plus ADV's planted policies, rendered as numpy arrays, with a synthetic flag on every number.
+    - moto for S3 and Stubber for Bedrock. No CDK tonight.
+    - The Bedrock adapter, probe script and model registry are merged before 08:00 for Kiro.
+    - Strands runs via our ModelProvider with `SequentialToolExecutor` (Wednesday).
+    - STAT's PPI variance fix, with the gold-only interval printed beside it.
 - [ ] Step 3: spec sheet.
-- [ ] Step 4: build.
-- [ ] Morning report.
+- [~] Step 4: build. **P0 scaffold** is on branch `pkg/p0-scaffold`: uv project, `canon.py`, typer CLI, offline test guard (blocks non-loopback sockets, clears `AWS_*`), CI workflow; 6 tests pass. It is not yet reviewed or merged.
+- [ ] Morning report (`docs/OVERNIGHT-REPORT.md`).
