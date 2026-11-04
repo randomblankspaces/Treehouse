@@ -1,5 +1,7 @@
 # Kiro continuation prompts — agent evaluation MVP
 
+> **Superseded for the MVP build by [KIRO-MVP-PROMPT.md](KIRO-MVP-PROMPT.md) and [MVP-PLAN.md](MVP-PLAN.md)** (2026-11-04). Kept for history and for its independent-acceptance guidance.
+
 Suhas confirmed this scope after the report reading: **Treehouse evaluates the agent building a
 geospatial database**. Strands belongs to the workflow under evaluation, alongside foundation
 models, retrieval and classification. It is not the product or a mandatory architecture for every
