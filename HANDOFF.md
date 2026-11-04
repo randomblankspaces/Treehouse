@@ -62,14 +62,11 @@ For each method, give what it catches, what it misses, its cost, and how the met
 - Network: Vantor bucket HTTPS **works**; data.source.coop and overpass-api.de are **blocked**; arxiv.org is blocked for fetch.
 - Vantor Nepal event: 33 scenes, **4 pre + 29 post** (STAC `phase`). Items carry `eo:cloud_cover`, `pan_gsd`, `view:off_nadir`, `view:sun_*`. There is no cloud mask.
 
-## Current state: checkpoint 3, ~03:15 EST Wed Nov 4
-- [x] **Step 1** and **Step 2** are on main. Build from `docs/design/IMPLEMENTATION-DESIGN.md`: §7 is the package plan and §6 the tests; its final fact-check section overrides the body.
-- [~] **Step 3** (spec sheet) is on branch `docs/spec-sheet` (180c8e9). A doubter raised 41 doubts. A judge is applying the valid fixes, then the branch is merged.
-- [~] **Step 4: build.**
-  - **On main (02ac127): P0, P0b, P1 and the P1 review fixes.** 213 tests pass, 1 deselected; ruff is clean.
-  - **Built but not merged:** P2 and P3 on `pkg/p2-trace-store` and `pkg/p3-providers-loop`. Their review fixes are in progress on `pkg/p3-fixes` (blocking: seal and verify ledger holes).
-  - **P4** (gateway and tools) is on `pkg/p4-gateway-tools` (06cdc4a, 233 tests). Its doubter is running.
-  - **P6** (Bedrock adapter, spend ledger, probe) is on `pkg/p6-aws-a` (8a8f232, 234 tests). It is stacked on P3, **not** on P4. Its doubter is running. **It must be on main by 08:00 EST for Kiro.**
-  - **P5** (demo skeleton) is being built on `pkg/p5-demo-skeleton`, stacked on P4.
-  - **Merge order:** p3-fixes (which contains P2 and P3) → P4 (+ fixes) → P6 (+ fixes) → P5 → P7 → P8. Expect conflicts in `schemas/model_io.py`, `harness/plain_loop.py` and the golden schema files; keep both sides, then regenerate the goldens.
-- At about 03:10 EST every agent stopped at a usage limit and was then resumed. If this happens again, run `git status` in each worktree and push any WIP.
+## Current state: checkpoint 4, ~04:00 EST Wed Nov 4
+- [x] **Steps 1, 2 and 3** are on main. The design docs and spec sheet each went through a doubter and a judge.
+- [~] **Step 4 (build).** **Main is at 7eebedf: P0, P0b, P1, P2, P3, P4 and P6, each with its judged review fixes. 507 tests pass, 2 live tests are skipped and 1 is deselected; ruff is clean.** P6 (Bedrock adapter, spend ledger, probe) is on main, so the Kiro steps K0–K2a can run now.
+  - **P5 (demo skeleton)** is on `pkg/p5-demo-skeleton` (57a84a8). `treehouse demo` works offline in about 8 s; 385 tests at that commit. **It is not on main yet.** A doubter is running. After that, a judge must merge main into P5, re-record the demo cassettes and goldens (`uv run python scripts/make_demo_fixtures.py`), apply the fixes, and then merge.
+  - **P7 (checks and panels)** is being built on `pkg/p7-checks-panels`, stacked on P5.
+  - **P8a (pure trust engine: sampling, PPI, baselines, tiers, gate, passport, M1–M17)** is being built on `pkg/p8a-trust-core` from main. **P8b** wires it into the demo after P5 and P7 land.
+  - The merge log with test outputs is in `wip/merge-log.txt` (copied at each checkpoint).
+- [x] TODO.md holds the Kiro prompts K0–K9 and H. The P6 judge updated them: the ledger must exist (`budget init`), prices are per model and profile, and `budget reconcile` runs against the AWS bill.

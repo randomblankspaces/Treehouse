@@ -1,0 +1,5 @@
+06:33Z main 02ac127 (P0b+P1+p1-fixes): 213 passed, 1 deselected in 2.55s; ruff clean
+08:14Z main 2b77ae7 (+docs/spec-sheet): .....................................................................    [100%]
+08:16Z main b57c8c2 (+P2,P3,p3-fixes): 320 passed, 1 deselected in 6.11s; ruff clean
+08:39Z main b4f4794 (+P4,p4-fixes): 423 passed, 1 deselected in 15.94s; ruff clean
+08:39Z main 7eebedf (+P6 judged): 507 passed, 2 skipped (live), 1 deselected, 2 warnings in 18.61s; ruff clean. NOTE: SpendWarning in test_plain_loop_chat_span_gets_cost_and_retry_events: cost 0.0045 > reserved 0.0012 (follow-up)
