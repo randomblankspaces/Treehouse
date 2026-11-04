@@ -34,6 +34,7 @@ CHAT_ATTRS = (
     "gen_ai.usage.input_tokens",
     "gen_ai.usage.output_tokens",
     "treehouse.input.messages_ref",
+    "treehouse.output.messages_ref",
     "treehouse.cost.usd",
     "treehouse.price_table.version",
     "treehouse.cassette",
@@ -110,17 +111,17 @@ class TrialTracer:
             yield s
         except BaseException as e:
             if s.err is None:
-                s.error("infra", type(e).__name__, str(e))
+                # exceptions may name their error source (BudgetExceeded -> "budget"); default "infra"
+                s.error(getattr(e, "span_error_source", "infra"), type(e).__name__, str(e))
             self._end(s, check=False)
             raise
         self._end(s, check=True)
 
     def _end(self, s: Span, *, check: bool) -> None:
         self._stack.remove(s)
-        if check:
-            missing = [a for a in REQUIRED_BY_OP[s.op] if a not in s.attributes]
-            if missing:
-                raise MissingSpanAttributes(f"{s.op} span {s.name!r} missing {missing}")
+        missing = [a for a in REQUIRED_BY_OP[s.op] if a not in s.attributes] if check else []
+        if missing:  # write the span as an error (no hole in the trace), then raise
+            s.error("infra", "MissingSpanAttributes", f"missing {missing}")
         rec = SpanRecord(
             trace_id=self.trace_id,
             span_id=s.span_id,
@@ -135,6 +136,8 @@ class TrialTracer:
             events=s.events,
         )
         self.writer.append(rec.model_dump(mode="json"))
+        if missing:
+            raise MissingSpanAttributes(f"{s.op} span {s.name!r} missing {missing}")
 
     def close(self) -> ChainHead:
         if self._stack:

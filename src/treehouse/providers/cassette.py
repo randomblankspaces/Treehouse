@@ -53,11 +53,14 @@ class Cassette:
         self.path = Path(path) if path is not None else None
         self.entries: dict[Key, CassetteEntry] = {}
         if self.path is not None and self.path.exists():
-            for line in self.path.read_text(encoding="utf-8").splitlines():
+            for line in self.path.read_bytes().split(b"\n"):
                 if line.strip():
                     e = CassetteEntry.model_validate_json(line)
                     if e.key in self.entries:
                         raise CassetteError(f"duplicate cassette entry {e.key} in {self.path}")
+                    if e.request.key() != e.request_hash:
+                        raise CassetteError(f"cassette entry {e.key} in {self.path}: request_hash does not match "
+                                            "the stored request (hand-edited?)")
                     self.entries[e.key] = e
 
     @property
@@ -74,8 +77,8 @@ class Cassette:
         self.entries[entry.key] = entry
         if self.path is not None:
             self.path.parent.mkdir(parents=True, exist_ok=True)
-            with open(self.path, "a", encoding="utf-8") as f:
-                f.write(canonical_json(entry) + "\n")
+            with open(self.path, "ab") as f:
+                f.write((canonical_json(entry) + "\n").encode("utf-8"))
 
     def get(self, key: Key) -> CassetteEntry | None:
         return self.entries.get(key)
@@ -116,6 +119,7 @@ class ReplayProvider:
             raise ValueError("only miss='fail' is supported")
         self.cassette = cassette
         self.cassette_ref = cassette.ref
+        self.served: set[Key] = set()
 
     async def complete(self, req: ModelRequest, *, role: str, trial_index: int, turn: int) -> ModelResponse:
         key = (role, trial_index, turn)
@@ -126,4 +130,15 @@ class ReplayProvider:
             idx = first_divergent_message_index(e.request, req)
             fields = [f for f in ("model_id", "system", "tools", "params") if getattr(e.request, f) != getattr(req, f)]
             raise CassetteMiss(key, idx, "request hash differs" + (f" in {fields}" if fields else ""))
+        self.served.add(key)
         return e.response
+
+    def unused_keys(self) -> list[Key]:
+        """Recorded entries this replay never served (a replay that stopped early)."""
+        return sorted(set(self.cassette.entries) - self.served)
+
+    def check_consumed(self) -> None:
+        """Raise CassetteError unless every recorded entry was served. The runner calls it after a replay."""
+        unused = self.unused_keys()
+        if unused:
+            raise CassetteError(f"replay left {len(unused)} recorded entries unused, first {unused[0]}")

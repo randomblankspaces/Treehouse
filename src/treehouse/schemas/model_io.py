@@ -67,9 +67,16 @@ class ToolSpec(Frozen):
     input_schema: dict[str, Any]
 
 
+# Free-form payloads (tool JSON, tool-use input, tool input schemas) are copied verbatim: only real Image
+# blocks lose ``bytes_``, so a tool result that merely looks like an image still changes the request key.
+_OPAQUE_KEYS = frozenset({"json_", "input", "input_schema"})
+
+
 def _strip_image_bytes(obj: Any) -> Any:
     if isinstance(obj, dict):
-        return {k: _strip_image_bytes(v) for k, v in obj.items() if not (obj.get("type") == "image" and k == "bytes_")}
+        is_image = obj.get("type") == "image"
+        return {k: (v if k in _OPAQUE_KEYS else _strip_image_bytes(v))
+                for k, v in obj.items() if not (is_image and k == "bytes_")}
     if isinstance(obj, list):
         return [_strip_image_bytes(v) for v in obj]
     return obj
