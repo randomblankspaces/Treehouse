@@ -1,0 +1,31 @@
+{
+  "dataset": "Project PLATEAU 3D city model (building usage)",
+  "city": "Nagoya city (Aichi)",
+  "municipality_code": "23100",
+  "class": "warehouse",
+  "class_definition": "PLATEAU bldg:usage = warehouse (code 441), footprint area >= 1,600 m2 (Table 8)",
+  "aoi_bbox_lonlat": [
+    136.82,
+    35.05,
+    136.92,
+    35.12
+  ],
+  "license": "CC-BY-4.0",
+  "attribution": "国土交通省 Project PLATEAU (CityGML), CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "snapshot_date": "2026-11-04",
+  "retrieved_at": "2026-11-04T21:07:01.714646+00:00",
+  "portal_reachable": true,
+  "source_mode": "fixture",
+  "synthetic_fixture": true,
+  "real_access_path": "Download the municipality CityGML (bldg) from the PLATEAU G-spatial portal, read bldg:usage (441 = warehouse) and footprint area, clip to the AOI. Not performed in the Workshop window.",
+  "report_full_city_warehouse_count": 403,
+  "fixture_count": 46,
+  "limitations": [
+    "SYNTHETIC FIXTURE: deterministic AOI-sized warehouse points, NOT the real PLATEAU footprints.",
+    "Not a complete inventory; counts are a small AOI subset, not the report's full-city 403/63.",
+    "Points only, no footprint polygons; footprint_area_m2 is a plausible >= 1,600 m2 placeholder.",
+    "Replace with the real CityGML-derived key before claiming real output accuracy."
+  ],
+  "model_visibility": "keys/ is forbidden to the agent; only the 'train' split may seed few-shot examples."
+}

@@ -1,0 +1,93 @@
+# Asset-class registry (Req 1.4). The system is class-agnostic: every report Table 8 class is defined here
+# once, and a new class needs only an entry below plus a task card. RV1 (scale fit) and the output grader read
+# minimum/typical size and suitable resolutions from here; there is NO class-specific code anywhere else.
+#
+# Fields per class:
+#   positive            what counts as the asset (Table 8 positive)
+#   negative            look-alikes that do NOT count (Table 8 negative / excluded)
+#   min_size_m          smallest side an instance is expected to span (drives RV1 cell/chip-size fit)
+#   typical_size_m      a representative side for a typical instance
+#   min_area_m2         minimum footprint area where the reference defines one (e.g. warehouses >= 1,600 m2)
+#   suitable_gsd_m      ground-sample distances at which the class is resolvable (RV3 resolution fit)
+#   cell_size_m         the report's grid unit for scoring this class (Table 7 default 160 m)
+#   references          reference datasets: id, completeness (complete|incomplete|synthetic), licence
+#
+# Sizes and the 160 m grid unit are the report's anchors (REPORT-TABLES.md Tables 7, 8, 9, 11).
+schema_version: treehouse.asset-classes/1
+cell_size_default_m: 160
+
+classes:
+  warehouse:
+    label: Warehouses
+    positive: "Warehouses and large logistics/storage buildings (Nagoya: PLATEAU warehouse use, >= 1,600 m2)"
+    negative: [factories, markets, aircraft hangars, other large roofs]
+    min_size_m: 40            # ~1,600 m2 => ~40 m side
+    typical_size_m: 80
+    min_area_m2: 1600
+    suitable_gsd_m: [0.5, 10]  # GSI aerial 0.5 m; Sentinel-2/AEF 10 m (small warehouses are the failure mode)
+    cell_size_m: 160
+    references:
+      - {id: plateau, name: PLATEAU 3D city model (Japan), completeness: complete, license: CC-BY-4.0}
+      - {id: osm, name: OpenStreetMap building=warehouse, completeness: incomplete, license: ODbL-1.0}
+
+  oil_fuel_tank:
+    label: Oil / fuel tanks
+    positive: Above-ground oil/fuel tanks, fixed and floating roof
+    negative: [water tanks, chemical tanks, LNG/LPG spheres, demolished bases]
+    min_size_m: 10
+    typical_size_m: 30
+    min_area_m2: null
+    suitable_gsd_m: [0.5, 10]
+    cell_size_m: 160
+    references:
+      - {id: hand-labels, name: Hand labels, completeness: incomplete, license: LicenseRef-synthetic}
+
+  bridge:
+    label: Bridges
+    positive: Road, rail, pedestrian bridges and flyovers >= 10 m
+    negative: [culverts, spans shorter than 10 m]
+    min_size_m: 10
+    typical_size_m: 50
+    min_area_m2: null
+    suitable_gsd_m: [0.5, 10]
+    cell_size_m: 160
+    references:
+      - {id: osm, name: OpenStreetMap bridges, completeness: incomplete, license: ODbL-1.0}
+
+  substation:
+    label: Substations / switchyards (energy infrastructure)
+    positive: Fenced substations and switchyards
+    negative: [distribution poles, small transformers, rooftop solar, greenhouses]
+    min_size_m: 50
+    typical_size_m: 150
+    min_area_m2: null
+    suitable_gsd_m: [0.5, 10]
+    cell_size_m: 160
+    references:
+      - {id: osm-power, name: OpenStreetMap power=substation, completeness: incomplete, license: ODbL-1.0}
+
+  ground_solar:
+    label: Ground-mounted solar
+    positive: Utility-scale ground-mounted solar arrays (fenced PV fields)
+    negative: [rooftop solar, greenhouses, distribution poles, small transformers]
+    min_size_m: 100           # ~1 ha utility-scale floor
+    typical_size_m: 300
+    min_area_m2: 10000
+    suitable_gsd_m: [0.5, 10]
+    cell_size_m: 160
+    references:
+      - {id: grw, name: Global Renewables Watch, completeness: incomplete, license: CC-BY-4.0}
+      - {id: uspvdb, name: USGS USPVDB (US only), completeness: complete, license: LicenseRef-public-domain}
+
+  wind_turbine:
+    label: Wind turbines
+    positive: Ground wind turbines (towers and rotors)
+    negative: [distribution poles, communication masts]
+    min_size_m: 50            # rotor/tower footprint; blades span further
+    typical_size_m: 100
+    min_area_m2: null
+    suitable_gsd_m: [0.5, 10]
+    cell_size_m: 160
+    references:
+      - {id: osm-power, name: OpenStreetMap power=generator source=wind, completeness: incomplete, license: ODbL-1.0}
+      - {id: grw, name: Global Renewables Watch, completeness: incomplete, license: CC-BY-4.0}

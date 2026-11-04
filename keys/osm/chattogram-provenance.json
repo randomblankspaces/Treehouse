@@ -1,0 +1,36 @@
+{
+  "dataset": "OpenStreetMap building=warehouse",
+  "city": "Chattogram (Chittagong), Bangladesh",
+  "class": "warehouse",
+  "aoi_bbox_lonlat": [
+    91.78,
+    22.28,
+    91.88,
+    22.36
+  ],
+  "license": "ODbL-1.0",
+  "attribution": "© OpenStreetMap contributors, ODbL 1.0",
+  "license_url": "https://opendatacommons.org/licenses/odbl/1-0/",
+  "snapshot_date": "2026-11-04",
+  "retrieved_at": "2026-11-04T21:08:08.111857+00:00",
+  "city_choice": {
+    "chosen": "chattogram",
+    "compared": [
+      "chattogram",
+      "dhaka"
+    ],
+    "reason": "Chattogram port/industrial district has the better building=warehouse coverage."
+  },
+  "source_mode": "fixture",
+  "overpass_reachable": false,
+  "synthetic_fixture": true,
+  "reference_quality": "incomplete",
+  "completeness_caveat": "OSM building=warehouse is sparse in Bangladesh: a POOL, not a complete inventory. Report precision within this pool only; do NOT report recall (DM2, R4.3).",
+  "feature_count": 18,
+  "limitations": [
+    "Unkeyed scenario: precision-within-pool only, never recall.",
+    "If source_mode=fixture, geometry is SYNTHETIC, not real OSM; replace before real claims.",
+    "Overpass was flaky/unreachable in this environment (probe saw 406/502)."
+  ],
+  "model_visibility": "keys/ is forbidden to the agent."
+}

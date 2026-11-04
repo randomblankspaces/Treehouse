@@ -1,0 +1,23 @@
+{
+  "city": "gifu",
+  "policy": "few-shot examples may only come from 'train'; 'heldout' is grading-only (RV4)",
+  "train": [],
+  "heldout": [
+    "plateau-fixture:gifu:000",
+    "plateau-fixture:gifu:001",
+    "plateau-fixture:gifu:002",
+    "plateau-fixture:gifu:003",
+    "plateau-fixture:gifu:004",
+    "plateau-fixture:gifu:005",
+    "plateau-fixture:gifu:006",
+    "plateau-fixture:gifu:007",
+    "plateau-fixture:gifu:008",
+    "plateau-fixture:gifu:009",
+    "plateau-fixture:gifu:010",
+    "plateau-fixture:gifu:011"
+  ],
+  "counts": {
+    "train": 0,
+    "heldout": 12
+  }
+}

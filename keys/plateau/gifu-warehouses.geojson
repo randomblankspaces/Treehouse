@@ -1,0 +1,216 @@
+{
+  "type": "FeatureCollection",
+  "name": "plateau-gifu-warehouses",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:gifu:000",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.725224,
+          35.387432
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:gifu:000",
+        "cls": "warehouse",
+        "footprint_area_m2": 1715.3,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:gifu:001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.759634,
+          35.398269
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:gifu:001",
+        "cls": "warehouse",
+        "footprint_area_m2": 4008.2,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:gifu:002",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.778433,
+          35.387848
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:gifu:002",
+        "cls": "warehouse",
+        "footprint_area_m2": 8175.9,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:gifu:003",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.807216,
+          35.385797
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:gifu:003",
+        "cls": "warehouse",
+        "footprint_area_m2": 3212.8,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:gifu:004",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.725589,
+          35.413672
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:gifu:004",
+        "cls": "warehouse",
+        "footprint_area_m2": 10109.5,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:gifu:005",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.761795,
+          35.421555
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:gifu:005",
+        "cls": "warehouse",
+        "footprint_area_m2": 7611.8,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:gifu:006",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.784751,
+          35.413711
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:gifu:006",
+        "cls": "warehouse",
+        "footprint_area_m2": 5335.5,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:gifu:007",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.811504,
+          35.419131
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:gifu:007",
+        "cls": "warehouse",
+        "footprint_area_m2": 3518.9,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:gifu:008",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.730451,
+          35.436134
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:gifu:008",
+        "cls": "warehouse",
+        "footprint_area_m2": 10361.4,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:gifu:009",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.760034,
+          35.441448
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:gifu:009",
+        "cls": "warehouse",
+        "footprint_area_m2": 10155.0,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:gifu:010",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.785965,
+          35.435664
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:gifu:010",
+        "cls": "warehouse",
+        "footprint_area_m2": 9860.4,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:gifu:011",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.809687,
+          35.437751
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:gifu:011",
+        "cls": "warehouse",
+        "footprint_area_m2": 10442.8,
+        "bldg_usage": "441"
+      }
+    }
+  ]
+}
