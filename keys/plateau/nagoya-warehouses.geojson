@@ -1,0 +1,794 @@
+{
+  "type": "FeatureCollection",
+  "name": "plateau-nagoya-warehouses",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:000",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.823538,
+          35.054045
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:000",
+        "cls": "warehouse",
+        "footprint_area_m2": 5906.0,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.843182,
+          35.052614
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:001",
+        "cls": "warehouse",
+        "footprint_area_m2": 3177.9,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:002",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.856247,
+          35.053793
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:002",
+        "cls": "warehouse",
+        "footprint_area_m2": 2754.3,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:003",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.869836,
+          35.053271
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:003",
+        "cls": "warehouse",
+        "footprint_area_m2": 6961.5,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:004",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.881395,
+          35.057535
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:004",
+        "cls": "warehouse",
+        "footprint_area_m2": 3898.7,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:005",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.902089,
+          35.057698
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:005",
+        "cls": "warehouse",
+        "footprint_area_m2": 4848.9,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:006",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.910721,
+          35.054699
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:006",
+        "cls": "warehouse",
+        "footprint_area_m2": 3044.4,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:007",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.828443,
+          35.06317
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:007",
+        "cls": "warehouse",
+        "footprint_area_m2": 4510.5,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:008",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.837838,
+          35.062896
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:008",
+        "cls": "warehouse",
+        "footprint_area_m2": 9358.1,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:009",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.856475,
+          35.063034
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:009",
+        "cls": "warehouse",
+        "footprint_area_m2": 2443.0,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:010",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.866175,
+          35.064048
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:010",
+        "cls": "warehouse",
+        "footprint_area_m2": 2319.7,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:011",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.88562,
+          35.063965
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:011",
+        "cls": "warehouse",
+        "footprint_area_m2": 2161.2,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:012",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.900252,
+          35.063583
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:012",
+        "cls": "warehouse",
+        "footprint_area_m2": 8593.7,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:013",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.913568,
+          35.064477
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:013",
+        "cls": "warehouse",
+        "footprint_area_m2": 6469.0,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:014",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.830199,
+          35.072672
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:014",
+        "cls": "warehouse",
+        "footprint_area_m2": 7232.2,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:015",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.839252,
+          35.075049
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:015",
+        "cls": "warehouse",
+        "footprint_area_m2": 10408.2,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:016",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.857217,
+          35.072753
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:016",
+        "cls": "warehouse",
+        "footprint_area_m2": 9278.6,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:017",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.867095,
+          35.077635
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:017",
+        "cls": "warehouse",
+        "footprint_area_m2": 3044.5,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:018",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.880756,
+          35.074981
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:018",
+        "cls": "warehouse",
+        "footprint_area_m2": 4028.3,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:019",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.901242,
+          35.073355
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:019",
+        "cls": "warehouse",
+        "footprint_area_m2": 9149.4,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:020",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.913895,
+          35.076294
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:020",
+        "cls": "warehouse",
+        "footprint_area_m2": 9628.8,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:021",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.831367,
+          35.085488
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:021",
+        "cls": "warehouse",
+        "footprint_area_m2": 6790.0,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:022",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.843066,
+          35.086761
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:022",
+        "cls": "warehouse",
+        "footprint_area_m2": 9572.0,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:023",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.859026,
+          35.085749
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:023",
+        "cls": "warehouse",
+        "footprint_area_m2": 3085.7,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:024",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.871058,
+          35.084885
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:024",
+        "cls": "warehouse",
+        "footprint_area_m2": 4731.7,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:025",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.882154,
+          35.083423
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:025",
+        "cls": "warehouse",
+        "footprint_area_m2": 6396.2,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:026",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.897531,
+          35.08578
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:026",
+        "cls": "warehouse",
+        "footprint_area_m2": 9435.4,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:027",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.908895,
+          35.082382
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:027",
+        "cls": "warehouse",
+        "footprint_area_m2": 5846.5,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:028",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.823709,
+          35.095954
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:028",
+        "cls": "warehouse",
+        "footprint_area_m2": 6145.4,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:029",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.840246,
+          35.095248
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:029",
+        "cls": "warehouse",
+        "footprint_area_m2": 4983.5,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:030",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.853678,
+          35.094797
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:030",
+        "cls": "warehouse",
+        "footprint_area_m2": 8862.2,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:031",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.868726,
+          35.092475
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:031",
+        "cls": "warehouse",
+        "footprint_area_m2": 3806.8,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:032",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.886677,
+          35.0925
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:032",
+        "cls": "warehouse",
+        "footprint_area_m2": 6332.9,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:033",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.897801,
+          35.095162
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:033",
+        "cls": "warehouse",
+        "footprint_area_m2": 4870.0,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:034",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.914568,
+          35.092969
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:034",
+        "cls": "warehouse",
+        "footprint_area_m2": 9119.9,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:035",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.82948,
+          35.104714
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:035",
+        "cls": "warehouse",
+        "footprint_area_m2": 8841.3,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:036",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.837403,
+          35.105045
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:036",
+        "cls": "warehouse",
+        "footprint_area_m2": 8324.2,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:037",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.857543,
+          35.107199
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:037",
+        "cls": "warehouse",
+        "footprint_area_m2": 7162.5,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:038",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.865803,
+          35.103157
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:038",
+        "cls": "warehouse",
+        "footprint_area_m2": 6899.8,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:039",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.886406,
+          35.106133
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:039",
+        "cls": "warehouse",
+        "footprint_area_m2": 5401.5,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:040",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.900027,
+          35.104367
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:040",
+        "cls": "warehouse",
+        "footprint_area_m2": 2478.4,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:041",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.916727,
+          35.104541
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:041",
+        "cls": "warehouse",
+        "footprint_area_m2": 4456.0,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:042",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.827671,
+          35.115589
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:042",
+        "cls": "warehouse",
+        "footprint_area_m2": 5019.8,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:043",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.839954,
+          35.116315
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:043",
+        "cls": "warehouse",
+        "footprint_area_m2": 4866.4,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:044",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.859306,
+          35.116859
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:044",
+        "cls": "warehouse",
+        "footprint_area_m2": 1946.9,
+        "bldg_usage": "441"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "plateau-fixture:nagoya:045",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.866498,
+          35.113256
+        ]
+      },
+      "properties": {
+        "id": "plateau-fixture:nagoya:045",
+        "cls": "warehouse",
+        "footprint_area_m2": 9461.4,
+        "bldg_usage": "441"
+      }
+    }
+  ]
+}

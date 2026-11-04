@@ -20,7 +20,11 @@ CARDS = [
     "nepal-bhote-koshi-bridges.yaml",
     "virginia-solar-18sth.yaml",
     "india-brahmaputra-bridges.yaml",
+    "t1-nagoya-warehouses.yaml",
+    "t5-gifu-warehouses.yaml",
+    "t1-bangladesh-warehouses.yaml",
 ]
+WAREHOUSE_CARDS = ["t1-nagoya-warehouses.yaml", "t5-gifu-warehouses.yaml", "t1-bangladesh-warehouses.yaml"]
 GOLDEN_HASHES = ROOT / "tests" / "golden" / "card-hashes.json"
 NEPAL_STAC = ROOT / "wip" / "fixtures" / "nepal-flooding-aug-2026.stac.json"  # real Vantor metadata
 
@@ -128,6 +132,75 @@ def test_pinned_source_needs_fixture_and_etags(synth, tmp_path):
     bad["data_allowlist"][0]["etags"] = {}  # the shipped synth card pins ETags (judge D8)
     errs = validate_card(_write(tmp_path, bad)).errors
     assert any("fixture" in e for e in errs) and any("etag" in e.lower() for e in errs), errs
+
+
+def test_gsi_japan_licence_is_known_and_attribution():
+    from treehouse.cards import LICENSE_OBLIGATIONS, LICENSE_RANK
+
+    assert "LicenseRef-gsi-japan-attribution" in LICENSE_RANK
+    assert LICENSE_OBLIGATIONS["LicenseRef-gsi-japan-attribution"] == ("attribution",)
+    # free-and-open-with-attribution, same rank as copernicus
+    assert LICENSE_RANK["LicenseRef-gsi-japan-attribution"] == LICENSE_RANK["LicenseRef-copernicus-sentinel"]
+
+
+# ---- warehouse scenario cards (task 1) ---------------------------------------------------------
+
+@pytest.mark.parametrize("name", WAREHOUSE_CARDS)
+def test_warehouse_cards_validate(name):
+    report = validate_card(TASKS / name)
+    assert report.errors == [], report.errors
+
+
+@pytest.mark.parametrize("name", WAREHOUSE_CARDS)
+def test_warehouse_cards_apply_table8_definition(name):
+    """Table 8: positive = warehouse/logistics >= 1,600 m2; negatives = factories, markets, hangars."""
+    card = load_card(TASKS / name)
+    goal = card.goal.lower()
+    assert "warehouse" in goal
+    assert "factor" in goal and "market" in goal and "hangar" in goal  # negatives stated to the worker
+    assert "warehouse" in card.classes
+    assert card.classes["warehouse"].min_size_m == 40  # ~1,600 m2
+    assert card.needs_vision
+
+
+@pytest.mark.parametrize("name", WAREHOUSE_CARDS)
+def test_warehouse_cards_bind_record_decision_and_retrieval(name):
+    card = load_card(TASKS / name)
+    for tool in ("record_decision", "list_embedding_sources", "build_index", "retrieve", "classify",
+                 "aggregate", "record_claim"):
+        assert tool in card.tools_allowed, (name, tool)
+
+
+@pytest.mark.parametrize("name", WAREHOUSE_CARDS)
+def test_warehouse_cards_forbid_keys_and_maxar(name):
+    card = load_card(TASKS / name)
+    pats = {(f.kind, f.pattern) for f in card.forbidden_sources}
+    assert ("path", "keys/") in pats  # RV4: grading reference out of reach
+    assert any(k == "dataset_id" and p in ("maxar", "vantor") for k, p in pats)  # RV2: Maxar/Vantor excluded
+
+
+def test_nagoya_and_gifu_are_keyed_bangladesh_is_unkeyed():
+    nagoya = load_card(TASKS / "t1-nagoya-warehouses.yaml")
+    gifu = load_card(TASKS / "t5-gifu-warehouses.yaml")
+    bang = load_card(TASKS / "t1-bangladesh-warehouses.yaml")
+    assert all(s.keying.mode == "keyed" for s in nagoya.steps)
+    assert all(s.keying.mode == "keyed" for s in gifu.steps)
+    assert all(s.keying.mode == "unkeyed" and s.keying.status == "none" for s in bang.steps)
+    # keyed cards pin the committed PLATEAU reference by sha256
+    for card, key in ((nagoya, "keys/plateau/nagoya-warehouses.geojson"),
+                      (gifu, "keys/plateau/gifu-warehouses.geojson")):
+        st = card.steps[0].keying
+        assert st.key_path == key and st.version_hash.startswith("sha256:")
+        assert (ROOT / key).exists()
+
+
+def test_gsi_imagery_only_in_japan_cards():
+    """GSI (Japan) imagery is permitted for Nagoya/Gifu, never for Bangladesh."""
+    for name in ("t1-nagoya-warehouses.yaml", "t5-gifu-warehouses.yaml"):
+        ids = {s.source_id for s in load_card(TASKS / name).data_allowlist}
+        assert "gsi-seamless-aerial-japan" in ids
+    bang = {s.source_id for s in load_card(TASKS / "t1-bangladesh-warehouses.yaml").data_allowlist}
+    assert "gsi-seamless-aerial-japan" not in bang
 
 
 def test_license_floor_and_obligations():

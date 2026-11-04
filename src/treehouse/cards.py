@@ -23,6 +23,7 @@ LICENSE_RANK = {
     "Apache-2.0": 1,
     "CC-BY-4.0": 2,
     "LicenseRef-copernicus-sentinel": 2,  # free and open, attribution required
+    "LicenseRef-gsi-japan-attribution": 2,  # GSI seamless aerial (Japan): reusable with attribution (Table 17)
     "CC-BY-SA-4.0": 3,
     "ODbL-1.0": 3,
     "CC-BY-NC-4.0": 4,
@@ -37,6 +38,7 @@ LICENSE_OBLIGATIONS: dict[str, tuple[str, ...]] = {
     "Apache-2.0": ("attribution",),
     "CC-BY-4.0": ("attribution",),
     "LicenseRef-copernicus-sentinel": ("attribution",),
+    "LicenseRef-gsi-japan-attribution": ("attribution",),
     "CC-BY-SA-4.0": ("attribution", "share_alike"),
     "ODbL-1.0": ("attribution", "share_alike"),
     "CC-BY-NC-4.0": ("attribution", "non_commercial"),

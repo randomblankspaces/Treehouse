@@ -11,7 +11,7 @@ run `uv run treehouse budget status` (stop at exit 2/3). If a task hits a hard A
   - Enable CloudWatch Transaction Search for X-Ray spans (AgentCore Observability prerequisite); record the setting.
   - Write `docs/KIRO-STATUS.md` (what ran, outputs, blockers). _Req: 9.1, 9.2_
 
-- [ ] 1. Asset-class registry, reference data and task cards
+- [x] 1. Asset-class registry, reference data and task cards
   - `config/asset-classes.yaml` for every report Table 8 class (warehouses, oil/fuel tanks, bridges, substations/transmission, ground solar, wind): positive and negative definitions, minimum/typical size, suitable resolutions, reference sources with completeness and licence. RV1 and the grader read sizes from here; no class-specific code anywhere. _Req: 1.4_
   - Second class: `scripts/fetch_grw_solar.py` (or reuse the one on branch `pkg/t5-golden-tasks` if present) → ground-mounted solar reference for an ADB-country AOI; task card `tasks/t1-<country>-solar.yaml`. _Req: 1.5_
   - `scripts/fetch_plateau_warehouses.py` → `keys/plateau/nagoya-warehouses.geojson`, `gifu-warehouses.geojson` (warehouse use, ≥ 1,600 m²), with licence, snapshot date, sha256; record a train/held-out split for Nagoya few-shot examples.

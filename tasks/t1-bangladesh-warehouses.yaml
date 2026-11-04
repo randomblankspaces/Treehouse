@@ -1,0 +1,87 @@
+# T1 retrieval, UNKEYED. Warehouses in a Bangladesh city. OSM building=warehouse is a sparse POOL:
+# precision within the pool only, never recall (DM2, R4.3). No key reaches the grader as a complete reference.
+schema_version: treehouse.task/1
+id: t1-bangladesh-warehouses
+version: 1.0.0
+title: Warehouses in Chattogram (T1 retrieval, unkeyed; precision within the OSM pool only)
+family: warehouse-retrieval
+synthetic: false
+goal: >-
+  Find every warehouse in the area of interest. A warehouse is a warehouse or large logistics/storage
+  building (roughly 1,600 m2 of floor area or more). Do NOT count factories, markets, aircraft hangars or
+  other large roofs. Return each warehouse as a point inside the building, with the resources and image
+  windows you used and your confidence. There is no complete reference here, so be explicit about what you
+  could not review and give a count with a range; do not claim completeness.
+aoi:   # ~10 x 9 km over the Chattogram port / industrial belt
+  type: Polygon
+  coordinates: [[[91.78, 22.28], [91.88, 22.28], [91.88, 22.36], [91.78, 22.36], [91.78, 22.28]]]
+smoke_aoi: [91.78, 22.28, 91.83, 22.32]
+time_window: [2024-01-01, 2024-12-31]
+as_of: 2024-12-31T23:59:00Z
+data_allowlist:
+  - source_id: aef-10m-annual
+    kind: embeddings
+    access: s3_listing
+    license: CC-BY-4.0
+    status: unpinned
+  - source_id: lgnd-clay-embeddings
+    kind: embeddings
+    access: s3_listing
+    license: CC-BY-4.0
+    status: unpinned
+  - source_id: sentinel-2-l2a-cogs
+    kind: imagery
+    access: s3_listing
+    license: LicenseRef-copernicus-sentinel
+    status: unpinned
+tools_allowed:
+  - record_decision
+  - list_embedding_sources
+  - build_index
+  - get_examples
+  - retrieve
+  - classify
+  - imagery_window
+  - aggregate
+  - record_claim
+  - note_limitation
+  - submit_understanding
+needs_vision: true
+classes:
+  warehouse:
+    min_size_m: 40
+    max_effective_gsd_for_existence_m: 10
+    max_effective_gsd_for_status_m: 10
+    match_tolerance_m: 80
+    key_geometry: point
+windows: {max_side_m: 5000, max_out_px: 512, max_bytes_per_run: 500000000}
+steps:
+  - step_id: inventory
+    question_id: exists
+    statuses_allowed: [present, absent, cannot_assess]
+    keying:
+      mode: unkeyed
+      status: none
+# No key reaches the agent; the OSM pool (keys/osm/chattogram-warehouses.geojson) is read grader-side for
+# precision-within-pool only. forbidden_sources is still set so GSI/Maxar rules and the keys/ wall apply.
+forbidden_sources:
+  - {kind: path, pattern: keys/}
+  - {kind: tool, pattern: key_lookup}
+  - {kind: host, pattern: "*.maxar.com"}
+  - {kind: dataset_id, pattern: maxar}
+  - {kind: dataset_id, pattern: vantor}
+must_notice:
+  - {id: resolution, kind: mentions_any, terms: [10 m, resolution, gsd, cell size, 160 m]}
+  - {id: incomplete, kind: mentions_any, terms: [incomplete, no complete reference, cannot claim recall, pool, limits]}
+  - {id: count-range, kind: mentions_any, terms: [range, count, approximately, about]}
+  - {id: uses-imagery, kind: plans_tool, tool: imagery_window}
+known_limits:
+  - OSM building=warehouse is sparse in Bangladesh; precision within the pool only, never recall.
+  - Sentinel-2 / AEF are 10 m; GSI aerial is Japan-only, so no 0.5 m imagery here.
+  - Factories and markets are not warehouses (Table 8 negatives).
+sampling_plan:
+  strata_keys: [conf_tercile]
+  n_total: 20
+  seed: 20261106
+thresholds: {rely_lo: 0.8}
+budget: {enabled: true, usd: 15, tool_calls: 200, bytes: 500000000, wall_s: 1800, tokens: 3000000}

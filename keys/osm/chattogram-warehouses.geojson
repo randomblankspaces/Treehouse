@@ -1,0 +1,264 @@
+{
+  "type": "FeatureCollection",
+  "name": "osm-chattogram-warehouses",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "osm-fixture:chattogram:000",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.795533,
+          22.288508
+        ]
+      },
+      "properties": {
+        "cls": "warehouse"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "osm-fixture:chattogram:001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.804162,
+          22.284197
+        ]
+      },
+      "properties": {
+        "cls": "warehouse"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "osm-fixture:chattogram:002",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.829942,
+          22.295052
+        ]
+      },
+      "properties": {
+        "cls": "warehouse"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "osm-fixture:chattogram:003",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.85588,
+          22.286714
+        ]
+      },
+      "properties": {
+        "cls": "warehouse"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "osm-fixture:chattogram:004",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.874522,
+          22.285984
+        ]
+      },
+      "properties": {
+        "cls": "warehouse"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "osm-fixture:chattogram:005",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.794625,
+          22.312115
+        ]
+      },
+      "properties": {
+        "cls": "warehouse"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "osm-fixture:chattogram:006",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.814236,
+          22.308462
+        ]
+      },
+      "properties": {
+        "cls": "warehouse"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "osm-fixture:chattogram:007",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.830582,
+          22.309755
+        ]
+      },
+      "properties": {
+        "cls": "warehouse"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "osm-fixture:chattogram:008",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.851118,
+          22.308874
+        ]
+      },
+      "properties": {
+        "cls": "warehouse"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "osm-fixture:chattogram:009",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.865689,
+          22.311415
+        ]
+      },
+      "properties": {
+        "cls": "warehouse"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "osm-fixture:chattogram:010",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.789162,
+          22.335221
+        ]
+      },
+      "properties": {
+        "cls": "warehouse"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "osm-fixture:chattogram:011",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.812429,
+          22.326261
+        ]
+      },
+      "properties": {
+        "cls": "warehouse"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "osm-fixture:chattogram:012",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.83318,
+          22.325922
+        ]
+      },
+      "properties": {
+        "cls": "warehouse"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "osm-fixture:chattogram:013",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.855007,
+          22.327001
+        ]
+      },
+      "properties": {
+        "cls": "warehouse"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "osm-fixture:chattogram:014",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.865799,
+          22.332529
+        ]
+      },
+      "properties": {
+        "cls": "warehouse"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "osm-fixture:chattogram:015",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.792923,
+          22.349471
+        ]
+      },
+      "properties": {
+        "cls": "warehouse"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "osm-fixture:chattogram:016",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.804979,
+          22.346063
+        ]
+      },
+      "properties": {
+        "cls": "warehouse"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "osm-fixture:chattogram:017",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.82425,
+          22.347247
+        ]
+      },
+      "properties": {
+        "cls": "warehouse"
+      }
+    }
+  ]
+}
