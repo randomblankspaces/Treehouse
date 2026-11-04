@@ -24,19 +24,35 @@ data_allowlist:
     access: synthetic
     fixture_path: fixtures/stac/synth-crossings-v1
     item_ids: [SYN-PRE-1, SYN-PRE-2, SYN-POST-A, SYN-POST-B, SYN-POST-C]
+    etags:
+      SYN-PRE-1: synthetic-87527593ee690f48
+      SYN-PRE-2: synthetic-22e261683d704095
+      SYN-POST-A: synthetic-db1e8203256e0457
+      SYN-POST-B: synthetic-d6a1b247ccc74eab
+      SYN-POST-C: synthetic-708bbe120aaf7107
     license: LicenseRef-synthetic
-    status: pending_fixture   # written by P4
+    status: pinned   # fixtures written by treehouse.synth.fixtures (P4)
   - source_id: synth-imagery
     kind: imagery
-    access: synthetic
+    access: synthetic   # rendered in numpy from the seed; the scene metadata is the STAC fixture
+    fixture_path: fixtures/stac/synth-crossings-v1
+    item_ids: [SYN-PRE-1, SYN-PRE-2, SYN-POST-A, SYN-POST-B, SYN-POST-C]
+    etags:
+      SYN-PRE-1: synthetic-87527593ee690f48
+      SYN-PRE-2: synthetic-22e261683d704095
+      SYN-POST-A: synthetic-db1e8203256e0457
+      SYN-POST-B: synthetic-d6a1b247ccc74eab
+      SYN-POST-C: synthetic-708bbe120aaf7107
     license: LicenseRef-synthetic
-    status: pending_fixture
+    status: pinned
   - source_id: synth-embeddings
     kind: embeddings
     access: synthetic
     fixture_path: fixtures/embeddings/synth-crossings-v1.npz
+    item_ids: [synth-crossings-v1.npz]
+    etags: {synth-crossings-v1.npz: "sha256:4e58b6d6e6ac877a9e81cfc10921fe8f3d3720c135e786ec665c7c671475a232"}
     license: LicenseRef-synthetic
-    status: pending_fixture
+    status: pinned
 tools_allowed: [stac_search, scene_info, imagery_window, clay_search, record_claim, note_limitation, submit_understanding]
 needs_vision: true
 classes:
@@ -64,7 +80,8 @@ steps:
       license: LicenseRef-synthetic
       reference_quality: synthetic
       match_rule: {tolerance_m: {road_bridge: 6, footbridge: 6}, one_to_one: true}
-      status: pending_generation   # scripts/make_demo_fixtures.py (P5) generates it; then status: present + version_hash
+      version_hash: "sha256:e5e0a0fa49931ce5475e3ae20d32ea62b944271148ab1db6b0bf5c6305892b4e"
+      status: present   # keys/synth/synth-crossings-v1.key.json, written by scripts/make_demo_fixtures.py
   - step_id: status
     question_id: damaged
     statuses_allowed: [intact, damaged, destroyed, cannot_assess]

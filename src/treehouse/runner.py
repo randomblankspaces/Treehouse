@@ -16,7 +16,7 @@ from pathlib import Path
 
 from treehouse import __version__
 from treehouse.canon import canonical_json, sha256_bytes
-from treehouse.cards import license_floor
+from treehouse.cards import license_floor, license_obligations
 from treehouse.clock import LogicalClock, WallClock
 from treehouse.gateway.budget import BudgetGuard
 from treehouse.gateway.gateway import ToolGateway
@@ -76,6 +76,12 @@ class RunOutcome:
     trials: list[TrialOutcome]
 
 
+def synthetic_data(card: TaskCard, recorded_windows: list[dict] | None) -> bool:
+    """Synthetic when the data is: a source with ``access: synthetic`` or synthetic recorded windows."""
+    return any(d.access == "synthetic" for d in card.data_allowlist) or any(
+        bool(r["result"].get("synthetic")) for r in recorded_windows or [])
+
+
 def _licenses(card: TaskCard) -> list[str]:
     out = [d.license for d in card.data_allowlist]
     out += [s.keying.license for s in card.steps if s.keying.license]
@@ -100,10 +106,13 @@ async def _trial(spec: RunSpec, store: LocalStore, tmp: Path, i: int, floor: str
     tcas = ToolCassette(tc_path) if tc_path is not None else None
     gw = ToolGateway(servers, Policy(card), tracer, guard, Meter(), pixels, tool_cassette=tcas,
                      mode=cfg.tool_mode, store=store, ledger=ledger, license=floor)
-    loop = PlainLoop(model_id=cfg.worker.model_key, params=cfg.worker.params)
+    loop = PlainLoop(model_id=cfg.worker.model_key, params=cfg.worker.params,
+                     blob_sink=lambda b: store.put_blob(b, media_type="application/json", license=floor))
     async with gw:
         res = await loop.run(system=SYSTEM, user=card.goal, provider=spec.provider, gateway=gw, tracer=tracer,
                              budget=guard, max_turns=cfg.max_turns, role="worker", trial_index=i)
+    if hasattr(spec.provider, "check_consumed") and cfg.trials == 1:
+        spec.provider.check_consumed()  # a replay that stopped early is a divergence
     head = tracer.close()
     claims = "".join(canonical_json(c) + "\n" for c in ledger.claims).encode()
     parts = {f"trials/{tid}.claims.jsonl": claims}
@@ -148,9 +157,10 @@ def execute(store: LocalStore, spec: RunSpec) -> RunOutcome:
         "versions": {"treehouse": __version__, "python": platform.python_version(), "harness": "plain_loop/1"},
         "trials": heads, "cassettes": {"model_sha": model_sha, "tool_sha": tool_sha},
         "key_isolation_statement": backends["key_isolation"].statement, "license_floor": floor,
+        "license_obligations": license_obligations(_licenses(card)),
         "nc_notice": (f"Non-commercial: inputs are {', '.join(nc)}; derived data is non-commercial."
                       if nc else None),
-        "synthetic_data": card.synthetic})
+        "synthetic_data": synthetic_data(card, spec.recorded_windows)})
     return RunOutcome(m, outcomes)
 
 

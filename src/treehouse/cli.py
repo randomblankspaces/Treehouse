@@ -91,5 +91,53 @@ def verify_cmd(
     typer.echo(f"ok {root}: {report.runs} run(s), {report.records} record(s), {report.blobs} blob(s)\n{head}")
 
 
+@app.command("demo")
+def demo_cmd(
+    out: Annotated[Path, typer.Option("--out", help="Output directory (store and index.html).")] = Path("out/demo"),
+) -> None:
+    """Replay every demo run offline into a fresh store, check, score, trust (stub), report and verify."""
+    from treehouse.service import DemoError, demo
+
+    try:
+        demo(out, echo=typer.echo)
+    except DemoError as e:
+        typer.echo(f"FAIL {e}", err=True)
+        raise typer.Exit(1) from e
+
+
+@app.command("run")
+def run_cmd(
+    config: Annotated[Path, typer.Argument(help="RunConfig JSON (e.g. fixtures/demo/configs/synth-good.json).")],
+    mode: Annotated[str, typer.Option("--mode", help="fake | replay | record (live needs P6).")] = "replay",
+    run_id: Annotated[str | None, typer.Option("--run-id", help="Run id (default: the config file stem).")] = None,
+    store: Annotated[Path | None, typer.Option("--store", help="Store root (default $TREEHOUSE_STORE).")] = None,
+    cassette_out: Annotated[Path, typer.Option("--cassette-out", help="Where record mode writes cassettes.")]
+    = Path("out/cassettes"),
+    evaluate: Annotated[bool, typer.Option("--evaluate/--no-evaluate", help="Check, score, trust, report.")] = True,
+) -> None:
+    """Run one config through the plain loop, the gateway and the in-process MCP servers, and seal it."""
+    from treehouse.schemas.config import RunConfig
+    from treehouse.service import DemoError, evaluate as evaluate_run, run
+    from treehouse.store.local import LocalStore, default_store_root
+
+    if mode not in ("fake", "replay", "record"):
+        typer.echo(f"FAIL mode {mode!r}: use fake, replay or record (live runs need the Bedrock adapter, P6)",
+                   err=True)
+        raise typer.Exit(2)
+    cfg = RunConfig.model_validate_json(config.read_bytes())
+    st = LocalStore(store or default_store_root())
+    rid = run_id or config.stem
+    try:
+        out = run(st, cfg, run_id=rid, mode=mode, cassette_out=cassette_out)  # type: ignore[arg-type]
+    except DemoError as e:
+        typer.echo(f"FAIL {e}", err=True)
+        raise typer.Exit(1) from e
+    for t in out.trials:
+        typer.echo(f"sealed {rid} {t.trial_id}: stop={t.stop} claims={t.n_claims} head={t.head}")
+    if evaluate:
+        ev = evaluate_run(st, rid)
+        typer.echo(f"report {st.root / 'bundles' / rid / 'report.html'} (trust: {ev.passport.headline.chip()})")
+
+
 if __name__ == "__main__":  # pragma: no cover
     app()

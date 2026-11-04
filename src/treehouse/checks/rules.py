@@ -18,7 +18,7 @@ VERSION = "rules-p5-v1"
 
 def _r(claim: Claim, check_id: str, result: str, code: str | None = None, **detail) -> CheckResult:
     return CheckResult(claim_id=claim.claim_id, layer="rules", check_id=check_id, version=VERSION, result=result,
-                       code=code, detail=detail)
+                       code=code, detail=detail, record_ref=f"span:{claim.span_id}")
 
 
 def r1_schema(claim: Claim, run: SealedRun) -> CheckResult:

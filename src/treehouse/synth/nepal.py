@@ -22,7 +22,7 @@ from treehouse.tools.stac import Item
 SEED = 20261104
 N_POINTS = 30
 N_OBSCURED = 8
-SIDE_M = 60.0
+SIDE_M = 64.0  # 64 m / 128 px = 0.5 m effective GSD (upsampling never beats the pixel spacing)
 OUT_PX = 128
 NOTE = "illustrative, not surveyed bridges"
 BLOCK_BYTES = 48 * 1024

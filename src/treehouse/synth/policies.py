@@ -6,7 +6,7 @@ fixtures are recorded (``scripts/make_demo_fixtures.py``); the demo replays the 
 
 | policy        | behaviour                                                                                   |
 |---------------|---------------------------------------------------------------------------------------------|
-| good          | understanding, stac, clay, 60 m / 128 px windows; 35 correct status claims, 1 distractor    |
+| good          | understanding, stac, clay, 64 m / 128 px windows; 35 correct status claims, 1 distractor    |
 |               | false positive, 4 cannot_assess on the cloud-covered western strip (one crossing missed)     |
 | overconfident | like good, but guesses the 4 hidden crossings at 0.95 and claims 3 distractors              |
 | skimmer       | two 1000 m / 256 px windows (effective 3.9 m), then status claims from them                 |
@@ -95,7 +95,7 @@ def _opening(s: Script, *, clay: bool = True) -> None:
     s.end_turn()
 
 
-def _win(s: Script, scene: str, lon: float, lat: float, side_m: float = 60, out_px: int = 128) -> str:
+def _win(s: Script, scene: str, lon: float, lat: float, side_m: float = 64, out_px: int = 128) -> str:
     return s.call("imagery_window", scene_id=scene, lon=lon, lat=lat, side_m=side_m, out_px=out_px)
 
 

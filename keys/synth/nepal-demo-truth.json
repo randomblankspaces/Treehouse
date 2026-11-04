@@ -1,0 +1,310 @@
+{
+ "id": "corridor-demo-truth",
+ "note": "illustrative, not surveyed bridges",
+ "points": [
+  {
+   "cls": "footbridge",
+   "lat": 28.151403,
+   "lon": 85.353482,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": false,
+   "point_id": "NP01",
+   "status": "intact",
+   "synthetic": true
+  },
+  {
+   "cls": "footbridge",
+   "lat": 28.156039,
+   "lon": 85.352372,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": false,
+   "point_id": "NP02",
+   "status": "intact",
+   "synthetic": true
+  },
+  {
+   "cls": "road_bridge",
+   "lat": 28.160389,
+   "lon": 85.353838,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": false,
+   "point_id": "NP03",
+   "status": "intact",
+   "synthetic": true
+  },
+  {
+   "cls": "footbridge",
+   "lat": 28.165073,
+   "lon": 85.355992,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": false,
+   "point_id": "NP04",
+   "status": "damaged",
+   "synthetic": true
+  },
+  {
+   "cls": "footbridge",
+   "lat": 28.172092,
+   "lon": 85.354824,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": false,
+   "point_id": "NP05",
+   "status": "intact",
+   "synthetic": true
+  },
+  {
+   "cls": "footbridge",
+   "lat": 28.175227,
+   "lon": 85.355707,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": false,
+   "point_id": "NP06",
+   "status": "intact",
+   "synthetic": true
+  },
+  {
+   "cls": "footbridge",
+   "lat": 28.180711,
+   "lon": 85.356598,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": false,
+   "point_id": "NP07",
+   "status": "intact",
+   "synthetic": true
+  },
+  {
+   "cls": "road_bridge",
+   "lat": 28.185394,
+   "lon": 85.357024,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": false,
+   "point_id": "NP08",
+   "status": "damaged",
+   "synthetic": true
+  },
+  {
+   "cls": "footbridge",
+   "lat": 28.19101,
+   "lon": 85.358516,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": true,
+   "point_id": "NP09",
+   "status": "intact",
+   "synthetic": true
+  },
+  {
+   "cls": "footbridge",
+   "lat": 28.194292,
+   "lon": 85.358517,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": true,
+   "point_id": "NP10",
+   "status": "intact",
+   "synthetic": true
+  },
+  {
+   "cls": "footbridge",
+   "lat": 28.197505,
+   "lon": 85.360479,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": false,
+   "point_id": "NP11",
+   "status": "intact",
+   "synthetic": true
+  },
+  {
+   "cls": "footbridge",
+   "lat": 28.202238,
+   "lon": 85.360272,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": false,
+   "point_id": "NP12",
+   "status": "destroyed",
+   "synthetic": true
+  },
+  {
+   "cls": "road_bridge",
+   "lat": 28.209687,
+   "lon": 85.361071,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": false,
+   "point_id": "NP13",
+   "status": "damaged",
+   "synthetic": true
+  },
+  {
+   "cls": "road_bridge",
+   "lat": 28.211705,
+   "lon": 85.361358,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": false,
+   "point_id": "NP14",
+   "status": "intact",
+   "synthetic": true
+  },
+  {
+   "cls": "footbridge",
+   "lat": 28.21862,
+   "lon": 85.36305,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": false,
+   "point_id": "NP15",
+   "status": "damaged",
+   "synthetic": true
+  },
+  {
+   "cls": "road_bridge",
+   "lat": 28.221417,
+   "lon": 85.362095,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": false,
+   "point_id": "NP16",
+   "status": "destroyed",
+   "synthetic": true
+  },
+  {
+   "cls": "footbridge",
+   "lat": 28.225962,
+   "lon": 85.362709,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": false,
+   "point_id": "NP17",
+   "status": "damaged",
+   "synthetic": true
+  },
+  {
+   "cls": "road_bridge",
+   "lat": 28.231307,
+   "lon": 85.365437,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": false,
+   "point_id": "NP18",
+   "status": "intact",
+   "synthetic": true
+  },
+  {
+   "cls": "road_bridge",
+   "lat": 28.236768,
+   "lon": 85.365823,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": false,
+   "point_id": "NP19",
+   "status": "intact",
+   "synthetic": true
+  },
+  {
+   "cls": "footbridge",
+   "lat": 28.242042,
+   "lon": 85.365286,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": true,
+   "point_id": "NP20",
+   "status": "intact",
+   "synthetic": true
+  },
+  {
+   "cls": "footbridge",
+   "lat": 28.246454,
+   "lon": 85.367316,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": false,
+   "point_id": "NP21",
+   "status": "destroyed",
+   "synthetic": true
+  },
+  {
+   "cls": "footbridge",
+   "lat": 28.249078,
+   "lon": 85.365781,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": true,
+   "point_id": "NP22",
+   "status": "intact",
+   "synthetic": true
+  },
+  {
+   "cls": "road_bridge",
+   "lat": 28.254395,
+   "lon": 85.367737,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": false,
+   "point_id": "NP23",
+   "status": "intact",
+   "synthetic": true
+  },
+  {
+   "cls": "road_bridge",
+   "lat": 28.258438,
+   "lon": 85.368795,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": false,
+   "point_id": "NP24",
+   "status": "intact",
+   "synthetic": true
+  },
+  {
+   "cls": "road_bridge",
+   "lat": 28.264088,
+   "lon": 85.369241,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": true,
+   "point_id": "NP25",
+   "status": "damaged",
+   "synthetic": true
+  },
+  {
+   "cls": "road_bridge",
+   "lat": 28.267742,
+   "lon": 85.369941,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": true,
+   "point_id": "NP26",
+   "status": "intact",
+   "synthetic": true
+  },
+  {
+   "cls": "footbridge",
+   "lat": 28.272941,
+   "lon": 85.369361,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": false,
+   "point_id": "NP27",
+   "status": "destroyed",
+   "synthetic": true
+  },
+  {
+   "cls": "road_bridge",
+   "lat": 28.277338,
+   "lon": 85.370986,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": true,
+   "point_id": "NP28",
+   "status": "intact",
+   "synthetic": true
+  },
+  {
+   "cls": "footbridge",
+   "lat": 28.282108,
+   "lon": 85.371494,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": true,
+   "point_id": "NP29",
+   "status": "intact",
+   "synthetic": true
+  },
+  {
+   "cls": "footbridge",
+   "lat": 28.286514,
+   "lon": 85.372815,
+   "note": "illustrative, not surveyed bridges",
+   "obscured": false,
+   "point_id": "NP30",
+   "status": "intact",
+   "synthetic": true
+  }
+ ],
+ "scene_id": "B1300011011E5610",
+ "synthetic": true,
+ "task": "nepal-bhote-koshi-bridges",
+ "version_hash": "sha256:fae96cc7d00aab5eecceabc154672032489a38cd571d6809941f507e13870637"
+}

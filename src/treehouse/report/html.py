@@ -55,7 +55,7 @@ def fmt_value(tn: TypedNumber) -> str:
 def chip_html(tn: TypedNumber) -> str:
     """The generic chip: plain-English tier label plus SYNTHETIC / recorded / modelled bytes."""
     t = tn.tier.value
-    return (f'<span class="chip t-{_e(t)}" data-tier="{_e(t)}" title="{_e(tn.chip_hover())}">'
+    return (f'<span class="chip t-{_e(t)}" data-tier="{_e(t)}" title="{_e(tn.chip_hover() or tn.tier.value)}">'
             f"{_e(tn.chip())}</span>")
 
 
@@ -83,9 +83,19 @@ def _panel(title: str, p) -> str:
     return out
 
 
+def row_note(b: ReportBundle) -> str:
+    """The provenance note every synthetic claim row carries (e.g. "illustrative, not surveyed bridges")."""
+    notes = sorted({str(w.detail["note"]) for w in b.evidence if w.detail.get("note")})
+    return "; ".join(notes) if notes else "synthetic world"
+
+
+def _stop(b: ReportBundle) -> str:
+    return ",".join(str(s.attributes.get("treehouse.stop", "")) for s in b.trace_rows if s.op == "invoke_agent")
+
+
 def _claims(b: ReportBundle) -> str:
     led = {lg.claim_id: lg for lg in b.ledgers}
-    note = b.card_summary.get("row_note", "")
+    note = row_note(b)
     head = ("<tr><th>claim</th><th>step</th><th>class</th><th>status</th><th>lon, lat (agent's claim)</th>"
             "<th>confidence (agent's claim)</th><th>evidence</th><th>R1 R2 R4</th><th>ledger</th><th>data</th></tr>")
     rows = []
@@ -166,11 +176,11 @@ def render(b: ReportBundle) -> str:
               "</div>") if b.synthetic else ""
     body = [
         banner,
-        f"<h1>Run {ident(m.get('run_id', ''))}</h1>",
-        f"<p class='muted'>task {ident(c.get('id', ''))} &middot; policy {_e(m.get('policy', ''))} &middot; "
-        f"mode {_e(m.get('mode', ''))} &middot; stop {_e(m.get('stop', ''))} &middot; manifest "
-        f"{ident(b.manifest_ref)}</p>",
-        f"<p data-card='1'><b>{_e(c.get('title', ''))}</b>. {_e(c.get('synthetic_notice', ''))}</p>",
+        f"<h1>Run {ident(m.run_id)}</h1>",
+        f"<p class='muted'>task {ident(c.id + '@' + c.version)} &middot; mode {_e(m.mode)} &middot; stop "
+        f"{_e(_stop(b))} &middot; manifest {ident(b.manifest_ref)}</p>",
+        f"<p data-card='1'><b>{_e(c.title)}</b>. {_e(c.synthetic_notice or '')}</p>",
+        f"<p data-card='1' class='muted'>Goal: {_e(c.goal)}</p>",
     ]
     if verdict is not None:
         body.append(f"<div class='verdict'>Verdict: <b>{_e(verdict.gate)}</b>. Trust headline "
@@ -179,10 +189,15 @@ def render(b: ReportBundle) -> str:
              _panel("What the agent understood", b.scorecard.understanding),
              _panel("What the agent produced", b.scorecard.output), _panel("Cost, speed and data", b.scorecard.cost),
              _claims(b), _evidence(b), _trace(b),
-             f"<h2>Licence</h2><p>licence floor {ident(m.get('license_floor', ''))}</p>"]
-    if m.get("nc_notice"):
-        body.append(f"<p data-card='1'><b>{_e(m['nc_notice'])}</b></p>")
-    title = f"Treehouse report: {m.get('run_id', '')}"
+             f"<h2>Licence</h2><p>licence floor {ident(m.license_floor)}; obligations "
+             f"{ident(', '.join(m.license_obligations) or 'none')}</p>",
+             f"<p class='muted' data-card='1'>Key isolation: {_e(m.key_isolation_statement)}</p>"]
+    if m.nc_notice:
+        body.append(f"<p data-card='1'><b>{_e(m.nc_notice)}</b></p>")
+    if c.known_limits:
+        body.append("<h2>Known limits (task card)</h2><ul data-card='1'>"
+                    + "".join(f"<li>{_e(x)}</li>" for x in c.known_limits) + "</ul>")
+    title = f"Treehouse report: {m.run_id}"
     return page(title, "".join(body))
 
 
