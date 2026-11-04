@@ -30,8 +30,9 @@ def test_shipped_cards_validate(name):
     report = validate_card(TASKS / name)
     assert report.errors == [], report.errors
     assert report.license_floor
-    # No shipped card has a pinned STAC source yet (P4 pins them), so the footprint check only warns.
-    assert any("footprint" in w for w in report.warnings)
+    # P5 pinned the synth and Nepal STAC sources; the others still only warn about the footprint check.
+    pinned = any(s.kind == "stac" and s.status == "pinned" for s in load_card(TASKS / name).data_allowlist)
+    assert any("footprint" in w for w in report.warnings) != pinned
 
 
 def test_card_hashes_are_stable():
@@ -123,6 +124,7 @@ def test_pinned_source_needs_fixture_and_etags(synth, tmp_path):
     bad = copy.deepcopy(synth)
     bad["data_allowlist"][0]["status"] = "pinned"
     bad["data_allowlist"][0]["fixture_path"] = "fixtures/does-not-exist.json"
+    bad["data_allowlist"][0]["etags"] = {}
     errs = validate_card(_write(tmp_path, bad)).errors
     assert any("fixture" in e for e in errs) and any("etag" in e.lower() for e in errs), errs
 
@@ -236,7 +238,8 @@ def test_bad_cards_rejected_with_field_paths(tmp_path, mutate, path):
 def test_present_key_missing_on_disk_is_an_error(synth, tmp_path):
     bad = copy.deepcopy(synth)
     for st in bad["steps"]:
-        st["keying"] = {**st["keying"], "status": "present", "version_hash": "sha256:k"}
+        st["keying"] = {**st["keying"], "status": "present", "version_hash": "sha256:k",
+                        "key_path": "keys/synth/missing.key.json"}
     errs = validate_card(_write(tmp_path, bad)).errors
     assert any("not on disk" in e for e in errs), errs
 
@@ -246,10 +249,16 @@ def test_unkeyed_step_without_gold_plan_warns():
     assert report.errors == [] and any("gold_plan" in w for w in report.warnings)
 
 
-def test_synth_key_is_pending_generation_not_fetch():
+def test_synth_key_is_present_and_matches_the_generator():
+    """P5 writes keys/synth/synth-crossings-v1.key.json from synth.world.build_key() and pins its hash."""
+    from treehouse.synth.world import build_key
+
+    card = load_card(TASKS / "synth-crossings-v1.yaml")
     report = validate_card(TASKS / "synth-crossings-v1.yaml")
-    assert any("pending_generation" in w and "generated" in w for w in report.warnings)
-    assert not any("fetched" in w for w in report.warnings)
+    assert not any("pending" in w for w in report.warnings)
+    for st in card.steps:
+        assert st.keying.status == "present" and st.keying.version_hash == build_key()["version_hash"]
+        assert json.loads((ROOT / st.keying.key_path).read_text()) == build_key()
 
 
 def test_nepal_cloud_count_matches_item_list():
@@ -282,6 +291,7 @@ def _pinned_nepal_repo(tmp_path: Path, monkeypatch, swap: bool = False, layout: 
         f.write_text(json.dumps({"items": list(items.values())}))
         src["fixture_path"] = "fixtures/stac/vantor-nepal.json"
     src["status"] = "pinned"
+    card["data_allowlist"] = [d for d in card["data_allowlist"] if d["kind"] != "imagery"]  # stac only here
     card["event"]["footprint_ref"] = None
     if swap:  # lat/lon swapped on every AOI vertex
         card["aoi"]["coordinates"] = [[[y, x] for x, y in ring] for ring in card["aoi"]["coordinates"]]

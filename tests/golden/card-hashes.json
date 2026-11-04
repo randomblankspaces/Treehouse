@@ -1,6 +1,6 @@
 {
   "india-brahmaputra-bridges.yaml": "sha256:a474b4f2c7a3426e68ea6e22e612a3e5af59e649b1d89f619591317f51795d6b",
-  "nepal-bhote-koshi-bridges.yaml": "sha256:c7007d5d0a9abb5ef549ba85c577f73730c30fa8846851b84f55e1e9f97e36c1",
-  "synth-crossings-v1.yaml": "sha256:1947c546da68f4af0bcefc596528b72d02dc7a217b1ae62dc62769411b5f1f1c",
+  "nepal-bhote-koshi-bridges.yaml": "sha256:d83d835378011fc1697e793053ed7a06007a7db4e09716b93c1eaf38e04bbc66",
+  "synth-crossings-v1.yaml": "sha256:26c976c8f9b6b9e7339f675feca7f22ce688a849ce07a69dc3e23d8272cdcf40",
   "virginia-solar-18sth.yaml": "sha256:2d2935fd6349fe60460ddf89c86e35ecc9c5d9919e74cd35f7531732c7e0e4f8"
 }

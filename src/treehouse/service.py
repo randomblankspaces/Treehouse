@@ -320,9 +320,9 @@ def index_html(results: dict[str, Evaluated]) -> str:
     body = ("<div class='banner'>SYNTHETIC DEMO DATA: every run below replays a scripted fake agent on synthetic "
             "or illustrative data.</div><h1>Treehouse demo</h1>"
             "<p>Each run was replayed offline through the plain loop, the tool gateway and live in-process MCP "
-            "servers, sealed into a fresh store, checked (R1, R2, R4), scored and verified. Trust passport: stub "
+            "servers, sealed into a fresh store, checked (<code data-id='1'>R1, R2, R4</code>), scored and verified. Trust passport: stub "
             "(not yet built). Points on the corridor task are illustrative, not surveyed bridges.</p>"
-            "<table><tr><th>run</th><th>task</th><th>stop</th><th>claims</th><th>grounding rate (R4)</th>"
+            "<table><tr><th>run</th><th>task</th><th>stop</th><th>claims</th><th>grounding rate (<code data-id='1'>R4</code>)</th>"
             "<th>forbidden attempts</th><th>bytes read</th><th>trust</th><th>data</th></tr>"
             + "".join(rows) + "</table>")
     return page("Treehouse demo", body)

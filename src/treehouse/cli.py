@@ -117,7 +117,8 @@ def run_cmd(
 ) -> None:
     """Run one config through the plain loop, the gateway and the in-process MCP servers, and seal it."""
     from treehouse.schemas.config import RunConfig
-    from treehouse.service import DemoError, evaluate as evaluate_run, run
+    from treehouse.service import DemoError, run
+    from treehouse.service import evaluate as evaluate_run
     from treehouse.store.local import LocalStore, default_store_root
 
     if mode not in ("fake", "replay", "record"):

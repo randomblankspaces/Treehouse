@@ -97,7 +97,7 @@ def _claims(b: ReportBundle) -> str:
     led = {lg.claim_id: lg for lg in b.ledgers}
     note = row_note(b)
     head = ("<tr><th>claim</th><th>step</th><th>class</th><th>status</th><th>lon, lat (agent's claim)</th>"
-            "<th>confidence (agent's claim)</th><th>evidence</th><th>R1 R2 R4</th><th>ledger</th><th>data</th></tr>")
+            "<th>confidence (agent's claim)</th><th>evidence</th><th data-id=1>R1 R2 R4</th><th>ledger</th><th>data</th></tr>")
     rows = []
     for c in b.claims:
         lg = led.get(c.claim_id)
@@ -128,7 +128,7 @@ def _evidence(b: ReportBundle) -> str:
             f"<td>{ident(w.scene_id)}</td><td>{ident(w.scene_datetime.date().isoformat())}</td>"
             f'<td data-tier="tool-record">{w.effective_gsd_m:g}</td>'
             f'<td data-tier="tool-record">{w.bytes_read:,}{_e(modelled)}</td>'
-            f'<td data-tier="tool-record">{w.obscuration.bright_lowvar_fraction:.3f}</td><td>{_e(w.reader)}</td>'
+            f'<td data-tier="tool-record">{w.obscuration.bright_lowvar_fraction:.3f}</td><td>{ident(w.reader)}</td>'
             f"<td>{syn_chip(w.synthetic)} {_e(note)}</td></tr>")
     return f"<h2>Evidence windows (metadata only, no pixels)</h2><table>{head}{''.join(rows)}</table>"
 
@@ -161,7 +161,7 @@ def _summary_html(b: ReportBundle) -> str:
     if "claims" in f:
         parts.append(f"The agent recorded {num_html(f['claims'])} claims.")
     if "grounding_rate" in f:
-        parts.append(f"Share of claims whose cited window contains the point (R4): {num_html(f['grounding_rate'])}.")
+        parts.append(f"Share of claims whose cited window contains the point ({ident('R4')}): {num_html(f['grounding_rate'])}.")
     if "forbidden_attempts" in f:
         parts.append(f"Forbidden-source attempts: {num_html(f['forbidden_attempts'])}.")
     if "bytes_read" in f:
