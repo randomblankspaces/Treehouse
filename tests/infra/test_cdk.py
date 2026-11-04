@@ -38,11 +38,11 @@ def _logical_id(t, rtype, props):
     return next(iter(found))
 
 
-def test_run_store_object_lock_with_default_governance_retention(store):
+def test_run_store_object_lock_defaults_to_compliance_retention(store):
     store.has_resource_properties("AWS::S3::Bucket", {
         "ObjectLockEnabled": True,
         "ObjectLockConfiguration": {"ObjectLockEnabled": "Enabled",
-                                    "Rule": {"DefaultRetention": {"Mode": "GOVERNANCE", "Days": 1}}},
+                                    "Rule": {"DefaultRetention": {"Mode": "COMPLIANCE", "Days": 1}}},
         "VersioningConfiguration": {"Status": "Enabled"},
         "PublicAccessBlockConfiguration": {"BlockPublicAcls": True, "RestrictPublicBuckets": True},
     })
@@ -99,7 +99,7 @@ def test_agentcore_can_be_left_out():
     t.resource_count_is("AWS::Lambda::Function", 2)
 
 
-def test_submission_bucket_can_use_compliance_mode():
-    t = Template.from_stack(RunStoreStack(_app(), "C", lock_mode="compliance", retention_days=1))
+def test_dev_stack_can_opt_into_governance_mode():
+    t = Template.from_stack(RunStoreStack(_app(), "G", lock_mode="governance", retention_days=1))
     t.has_resource_properties("AWS::S3::Bucket", {
-        "ObjectLockConfiguration": {"Rule": {"DefaultRetention": {"Mode": "COMPLIANCE", "Days": 1}}}})
+        "ObjectLockConfiguration": {"Rule": {"DefaultRetention": {"Mode": "GOVERNANCE", "Days": 1}}}})

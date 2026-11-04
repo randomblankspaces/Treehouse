@@ -11,7 +11,7 @@ local stand-in and the manifest records which ran.
 | Job | AWS service | Code | Local stand-in | State |
 |---|---|---|---|---|
 | Worker and verifier models | Bedrock Converse (Strands) | `providers/bedrock.py` | Ollama / fake provider | existing |
-| Sealed run store | S3, versioned, **Object Lock GOVERNANCE with default retention** (1 day; `-c retention_days=N`) | `RunStoreStack.run_store` | content-addressed dir + hash chain + `treehouse verify` | CDK, synth-tested |
+| Sealed run store | S3, versioned, **Object Lock COMPLIANCE with default retention** (1 day; `-c retention_days=N`; `-c lock_mode=governance` for dev stacks only) | `RunStoreStack.run_store` | content-addressed dir + hash chain + `treehouse verify` | CDK, synth-tested |
 | Key isolation | Separate S3 key bucket, KMS CMK (rotation on), **explicit Deny for the worker role** in both the bucket policy and the key policy | `RunStoreStack.key_bucket`, `.key_kms` | key dir outside the worker volume | CDK, synth-tested |
 | Roles | Worker (Bedrock invoke, run-store read + put + `PutObjectRetention`; no delete, no `BypassGovernanceRetention`), grader (read runs and keys) | `RunStoreStack.worker_role`, `.grader_role` | none | CDK, synth-tested |
 | Treehouse checks inside AWS | Lambda, Python 3.12, `treehouse.aws.lambda_evaluator.handler`, bundle = `src/treehouse` + pydantic (8 MB) | `EvalStack.functions` | in-process `checks.rules` | CDK + unit-tested handler |
@@ -70,8 +70,8 @@ records which path ran, so the same report and the same `treehouse verify` work 
    cdk.out/TreehouseRunStore.template.json --stack-name TreehouseRunStore --capabilities CAPABILITY_IAM`).
 4. Point Treehouse at it: run-store bucket and role ARNs come from `cdk-outputs.json`.
 5. Evaluate any sealed run: `uv run python scripts/agentcore_eval.py --run <store>/runs/<id> --evaluators ...`.
-6. Retention is the one irreversible choice: Object Lock cannot be turned off on the bucket, and GOVERNANCE
-   objects can only be removed early by a principal with `s3:BypassGovernanceRetention`. Both buckets and the
+6. Retention is the one irreversible choice: Object Lock cannot be turned off on the bucket. COMPLIANCE (the default)
+   objects cannot be removed or shortened by anyone, root included, until retention ends; GOVERNANCE (dev, opt-in) allows `s3:BypassGovernanceRetention`. Both buckets and the
    KMS key are `RETAIN` on stack delete, so tearing down the stack never deletes evidence.
 7. Cost at rest: one KMS key (about $1 a month), S3 storage for runs (cents), Lambdas and log groups idle at $0.
    Evaluators and a disabled online config cost nothing until called.
@@ -131,7 +131,7 @@ Verify (read-only):
 Commit infra/cdk-outputs.json and the verify output (ka1-verify.txt) on kiro/ka1-cdk and push.
 ```
 
-Expected: versioning `Enabled`; Object Lock `Enabled` with `DefaultRetention: {Mode: GOVERNANCE, Days: 1}`; a
+Expected: versioning `Enabled`; Object Lock `Enabled` with `DefaultRetention: {Mode: COMPLIANCE, Days: 1}`; a
 `DenyWorker` statement naming the worker role; `treehouse_rules` at level `TRACE`; the online config with
 execution `DISABLED`. Cost: the KMS key is about $1 a month prorated; everything else is idle at $0.
 
