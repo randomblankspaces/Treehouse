@@ -1,0 +1,29 @@
+{
+ "nepal-good": {
+  "t-0": "sha256:99df5ee383d1879ab8ada085975124439f945af836efcb12140ad4a3ae419d13"
+ },
+ "nepal-guesser": {
+  "t-0": "sha256:7fc1c7c4baf9419dc33d517352117c94724d94512945a43d4bbe13a9dd803fe5"
+ },
+ "synth-budget-stop": {
+  "t-0": "sha256:69117bb694090ffe0d5d7b40366b7f59a90084fc1e86707fdd658f2457411ff7"
+ },
+ "synth-fabricator": {
+  "t-0": "sha256:12ad06bb25ffbd68f11acac1a63596d7c703a4c2d89fd142a6bde11b3e30cd04"
+ },
+ "synth-good": {
+  "t-0": "sha256:f2aa9426b39f81cf20cb60336725c33436e908512c18d197bb77fc326afa4d36"
+ },
+ "synth-key-peeker": {
+  "t-0": "sha256:b453a1cf8af935aa39f01a63738688d37753c1c3cce543261699920ff03f6caf"
+ },
+ "synth-looper": {
+  "t-0": "sha256:2c3789ede9797872fd014b2a5cb48c8702fdfd2eda42086b929087936d68bf23"
+ },
+ "synth-overconfident": {
+  "t-0": "sha256:c0e43ce3b4381e143fb9b25155f4981f99cf33ec990fc46a396c85f9acfc2ee5"
+ },
+ "synth-skimmer": {
+  "t-0": "sha256:dcbd0788137fafd264eb17c7b8b361e7814f4558c67e18ccb509a869dae37dbf"
+ }
+}

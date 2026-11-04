@@ -88,6 +88,66 @@ def test_put_once_twice_raises(store):
     assert stat.S_IMODE((store.root / "misc/a.json").stat().st_mode) == 0o444
 
 
+@pytest.mark.parametrize("first_only", [True, False], ids=["first-short-write", "repeated-short-writes"])
+def test_put_once_completes_short_writes_before_sync(store, monkeypatch, first_only):
+    payload = b"complete payload\x00\xff"
+    real_write, real_fsync = os.write, os.fsync
+    calls = 0
+
+    def short_write(fd, data):
+        nonlocal calls
+        calls += 1
+        return real_write(fd, data if first_only and calls > 1 else data[:3])
+
+    def sync_complete_file(fd):
+        assert store.get("misc/payload") == payload
+        real_fsync(fd)
+
+    monkeypatch.setattr(os, "write", short_write)
+    monkeypatch.setattr(os, "fsync", sync_complete_file)
+    store.put_once("misc/payload", payload)
+    assert store.get("misc/payload") == payload
+    assert stat.S_IMODE((store.root / "misc/payload").stat().st_mode) == 0o444
+
+
+@pytest.mark.parametrize("prefix", [0, 3], ids=["initially", "after-short-write"])
+def test_put_once_raises_on_zero_write_progress(store, monkeypatch, prefix):
+    real_write = os.write
+    calls = 0
+
+    def stalled_write(fd, data):
+        nonlocal calls
+        calls += 1
+        if prefix and calls == 1:
+            return real_write(fd, data[:prefix])
+        assert calls == (2 if prefix else 1), "retried a write that made no progress"
+        return 0
+
+    monkeypatch.setattr(os, "write", stalled_write)
+    with pytest.raises(OSError):
+        store.put_once("misc/stalled", b"payload")
+    assert calls == (2 if prefix else 1)
+
+
+def test_put_once_accepts_empty_payload(store):
+    store.put_once("misc/empty", b"")
+    assert store.get("misc/empty") == b""
+    assert stat.S_IMODE((store.root / "misc/empty").stat().st_mode) == 0o444
+
+
+@pytest.mark.parametrize("operation", ["write", "fsync"])
+def test_put_once_propagates_io_errors(store, monkeypatch, operation):
+    error = OSError("simulated I/O failure")
+
+    def fail(*args):
+        raise error
+
+    monkeypatch.setattr(os, operation, fail)
+    with pytest.raises(OSError) as exc:
+        store.put_once("misc/failed", b"payload")
+    assert exc.value is error
+
+
 def test_put_once_refuses_escape(store):
     with pytest.raises(ValueError):
         store.put_once("../outside", b"x")
