@@ -57,16 +57,8 @@
           "type": "string"
         },
         "record_ref": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Record Ref"
+          "title": "Record Ref",
+          "type": "string"
         },
         "result": {
           "enum": [
@@ -88,7 +80,8 @@
         "layer",
         "check_id",
         "version",
-        "result"
+        "result",
+        "record_ref"
       ],
       "title": "CheckResult",
       "type": "object"

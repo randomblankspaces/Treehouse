@@ -3,6 +3,9 @@
 Each line is the canonical JSON of ``{seq, prev, rec, h}`` with ``h = sha256(prev + canon(rec))`` and
 ``prev`` the previous line's ``h`` (the genesis value for line 0). A trial's genesis is
 ``sha256("treehouse/trial/" + trial_id)``. ``verify_chain`` reports the seq of the first bad line.
+
+Files are written in binary with ``\n`` line ends on every platform (no ``\r\n`` from text mode). Shared
+chains are locked with ``fcntl.flock``: macOS and Linux are supported, Windows is not.
 """
 
 from __future__ import annotations
@@ -37,7 +40,7 @@ class ChainedJsonlWriter:
     def __init__(self, path: Path | str, *, genesis: str) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self._f = open(self.path, "x", encoding="utf-8")  # noqa: SIM115 - closed in close()
+        self._f = open(self.path, "xb")  # noqa: SIM115 - closed in close()
         self._prev = genesis
         self._seq = 0
 
@@ -49,7 +52,7 @@ class ChainedJsonlWriter:
         if self._f.closed:
             raise ValueError(f"chain {self.path} is closed")
         line, h = _line(self._seq, self._prev, rec)
-        self._f.write(line)
+        self._f.write(line.encode("utf-8"))
         self._f.flush()
         self._prev, self._seq = h, self._seq + 1
         return h
@@ -66,7 +69,7 @@ def append_chained(path: Path | str, rec: dict[str, Any], *, genesis: str) -> tu
     Returns ``(seq, h)``. The tail is re-read under the lock so concurrent appenders stay chained."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "a+", encoding="utf-8") as f:
+    with open(path, "ab+") as f:
         fcntl.flock(f, fcntl.LOCK_EX)
         try:
             f.seek(0)
@@ -76,7 +79,7 @@ def append_chained(path: Path | str, rec: dict[str, Any], *, genesis: str) -> tu
                     last = raw
             seq, prev = (0, genesis) if last is None else (json.loads(last)["seq"] + 1, json.loads(last)["h"])
             line, h = _line(seq, prev, rec)
-            f.write(line)
+            f.write(line.encode("utf-8"))
             f.flush()
             os.fsync(f.fileno())
         finally:

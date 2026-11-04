@@ -12,6 +12,7 @@ from treehouse.schemas import bundle, geo, manifest, model_io, numbers, passport
 from treehouse.schemas.config import InferenceParams, RoleConfig, RunConfig, TrustConfig
 from treehouse.schemas.numbers import Interval, Tier, TypedNumber
 
+PX = "sha256:" + "ab" * 32
 IV = {"lo": 0.6, "hi": 0.8, "level": 0.9, "method": "wilson"}
 BASE = dict(
     metric="m",
@@ -58,6 +59,20 @@ TABLE = [
     ("proportion > 1", {"value": 1.2}, False),
     ("proportion < 0", {"value": -0.1}, False),
     ("count may exceed 1", {"type": "count", "value": 12}, True),
+    ("abstained with a value", {"tier": "ABSTAINED", "value": 0.93, "reasons": ["no gold"], "detail": {}}, False),
+    ("abstention_rate > 1", {"tier": "GOLD-ANCHORED", "panel": "trust", "n_gold": 5, "abstention_rate": 7.0,
+                             "interval": IV, "detail": {}}, False),
+    ("proportion interval outside [0, 1]", {"interval": {**IV, "lo": -0.5, "hi": 1.7}}, False),
+    ("kappa > 1", {"type": "kappa", "value": 5}, False),
+    ("kappa in range", {"type": "kappa", "value": -0.2}, True),
+    ("flag 0.4", {"type": "flag", "value": 0.4}, False),
+    ("flag 1", {"type": "flag", "value": 1}, True),
+    ("negative count", {"type": "count", "value": -3}, False),
+    ("fractional count", {"type": "count", "value": 3.5}, False),
+    ("negative n", {"n": -1}, False),
+    ("nan value", {"type": "usd", "value": float("nan")}, False),
+    ("inf value", {"type": "usd", "value": float("inf")}, False),
+    ("unknown bytes_model", {"detail": {"key_version": "k1", "bytes_model": "guess"}}, False),
 ]
 FENCE = [
     ("process", True),
@@ -105,6 +120,16 @@ def test_synthetic_is_required():
 def test_chip_labels():
     assert tn().chip() == "Checked · SYNTHETIC"
     assert tn(synthetic=False, replayed=True).chip() == "Checked · recorded"
+    assert tn().chip_hover() is None
+    examples = {
+        "GOLD-ANCHORED": {"panel": "trust", "n_gold": 5, "abstention_rate": 0.1, "interval": IV, "detail": {}},
+        "CALIBRATED-TRANSFER": {"panel": "trust", "interval": IV, "detail": {}},
+        "MODEL-ESTIMATED": {"panel": "trust", "interval": IV, "detail": {}},
+        "ABSTAINED": {"value": None, "reasons": ["no gold"], "detail": {}},
+        "MEASURED": {"panel": "process", "detail": {}},
+    }
+    for tier, kw in examples.items():
+        assert tn(tier=tier, synthetic=False, **kw).chip() == numbers.CHIP_LABELS[Tier(tier)]
     labels = {
         "GOLD-ANCHORED": "Estimated from a random check",
         "CALIBRATED-TRANSFER": "Estimated from track record",
@@ -114,6 +139,16 @@ def test_chip_labels():
     }
     for tier, label in labels.items():
         assert numbers.CHIP_LABELS[Tier(tier)] == label
+
+
+def test_modelled_bytes_chip_and_hover():
+    x = tn(metric="bytes_read", type="bytes", value=4096, tier="MEASURED", panel="process",
+           detail={"bytes_model": "synthetic-overview-block-v1"})
+    assert x.chip() == "Measured from trace · SYNTHETIC · modelled bytes"
+    assert x.chip_hover() == "declared overview-block model, not measured"
+    y = tn(metric="bytes_read", type="bytes", value=4096, tier="MEASURED", panel="process",
+           detail={"bytes_model": "measured"}, synthetic=False)
+    assert y.chip() == "Measured from trace" and y.chip_hover() is None
 
 
 def test_frozen_and_forbid():
@@ -191,7 +226,7 @@ def test_backend_resolution_rules():
 
 def test_request_key_ignores_image_bytes():
     def req(data: bytes | None):
-        img = model_io.Image(format="png", sha256="sha256:px", bytes_=data)
+        img = model_io.Image(format="png", sha256=PX, bytes_=data)
         return model_io.ModelRequest(
             model_id="m",
             system="s",
@@ -205,7 +240,7 @@ def test_request_key_ignores_image_bytes():
 
 
 def test_image_bytes_round_trip_json():
-    img = model_io.Image(format="png", sha256="sha256:px", bytes_=b"\x00\xff")
+    img = model_io.Image(format="png", sha256=PX, bytes_=b"\x00\xff")
     assert model_io.Image.model_validate_json(img.model_dump_json()) == img
 
 
@@ -226,7 +261,11 @@ EXEMPT = {
     ("SpanRecord", "attributes"): "raw trace attributes",
     ("SpanEvent", "attributes"): "raw trace attributes",
     ("CheckResult", "detail"): "rule evidence (distances in m)",
+    ("ReportBundle", "evidence"): "raw WindowResult rows, each chipped from its own synthetic flag",
 }
+# Every exempt float still reaches the page inside an element with a data-tier ancestor (I6).
+# Bare ints (counts, seqs, ids) are not flagged: they are integral identifiers or counts shown beside
+# the TypedNumber they qualify. ``Any`` is flagged: an untyped slot could carry a float.
 TYPED = (TypedNumber,)  # floats inside a TypedNumber are typed by definition
 
 
@@ -235,7 +274,7 @@ def _exempt(model: type[BaseModel], field: str) -> bool:
 
 
 def _floats(tp, path: str, seen: set) -> list[str]:
-    if tp is float:
+    if tp is float or tp is typing.Any:
         return [path]
     origin = typing.get_origin(tp)
     if origin is typing.Annotated:
@@ -265,13 +304,18 @@ def test_float_walker_can_fail():
         score: dict[str, list[float | None]]
 
     assert _floats(Bad, "Bad", set()) == ["Bad.score"]
+
+    class Untyped(BaseModel):
+        blob: dict[str, typing.Any]
+
+    assert _floats(Untyped, "Untyped", set()) == ["Untyped.blob"]
     assert _floats(TrustConfig, "TrustConfig", set())  # a config record has bare floats
 
 
 def test_exemptions_name_real_fields():
     from treehouse.schemas import checks, claims, trace
 
-    mods = [geo, claims, trace, checks]
+    mods = [geo, claims, trace, checks, bundle]
     for (model, field), _ in EXEMPT.items():
         cls = model if isinstance(model, type) else next(getattr(m, model) for m in mods if hasattr(m, model))
         assert field in cls.model_fields

@@ -24,7 +24,7 @@ class Image(Frozen):
     model_config = ConfigDict(frozen=True, extra="forbid", ser_json_bytes="base64", val_json_bytes="base64")
     type: Literal["image"] = "image"
     format: Literal["png", "jpeg"]
-    sha256: str
+    sha256: Annotated[str, Field(pattern=r"^sha256:[0-9a-f]{64}$")]  # treehouse.pixels.array_sha256
     bytes_: bytes | None = None
 
 
@@ -67,9 +67,16 @@ class ToolSpec(Frozen):
     input_schema: dict[str, Any]
 
 
+# Free-form payloads (tool JSON, tool-use input, tool input schemas) are copied verbatim: only real Image
+# blocks lose ``bytes_``, so a tool result that merely looks like an image still changes the request key.
+_OPAQUE_KEYS = frozenset({"json_", "input", "input_schema"})
+
+
 def _strip_image_bytes(obj: Any) -> Any:
     if isinstance(obj, dict):
-        return {k: _strip_image_bytes(v) for k, v in obj.items() if not (obj.get("type") == "image" and k == "bytes_")}
+        is_image = obj.get("type") == "image"
+        return {k: (v if k in _OPAQUE_KEYS else _strip_image_bytes(v))
+                for k, v in obj.items() if not (is_image and k == "bytes_")}
     if isinstance(obj, list):
         return [_strip_image_bytes(v) for v in obj]
     return obj
@@ -95,9 +102,25 @@ class Usage(Frozen):
     image_input_tokens: int | None = None
 
 
+StopReason = Literal[
+    "end_turn",
+    "tool_use",
+    "max_tokens",
+    "stop_sequence",
+    "content_filtered",
+    "guardrail",  # Bedrock guardrail_intervened maps here
+    "malformed_model_output",
+    "malformed_tool_use",
+    "model_context_window_exceeded",
+]
+
+
 class ModelResponse(Frozen):
+    """``stop_reason`` covers botocore's Converse stopReason enum (F3); ``guardrail_intervened`` maps to
+    ``guardrail``, every other provider value maps to itself."""
+
     message: Message
-    stop_reason: Literal["end_turn", "tool_use", "max_tokens", "stop_sequence", "content_filtered", "guardrail"]
+    stop_reason: StopReason
     usage: Usage
     latency_ms: int
     response_model_id: str

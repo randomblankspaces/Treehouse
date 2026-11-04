@@ -57,6 +57,51 @@ def polygon_problems(polygons: Sequence[Sequence[Ring]]) -> list[str]:
             for msg in ring_problems(ring)]
 
 
+def _on_segment(p, a, b) -> bool:
+    return _orient(a, b, p) == 0 and min(a[0], b[0]) <= p[0] <= max(a[0], b[0]) and \
+        min(a[1], b[1]) <= p[1] <= max(a[1], b[1])
+
+
+def point_in_ring(p, ring: Ring) -> bool:
+    """True if ``p`` is inside the closed ring or on its boundary (even-odd rule)."""
+    inside = False
+    for i in range(len(ring) - 1):
+        a, b = ring[i], ring[i + 1]
+        if _on_segment(p, a, b):
+            return True
+        if (a[1] > p[1]) != (b[1] > p[1]):
+            x = a[0] + (p[1] - a[1]) * (b[0] - a[0]) / (b[1] - a[1])
+            if p[0] < x:
+                inside = not inside
+    return inside
+
+
+def point_in_polygon(p, poly: Sequence[Ring]) -> bool:
+    """Inside the outer ring (boundary included) and not strictly inside any hole."""
+    if not poly or not point_in_ring(p, poly[0]):
+        return False
+    return not any(point_in_ring(p, h) and not any(_on_segment(p, h[i], h[i + 1]) for i in range(len(h) - 1))
+                   for h in poly[1:])
+
+
+def rings_intersect(r1: Ring, r2: Ring) -> bool:
+    """True if two closed rings' areas or boundaries touch (planar lon/lat)."""
+    if any(point_in_ring(p, r2) for p in r1) or any(point_in_ring(p, r1) for p in r2):
+        return True
+    return any(_segments_cross(r1[i], r1[i + 1], r2[j], r2[j + 1])
+               for i in range(len(r1) - 1) for j in range(len(r2) - 1))
+
+
+def polygons_intersect(a: Sequence[Sequence[Ring]], b: Sequence[Sequence[Ring]]) -> bool:
+    """Any polygon of ``a`` meets any polygon of ``b`` (outer rings only; holes are ignored)."""
+    return any(rings_intersect(pa[0], pb[0]) for pa in a for pb in b if pa and pb)
+
+
+def bbox_ring(b: Sequence[float]) -> list[tuple[float, float]]:
+    x0, y0, x1, y1 = b
+    return [(x0, y0), (x1, y0), (x1, y1), (x0, y1), (x0, y0)]
+
+
 # --- P4: point-in-polygon, boxes, distances, coverage ---------------------------------------------
 
 EARTH_R_M = 6_371_008.8
@@ -64,19 +109,9 @@ M_PER_DEG = 111_320.0  # metres per degree of latitude (and of longitude at the 
 Polys = Sequence[Sequence[Ring]]  # list of polygons, each a list of rings (outer first, then holes)
 
 
-def point_in_ring(x: float, y: float, ring: Ring) -> bool:
-    """Even-odd ray cast. Points exactly on an edge may fall either way."""
-    inside = False
-    for i in range(len(ring) - 1):
-        (x1, y1), (x2, y2) = ring[i][:2], ring[i + 1][:2]
-        if (y1 > y) != (y2 > y) and x < (x2 - x1) * (y - y1) / (y2 - y1) + x1:
-            inside = not inside
-    return inside
-
-
 def point_in_polygons(x: float, y: float, polygons: Polys) -> bool:
-    """Inside any polygon's outer ring and outside all of its holes."""
-    return any(point_in_ring(x, y, p[0]) and not any(point_in_ring(x, y, h) for h in p[1:]) for p in polygons)
+    """Inside (or on the boundary of) any polygon's outer ring and not strictly inside any of its holes."""
+    return any(point_in_polygon((x, y), p) for p in polygons)
 
 
 def bbox_of(polygons: Polys) -> tuple[float, float, float, float]:
@@ -91,10 +126,6 @@ def bbox_contains(b: Sequence[float], x: float, y: float) -> bool:
 
 def bbox_intersects(a: Sequence[float], b: Sequence[float]) -> bool:
     return a[0] <= b[2] and b[0] <= a[2] and a[1] <= b[3] and b[1] <= a[3]
-
-
-def bbox_ring(b: Sequence[float]) -> list[tuple[float, float]]:
-    return [(b[0], b[1]), (b[2], b[1]), (b[2], b[3]), (b[0], b[3]), (b[0], b[1])]
 
 
 def polygons_intersect_bbox(polygons: Polys, b: Sequence[float]) -> bool:

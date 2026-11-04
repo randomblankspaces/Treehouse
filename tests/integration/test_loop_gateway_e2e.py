@@ -66,9 +66,14 @@ def run_sealed(root, *, zlib_level):
     store = LocalStore(root)
     tmp = store.begin_run("run-0001")
     clock, ids = LogicalClock(), IdSource(11)
-    rig = make_rig(tmp.path / "trials" / "t-0.trace.jsonl", zlib_level=zlib_level, store=store, clock=clock, ids=ids)
+    hashes = {"treehouse.task.hash": card().card_hash(),
+              "treehouse.config.hash": sha256_bytes(canonical_json(CFG).encode())}
+    rig = make_rig(tmp.path / "trials" / "t-0.trace.jsonl", zlib_level=zlib_level, store=store, clock=clock, ids=ids,
+                   base_attrs=hashes)
     spy = Spy(FakeProvider(SCRIPT))
-    loop = PlainLoop(model_id="fake-model", params=InferenceParams(max_tokens=256))
+    loop = PlainLoop(model_id="fake-model", params=InferenceParams(max_tokens=256),
+                     blob_sink=lambda b: store.put_blob(b, media_type="application/json",
+                                                        license="LicenseRef-synthetic"))
 
     async def go():
         async with rig.gateway as gw:

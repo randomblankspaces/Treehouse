@@ -1398,7 +1398,7 @@ requires-dist = [
     { name = "pyyaml", specifier = ">=6" },
     { name = "rasterio", marker = "extra == 'geo'", specifier = ">=1.4" },
     { name = "scipy", specifier = ">=1.13" },
-    { name = "strands-agents", marker = "extra == 'strands'", specifier = ">=1.60,<2" },
+    { name = "strands-agents", marker = "extra == 'strands'", specifier = ">=1.63,<2" },
     { name = "typer", specifier = ">=0.12" },
     { name = "uvicorn", marker = "extra == 'api'", specifier = ">=0.30" },
 ]

@@ -322,6 +322,7 @@
           "type": "string"
         },
         "n_gold": {
+          "minimum": 1,
           "title": "N Gold",
           "type": "integer"
         },
@@ -448,6 +449,7 @@
           "enum": [
             "present",
             "pending_fetch",
+            "pending_generation",
             "none"
           ],
           "title": "Status",
@@ -616,6 +618,7 @@
       "properties": {
         "census_if_N_le": {
           "default": 60,
+          "minimum": 0,
           "title": "Census If N Le",
           "type": "integer"
         },
@@ -630,10 +633,12 @@
         },
         "min_N_h": {
           "default": 4,
+          "minimum": 1,
           "title": "Min N H",
           "type": "integer"
         },
         "n_total": {
+          "minimum": 1,
           "title": "N Total",
           "type": "integer"
         },
@@ -738,14 +743,17 @@
       "additionalProperties": false,
       "properties": {
         "max_bytes_per_run": {
+          "minimum": 0,
           "title": "Max Bytes Per Run",
           "type": "integer"
         },
         "max_out_px": {
+          "minimum": 1,
           "title": "Max Out Px",
           "type": "integer"
         },
         "max_side_m": {
+          "exclusiveMinimum": 0,
           "title": "Max Side M",
           "type": "number"
         }
@@ -760,6 +768,7 @@
     }
   },
   "additionalProperties": false,
+  "description": "A task card.\n\n``synthetic`` means *synthetic task* (written by the team, not a partner's), which requires\n``synthetic_notice``. It does not decide the per-number ``synthetic`` flag: that comes from the data\na number was computed on (a source with ``access: synthetic``, a synthetic key or labeller, or a\n``WindowResult.synthetic``), so a real-data run of a synthetic task is not chipped SYNTHETIC.\n\nThe worker sees ``goal``, the AOI, the time window and the tools only. ``known_limits``,\n``must_notice``, keys and plans are grader-side and never enter a worker prompt. ``as_of`` is\nnormalised to UTC so the card hash does not depend on the offset it was written with.",
   "properties": {
     "aoi": {
       "$ref": "#/$defs/Polygon"

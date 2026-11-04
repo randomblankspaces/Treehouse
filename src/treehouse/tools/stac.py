@@ -61,7 +61,7 @@ class StacCatalog:
             pan_gsd_m=p["pan_gsd"], off_nadir_deg=p.get("view:off_nadir"),
             sun_elevation_deg=p.get("view:sun_elevation"), footprint=it.footprint,
             aoi_coverage_fraction=round(coverage_fraction(it.footprint.polygons(), self.aoi.polygons(), 30), 6),
-            license=it.raw.get("license", "unknown"))
+            license=it.raw.get("license", "unknown"), synthetic=bool(p.get("treehouse:synthetic", False)))
 
     def search(self, aoi_bbox: tuple[float, float, float, float], start: str, end: str) -> StacSearchResult | ToolError:
         try:

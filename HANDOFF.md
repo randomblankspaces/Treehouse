@@ -62,17 +62,14 @@ For each method, give what it catches, what it misses, its cost, and how the met
 - Network: Vantor bucket HTTPS **works**; data.source.coop and overpass-api.de are **blocked**; arxiv.org is blocked for fetch.
 - Vantor Nepal event: 33 scenes, **4 pre + 29 post** (STAC `phase`). Items carry `eo:cloud_cover`, `pan_gsd`, `view:off_nadir`, `view:sun_*`. There is no cloud mask.
 
-## Current state (update this as you go) — checkpoint 1, ~00:45 EST Wed Nov 4
-- [x] Step 1: SYSTEM-DESIGN.md (an earlier session's council, unanimous in round 2) is on main (`22f0400`). Branch `docs/system-design-factcheck` has: fact-check pass 2; scene count corrected to 4 pre + 29 post; §A13 unkeyed-methods comparison; council-1 log addendum. A doubter raised 36 doubts (`wip/doubt-sd.md`). A **judge agent** is applying the valid ones on that branch. When its commit lands, merge the branch to main.
-- [ ] Step 2: implementation council. Rounds (a) and (b) are done (`wip/council2/`). A neutral moderator is merging into `c-design-r1.md`. Next: all 5 seats vote with blocking objections; revise until unanimous; fact-check library/API claims; write `docs/design/IMPLEMENTATION-DESIGN.md` and `docs/design/council-2-log.md` (from `log-draft.md`).
-  - Consensus after round (b):
-    - The demo skeleton comes before the trust maths, with a 04:30 checkpoint. The plain tool loop is Must-0 and is the demo engine.
-    - A MEASURED tier for exact trace-derived numbers.
-    - One synthetic world: RS's `synth-crossings` structure plus ADV's planted policies, rendered as numpy arrays, with a synthetic flag on every number.
-    - moto for S3 and Stubber for Bedrock. No CDK tonight.
-    - The Bedrock adapter, probe script and model registry are merged before 08:00 for Kiro.
-    - Strands runs via our ModelProvider with `SequentialToolExecutor` (Wednesday).
-    - STAT's PPI variance fix, with the gold-only interval printed beside it.
-- [ ] Step 3: spec sheet.
-- [~] Step 4: build. **P0 scaffold** is on branch `pkg/p0-scaffold`: uv project, `canon.py`, typer CLI, offline test guard (blocks non-loopback sockets, clears `AWS_*`), CI workflow; 6 tests pass. It is not yet reviewed or merged.
-- [ ] Morning report (`docs/OVERNIGHT-REPORT.md`).
+## Current state: checkpoint 3, ~03:15 EST Wed Nov 4
+- [x] **Step 1** and **Step 2** are on main. Build from `docs/design/IMPLEMENTATION-DESIGN.md`: §7 is the package plan and §6 the tests; its final fact-check section overrides the body.
+- [~] **Step 3** (spec sheet) is on branch `docs/spec-sheet` (180c8e9). A doubter raised 41 doubts. A judge is applying the valid fixes, then the branch is merged.
+- [~] **Step 4: build.**
+  - **On main (02ac127): P0, P0b, P1 and the P1 review fixes.** 213 tests pass, 1 deselected; ruff is clean.
+  - **Built but not merged:** P2 and P3 on `pkg/p2-trace-store` and `pkg/p3-providers-loop`. Their review fixes are in progress on `pkg/p3-fixes` (blocking: seal and verify ledger holes).
+  - **P4** (gateway and tools) is on `pkg/p4-gateway-tools` (06cdc4a, 233 tests). Its doubter is running.
+  - **P6** (Bedrock adapter, spend ledger, probe) is on `pkg/p6-aws-a` (8a8f232, 234 tests). It is stacked on P3, **not** on P4. Its doubter is running. **It must be on main by 08:00 EST for Kiro.**
+  - **P5** (demo skeleton) is being built on `pkg/p5-demo-skeleton`, stacked on P4.
+  - **Merge order:** p3-fixes (which contains P2 and P3) → P4 (+ fixes) → P6 (+ fixes) → P5 → P7 → P8. Expect conflicts in `schemas/model_io.py`, `harness/plain_loop.py` and the golden schema files; keep both sides, then regenerate the goldens.
+- At about 03:10 EST every agent stopped at a usage limit and was then resumed. If this happens again, run `git status` in each worktree and push any WIP.
