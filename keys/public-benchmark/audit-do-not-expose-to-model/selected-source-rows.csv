@@ -1,0 +1,25 @@
+case_id,multi_poly,eia_id,p_state,p_county,ylat,xlong,p_area,p_img_date,p_dig_conf,p_name,p_year,p_pwr_reg,p_tech_pri,p_tech_sec,p_sys_type,p_axis,p_azimuth,p_tilt,p_battery,p_cap_ac,p_cap_dc,p_type,p_agrivolt,p_comm,p_zscore
+401372,single,59905,VA,Rockingham,38.383400,-78.642700,37122,20250525,4,Merck,2017,PJM,PV,c-si,ground,fixed-tilt,180,25,,0.8,2.2,greenfield,non-agrivoltaic,,-0.21736267
+402037,multi,60917,VA,Buckingham,37.503700,-78.373400,294525,20220402,4,"Buckingham Solar, LLC",2017,PJM,PV,c-si,ground,single-axis,180,45,,19.8,22.7,greenfield,non-agrivoltaic,,0.030346461
+402364,single,61457,VA,Fluvanna,37.965100,-78.231600,135855,20200823,4,Palmer Solar Center,2017,PJM,PV,c-si,ground,single-axis,90,,,5,6.7,greenfield,non-agrivoltaic,,-0.35571274
+402640,multi,61849,VA,Pittsylvania,36.658200,-79.304300,166063,20190814,4,Danville,2018,PJM,PV,c-si,ground,single-axis,0,,,6,8,greenfield,non-agrivoltaic,,-0.37160799
+403215,multi,62813,VA,Mecklenburg,36.816400,-78.446000,1777563,20220311,4,Grasshopper Solar,2020,PJM,PV,c-si,ground,single-axis,90,,,80,103.8,greenfield,non-agrivoltaic,,-0.22945651
+403292,multi,62959,VA,Pittsylvania,36.927900,-79.353200,1186537,20220609,4,Whitehorn Solar,2021,PJM,PV,c-si,ground,single-axis,180,,,50,65.7,greenfield,non-agrivoltaic,,-0.27150837
+403383,multi,63077,VA,Charlotte,37.023100,-78.581100,234958,20211220,4,"Twittys Creek Solar, LLC",2020,PJM,PV,c-si,ground,single-axis,180,,,13.8,17.4,greenfield,non-agrivoltaic,,-0.011623723
+403389,multi,63083,VA,Appomattox,37.330000,-78.768300,283041,20220126,4,"Caden Energix Pamplin, LLC",2020,PJM,PV,thin-film,ground,single-axis,60,,,15.7,19.8,greenfield,non-agrivoltaic,,-0.068668328
+403717,multi,63549,VA,Halifax,37.011700,-79.033000,1592471,20210311,4,Water Strider Solar,2021,PJM,PV,c-si,ground,single-axis,180,60,,80,108.2,greenfield,non-agrivoltaic,,-0.096622862
+403919,multi,63965,VA,Pittsylvania,36.592500,-79.301000,228650,20231012,4,"Danville Farm, LLC",2020,PJM,PV,thin-film,ground,single-axis,180,,,12,15.9,greenfield,non-agrivoltaic,,-0.074453562
+403951,multi,64015,VA,Buckingham,37.502400,-78.384000,508782,20221228,4,"Energix Buckingham, LLC",2021,PJM,PV,thin-film,ground,single-axis,180,,,20,26.4,greenfield,non-agrivoltaic,,-0.31994781
+403955,multi,64019,VA,Campbell,37.144100,-79.356600,1654819,20220722,4,Altavista Solar,2021,PJM,PV,c-si,ground,single-axis,180,25,,80,113,greenfield,non-agrivoltaic,,-0.091884129
+401241,multi,59685,VA,Fauquier,38.548400,-77.780100,374877,20211009,4,Remington Solar Facility,2017,PJM,PV,thin-film,ground,fixed-tilt,180,20,,20,27.7,greenfield,non-agrivoltaic,,-0.013917108
+401375,multi,59911,VA,Chesterfield,37.341700,-77.286900,35633,20211002,4,Philip Morris,2016,PJM,PV,c-si,ground,fixed-tilt,176,25,,0.8,2.4,greenfield,non-agrivoltaic,,-0.10484888
+401528,multi,60127,VA,Accomack,37.940200,-75.586900,2095058,20220121,4,"Eastern Shore Solar, LLC",2016,PJM,PV,c-si,ground,single-axis,180,60,,80,105.4,greenfield,non-agrivoltaic,,-0.3419207
+401629,multi,60318,VA,Isle of Wight,36.891500,-76.614100,414080,20221018,4,Woodland Solar Farm,2016,PJM,PV,c-si,ground,single-axis,180,,,19.7,25.1,greenfield,non-agrivoltaic,,-0.19855407
+401808,multi,60584,VA,Virginia Beach,36.788000,-76.047500,288485,20211030,4,Oceana Solar,2017,PJM,PV,thin-film,ground,single-axis,8,,,17.6,21.1,greenfield,non-agrivoltaic,,-0.024351371
+402035,multi,60915,VA,New Kent,37.472900,-76.844200,290256,20220107,4,"Correctional Solar, LLC",2017,PJM,PV,c-si,ground,single-axis,0,0,,20,22.9,greenfield,non-agrivoltaic,,0.055697214
+402036,multi,60916,VA,Sussex,36.943400,-77.415500,424164,20220617,4,"Sappony Solar, LLC",2017,PJM,PV,c-si,ground,single-axis,0,0,,20,28.3,greenfield,non-agrivoltaic,,-0.11366486
+402108,multi,61023,VA,King William,37.670600,-77.168600,409722,20220327,4,Hollyfield,2018,PJM,PV,c-si,ground,single-axis,181,,,17,22.5,greenfield,non-agrivoltaic,,-0.27784988
+402310,multi,61375,VA,Northampton,37.365800,-75.918200,507245,20220703,4,"Hecate Energy Cherrydale, LLC",2017,PJM,PV,c-si,ground,single-axis,180,60,,20,25.1,greenfield,non-agrivoltaic,,-0.35340792
+402327,multi,61406,VA,Essex,37.832500,-76.796100,549749,20221012,4,Essex Solar Center,2017,PJM,PV,c-si,ground,single-axis,90,,,20,26.7,greenfield,non-agrivoltaic,,-0.36613986
+402338,multi,61422,VA,Southampton,36.611200,-77.209100,2939023,20231029,4,"Southampton Solar, LLC",2017,PJM,PV,c-si,ground,single-axis,0,0,,103.6,140.8,greenfield,non-agrivoltaic,,-0.37532741
+402736,multi,61985,VA,Surry,37.154400,-76.901200,3187658,20241008,2,Colonial Trail West,2019,PJM,PV,c-si,ground,single-axis,0,,,142.4,210.9,greenfield,non-agrivoltaic,,-0.12142678

@@ -66,7 +66,8 @@ class ToolGateway:
     def __init__(self, servers: dict[str, MCPServer], policy: Policy, tracer: TrialTracer, budget: BudgetGuard,
                  meter: Meter, pixels: PixelCache, tool_cassette: ToolCassette | None = None,
                  mode: Literal["live", "verify"] = "live", as_of: datetime | None = None, store: Any = None,
-                 *, ledger: ClaimLedger, license: str = "unknown", tools: Iterable[str] | None = None) -> None:
+                 *, ledger: ClaimLedger, license: str = "unknown", tools: Iterable[str] | None = None,
+                 investigation: Any = None) -> None:
         if mode == "verify" and tool_cassette is None:
             raise ValueError("mode='verify' needs a tool_cassette")
         if as_of is not None:
@@ -76,6 +77,7 @@ class ToolGateway:
         self.as_of, self.store, self.ledger, self.license = policy.as_of, store, ledger, license
         self.tools = None if tools is None else set(tools)
         self.seq = 0
+        self.investigation = investigation
         self._entered = False
         self._stack: AsyncExitStack | None = None
         self._catalog: dict[str, tuple[Client, Any]] = {}
@@ -140,14 +142,22 @@ class ToolGateway:
                  "treehouse.key_access_attempt": False}
         with self.tracer.span(f"execute_tool {name}", "execute_tool", attrs) as span:
             n_events = len(self.budget.events)
+            outcome = None
             try:
-                return await self._call(span, name, args, rid, args_hash, t0)
+                outcome = await self._call(span, name, args, rid, args_hash, t0)
+                return outcome
             finally:
+                if self.investigation is not None:
+                    self.investigation.observe(span, name, args, call_id, rid, self.seq, outcome)
                 for e in self.budget.events[n_events:]:
                     span.event(e["name"], axis=e["axis"], pct=e["pct"])
 
     async def _call(self, span, name: str, args: dict[str, Any], rid: str, args_hash: str, t0: int) -> ToolOutcome:
         self.ledger.span_id = span.span_id
+        if self.investigation is not None:
+            refused = self.investigation.before(span, name, args, rid, self.seq)
+            if refused is not None:
+                return self._blocked(span, rid, refused, args_hash)
         decision = self.policy.check(name, args)
         if not decision.blocked and self.tools is not None and name not in self.tools:
             decision = Decision(True, "not_allowlisted", name)

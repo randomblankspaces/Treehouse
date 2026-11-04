@@ -1,5 +1,14 @@
 # Build Design Decisions (formerly Open Build Questions)
 
+> Current context, November 4: Suhas clarified that Treehouse evaluates an agent's complete
+> investigation and the accuracy of its resulting geographic database, across configurable tasks
+> and zones. Agent explanations/confidence are self-reports; held-out evaluation and separate-context
+> process review have distinct evidence labels. Independent test authorship precedes implementation.
+> The current delivery sequence and superseding scope are in [OUTLINE.md](OUTLINE.md)
+> and [PLAN.md](PLAN.md). Earlier Nepal-only, UI-deferred and old overnight ordering below
+> are historical where they conflict; preserved decisions are not new execution authority.
+
+
 > **For agents — what this file is:** Design questions for the build. **Status: decided (SCOPE D25).** Every *recommended default* below is now the decision, with one change: **OQ12's output metric is deterministic, with no LLM judge.** OQ13 doesn't apply (solo build), and OQ14 was open until round 6 (now superseded by D67). Build on these. Change one only by logging a new decision in SCOPE.md. **Round 6 (2026-11-04):** the two adopted designs changed several rows. Each changed row ends with **Superseded by Dxx** and a one-line note; where a superseded note and the original text differ, the note wins. Details are in [design/SYSTEM-DESIGN.md](design/SYSTEM-DESIGN.md) and [design/IMPLEMENTATION-DESIGN.md](design/IMPLEMENTATION-DESIGN.md).
 
 | # | Question | Decision (accepted default, D25) |

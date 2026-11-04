@@ -1,5 +1,13 @@
 # HANDOFF — overnight job (for whichever agent picks this up)
 
+> Current handoff: read [docs/KIRO-HANDOFF.md](docs/KIRO-HANDOFF.md),
+> [docs/OUTLINE.md](docs/OUTLINE.md) and [docs/PLAN.md](docs/PLAN.md) first. The product now includes
+> an opt-in decision/evidence investigation sandbox and observatory UI. Local checks do not prove
+> live model/imagery accuracy. Suhas will provide further context after the reviewed main merge;
+> Kiro then handles AWS integration/live testing, followed by refinement. The overnight narrative
+> below is retained as history and must not be executed blindly.
+
+
 > If you are a new agent: read this file, then `TODO.md`, then `docs/OVERNIGHT-REPORT.md` (if present). Continue from **Current state**. Keep this file current, push often (WIP included), and merge into the fork's `main` only when tests are green.
 
 ## The job, as Suhas gave it (2026-11-04, ~00:00 EST)

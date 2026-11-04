@@ -1,5 +1,14 @@
 # Treehouse: consensus system design (revision 2)
 
+> Current context, November 4: Suhas clarified that Treehouse evaluates an agent's complete
+> investigation and the accuracy of its resulting geographic database, across configurable tasks
+> and zones. Agent explanations/confidence are self-reports; held-out evaluation and separate-context
+> process review have distinct evidence labels. Independent test authorship precedes implementation.
+> The current delivery sequence and superseding scope are in [../OUTLINE.md](../OUTLINE.md)
+> and [../PLAN.md](../PLAN.md). Earlier Nepal-only, UI-deferred and old overnight ordering below
+> are historical where they conflict; preserved decisions are not new execution authority.
+
+
 Status: merged from five revised proposals (statistician, remote-sensing, agent-eval, aws-architect, beneficiary-judge), then revised to resolve round-1 blocking objections. Every choice was picked on the strength of its reasoning and evidence. Vote counts were not used.
 
 Conventions:

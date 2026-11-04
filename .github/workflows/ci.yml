@@ -4,6 +4,43 @@ on:
     branches: [main]
   pull_request:
 jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      - run: npm ci
+        working-directory: ui
+      - uses: astral-sh/setup-uv@v6
+      - run: uv python install 3.12
+      - run: uv sync --locked --extra api
+      - run: npm run typecheck
+        working-directory: ui
+      - run: npm run build
+        working-directory: ui
+      - run: npx --no-install playwright install --with-deps chromium
+        working-directory: ui
+      - name: Prepare an offline disposable browser store
+        run: |
+          uv run --extra api python scripts/offline.py treehouse demo --out out/ui-ci
+          uv run --extra api python scripts/offline.py treehouse sandbox demo --store out/ui-ci/store --run-id investigation-demo
+      - name: Independent browser acceptance
+        run: |
+          uv run --extra api treehouse ui serve --store out/ui-ci/store > /tmp/treehouse-ui.log 2>&1 &
+          ui_server_pid=$!
+          trap 'kill "$ui_server_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..100}; do
+            if curl -fsS http://127.0.0.1:8765/api/capabilities > /dev/null; then break; fi
+            sleep 0.2
+          done
+          BASE_URL=http://127.0.0.1:8765 npm --prefix ui test
+          BASE_URL=http://127.0.0.1:8765 DISPOSABLE_STORE=yes npm --prefix ui run test:start
+          TREEHOUSE_UI_URL=http://127.0.0.1:8765 TREEHOUSE_TEST_RUN_ID=investigation-demo npm --prefix ui run test:investigation
   test:
     runs-on: ubuntu-latest
     steps:

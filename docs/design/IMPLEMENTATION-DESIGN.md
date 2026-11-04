@@ -1,5 +1,14 @@
 # Treehouse: implementation design
 
+> Current context, November 4: Suhas clarified that Treehouse evaluates an agent's complete
+> investigation and the accuracy of its resulting geographic database, across configurable tasks
+> and zones. Agent explanations/confidence are self-reports; held-out evaluation and separate-context
+> process review have distinct evidence labels. Independent test authorship precedes implementation.
+> The current delivery sequence and superseding scope are in [../OUTLINE.md](../OUTLINE.md)
+> and [../PLAN.md](../PLAN.md). Earlier Nepal-only, UI-deferred and old overnight ordering below
+> are historical where they conflict; preserved decisions are not new execution authority.
+
+
 Target path: `docs/design/IMPLEMENTATION-DESIGN.md`. This document implements `docs/design/SYSTEM-DESIGN.md`, including §A13 from the `docs/system-design-factcheck` branch. The neutral moderator merged it from the round-a and round-b texts of STAT, RS, OBS, AWS and ADV. Choices rest on evidence, not votes. Deviations from SYSTEM-DESIGN are marked **[DEV]** and listed in §10.
 
 Constraints:
