@@ -1,0 +1,37 @@
+# Model registry (IMPLEMENTATION-DESIGN §3, fact-check U1/U2). Every row is UNVERIFIED until the K1 probe
+# (scripts/aws_probe.py) confirms the id, the inference profile and the image-delivery mode. Kiro updates a
+# row only where the probe proved a different value, then sets verified: true with the probe date.
+schema_version: treehouse.models/1
+defaults:
+  worker: claude-sonnet-5-5
+  verifier: nova-pro
+models:
+  - key: claude-sonnet-5-5
+    family: anthropic-claude
+    model_id: anthropic.claude-sonnet-5-5
+    # The bare id reportedly fails on-demand; call through a cross-region profile (U1).
+    inference_profile: us.anthropic.claude-sonnet-5-5
+    alt_profiles: [global.anthropic.claude-sonnet-5-5]
+    region: us-east-1
+    vision: true
+    tool_use: true
+    # UNVERIFIED whether Sonnet 5.5 accepts an image inside a tool result (U1); K1 decides.
+    image_delivery: user_turn
+    max_image_px: 1568
+    price_ref: claude-sonnet-5-5
+    quota_note: "UNVERIFIED until K1: on-demand RPM/TPM quotas unknown; adapter concurrency 2"
+    verified: false
+  - key: nova-pro
+    family: amazon-nova
+    model_id: amazon.nova-pro-v1:0
+    # us., eu. and apac. profiles exist; there is no global. profile (U2).
+    inference_profile: us.amazon.nova-pro-v1:0
+    alt_profiles: []
+    region: us-east-1
+    vision: true
+    tool_use: true
+    image_delivery: user_turn
+    max_image_px: 2048
+    price_ref: nova-pro
+    quota_note: "UNVERIFIED until K1: on-demand RPM/TPM quotas unknown; adapter concurrency 2"
+    verified: false

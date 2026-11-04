@@ -102,6 +102,14 @@ class Usage(Frozen):
     image_input_tokens: int | None = None
 
 
+class ProviderEvent(Frozen):
+    """A span event raised inside a provider call (e.g. ``treehouse.retry``); the harness copies it onto the
+    chat span."""
+
+    name: str
+    attributes: dict[str, Any] = {}
+
+
 StopReason = Literal[
     "end_turn",
     "tool_use",
@@ -125,3 +133,8 @@ class ModelResponse(Frozen):
     latency_ms: int
     response_model_id: str
     request_id: str | None = None
+    # set by live providers from the SpendLedger commit; cassettes keep them, replay reports them but the
+    # SpendLedger is charged $0
+    cost_usd: float | None = None
+    price_table_version: str | None = None
+    events: list[ProviderEvent] = []

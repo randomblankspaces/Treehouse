@@ -1,0 +1,350 @@
+{
+  "$defs": {
+    "ProbeCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "additionalProperties": true,
+          "default": {},
+          "title": "Data",
+          "type": "object"
+        },
+        "detail": {
+          "default": "",
+          "title": "Detail",
+          "type": "string"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error Code"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "service": {
+          "title": "Service",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "ok",
+            "denied",
+            "unavailable",
+            "invalid_request",
+            "error",
+            "skipped_budget"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "service",
+        "status"
+      ],
+      "title": "ProbeCheck",
+      "type": "object"
+    },
+    "ProbeModel": {
+      "additionalProperties": false,
+      "properties": {
+        "image_input": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Image Input"
+        },
+        "inference_profile": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Inference Profile"
+        },
+        "invoke_id_used": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Invoke Id Used"
+        },
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "listed": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Listed"
+        },
+        "model_id": {
+          "title": "Model Id",
+          "type": "string"
+        },
+        "near_matches": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Near Matches",
+          "type": "array"
+        },
+        "profile_listed": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Profile Listed"
+        },
+        "recommended_image_delivery": {
+          "anyOf": [
+            {
+              "enum": [
+                "tool_result",
+                "user_turn"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Recommended Image Delivery"
+        },
+        "tool_result_image": {
+          "anyOf": [
+            {
+              "enum": [
+                "ok",
+                "denied",
+                "unavailable",
+                "invalid_request",
+                "error",
+                "skipped_budget"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Tool Result Image"
+        },
+        "user_turn_image": {
+          "anyOf": [
+            {
+              "enum": [
+                "ok",
+                "denied",
+                "unavailable",
+                "invalid_request",
+                "error",
+                "skipped_budget"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "User Turn Image"
+        }
+      },
+      "required": [
+        "key",
+        "model_id",
+        "inference_profile",
+        "listed",
+        "profile_listed",
+        "image_input",
+        "user_turn_image",
+        "tool_result_image"
+      ],
+      "title": "ProbeModel",
+      "type": "object"
+    },
+    "ProbeSpend": {
+      "additionalProperties": false,
+      "properties": {
+        "calls": {
+          "title": "Calls",
+          "type": "integer"
+        },
+        "cap_usd": {
+          "title": "Cap Usd",
+          "type": "number"
+        },
+        "committed_usd": {
+          "title": "Committed Usd",
+          "type": "number"
+        },
+        "estimated": {
+          "const": true,
+          "default": true,
+          "title": "Estimated",
+          "type": "boolean"
+        },
+        "max_tokens": {
+          "title": "Max Tokens",
+          "type": "integer"
+        },
+        "per_call_cap_usd": {
+          "title": "Per Call Cap Usd",
+          "type": "number"
+        },
+        "price_table": {
+          "title": "Price Table",
+          "type": "string"
+        },
+        "reserved_usd": {
+          "title": "Reserved Usd",
+          "type": "number"
+        }
+      },
+      "required": [
+        "cap_usd",
+        "per_call_cap_usd",
+        "max_tokens",
+        "reserved_usd",
+        "committed_usd",
+        "calls",
+        "price_table"
+      ],
+      "title": "ProbeSpend",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "checks": {
+      "items": {
+        "$ref": "#/$defs/ProbeCheck"
+      },
+      "title": "Checks",
+      "type": "array"
+    },
+    "execution": {
+      "additionalProperties": true,
+      "title": "Execution",
+      "type": "object"
+    },
+    "foundation_models": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Foundation Models",
+      "type": "array"
+    },
+    "generated_at": {
+      "title": "Generated At",
+      "type": "string"
+    },
+    "inference_profiles": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Inference Profiles",
+      "type": "array"
+    },
+    "invocation_logging": {
+      "additionalProperties": true,
+      "default": {},
+      "title": "Invocation Logging",
+      "type": "object"
+    },
+    "models": {
+      "items": {
+        "$ref": "#/$defs/ProbeModel"
+      },
+      "title": "Models",
+      "type": "array"
+    },
+    "probe_version": {
+      "title": "Probe Version",
+      "type": "string"
+    },
+    "quotas": {
+      "default": [],
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Quotas",
+      "type": "array"
+    },
+    "region": {
+      "title": "Region",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "treehouse.aws-capabilities/v1",
+      "default": "treehouse.aws-capabilities/v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "spend": {
+      "$ref": "#/$defs/ProbeSpend"
+    },
+    "summary": {
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "title": "Summary",
+      "type": "object"
+    },
+    "throttle_note": {
+      "default": "",
+      "title": "Throttle Note",
+      "type": "string"
+    }
+  },
+  "required": [
+    "generated_at",
+    "probe_version",
+    "region",
+    "execution",
+    "checks",
+    "models",
+    "spend",
+    "summary"
+  ],
+  "title": "AwsCapabilities",
+  "type": "object"
+}
