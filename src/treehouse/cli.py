@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Annotated
 
 import typer
 
@@ -58,6 +59,36 @@ def task_validate(path: Path) -> None:
         raise typer.Exit(1)
     typer.echo(f"ok {path}\ncard hash: {report.card_hash}\nlicense floor: {report.license_floor}")
     typer.echo(f"license obligations: {describe_obligations(report.license_obligations)}")
+
+
+@app.command("verify")
+def verify_cmd(
+    run_id: str = typer.Argument(None, help="Run id; omit to verify the whole store."),
+    store: Annotated[
+        Path | None, typer.Option("--store", help="Store root (default $TREEHOUSE_STORE or ./.treehouse).")
+    ] = None,
+    expect_head: Annotated[
+        str | None, typer.Option("--expect-head", help="A ledger head recorded earlier; FAIL if it is no longer "
+                                                        "a line of the ledger (the store was rewritten).")
+    ] = None,
+) -> None:
+    """Verify traces, file hashes, manifests, the ledger chain, blobs and evals. Exits 1 on any problem.
+    Prints the ledger head: record it outside the store, since the store alone cannot detect a full rewrite."""
+    from treehouse.store.local import LocalStore, default_store_root
+    from treehouse.store.verify import verify
+
+    root = store or default_store_root()
+    if not root.is_dir():
+        typer.echo(f"FAIL {root}: store not found", err=True)
+        raise typer.Exit(1)
+    report = verify(LocalStore(root), run_id, expected_head=expect_head)
+    for p in report.problems:
+        typer.echo(str(p))
+    head = f"ledger head: {report.ledger_head} ({report.ledger_n_lines} line(s))"
+    if not report.ok:
+        typer.echo(head)
+        raise typer.Exit(1)
+    typer.echo(f"ok {root}: {report.runs} run(s), {report.records} record(s), {report.blobs} blob(s)\n{head}")
 
 
 if __name__ == "__main__":  # pragma: no cover

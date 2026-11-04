@@ -55,3 +55,6 @@ tmp/
 temp/
 *.tmp
 .hypothesis/
+
+# Treehouse local store (default $TREEHOUSE_STORE)
+.treehouse/

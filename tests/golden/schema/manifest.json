@@ -773,6 +773,14 @@
       "title": "Data Pointers",
       "type": "array"
     },
+    "files": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "default": {},
+      "title": "Files",
+      "type": "object"
+    },
     "key_isolation_statement": {
       "title": "Key Isolation Statement",
       "type": "string"
