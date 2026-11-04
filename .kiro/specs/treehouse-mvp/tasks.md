@@ -18,7 +18,7 @@ run `uv run treehouse budget status` (stop at exit 2/3). If a task hits a hard A
   - `scripts/fetch_osm_warehouses.py` → Bangladesh city pool (pick the city with the best `building=warehouse` coverage among Chattogram/Dhaka; pin an extract, Overpass is flaky).
   - Task cards `tasks/t1-nagoya-warehouses.yaml`, `tasks/t5-gifu-warehouses.yaml`, `tasks/t1-bangladesh-warehouses.yaml` with Table-8 positive/negative definitions, AOI (keep AOIs small enough for budget: start with a ~10 × 10 km Nagoya port/logistics district), permitted sources + licences, forbidden sources, budget. `treehouse task validate` passes. _Req: 1.2, 1.3_
 
-- [ ] 2. Embedding sources
+- [x] 2. Embedding sources
   - `EmbeddingSource` protocol + `clay_lgnd` (source.coop GeoParquet) + `aef` (verify the AEF access path first: Earth Engine export or public cloud mirror; if unavailable from Workshop, record the blocker and use committed AOI-sized fixtures) + offline fixtures for tests.
   - Should: `clay_compute` on 160 m Sentinel-2 L2A chips (Clay v1.5 weights from Hugging Face `made-with-clay/Clay`, Apache-2.0) on SageMaker or a GPU EC2 instance; cache to S3. _Req: 2.2, 2.5_
 

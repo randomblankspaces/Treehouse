@@ -114,3 +114,34 @@ Region: us-east-1. Identity: `WSParticipantRole` (assumed-role session).
   `tasks/t1-nagoya-warehouses.yaml`, `tasks/t5-gifu-warehouses.yaml`, `tasks/t1-bangladesh-warehouses.yaml`,
   `scripts/fetch_plateau_warehouses.py`, `scripts/fetch_osm_warehouses.py`,
   `tests/unit/{test_reference_fetch,test_assets}.py`, licence addition in `src/treehouse/cards.py`.
+
+---
+
+## Credential window update (2026-11-04 21:24 UTC)
+
+The session's AWS credentials **auto-refresh from the instance profile** (role `WSParticipantRole`); the
+metadata endpoint now reports expiry `2026-11-05T03:05Z` and renews. The earlier 21:22 UTC concern was the
+first short-lived token, not a hard session end. The live-AWS window is therefore effectively open for the
+rest of the build, so the live Nagoya Strands-on-Bedrock run (task 4) can proceed once tasks 2–3 land.
+
+---
+
+## Task 2 — Embedding sources
+
+**Status:** done (real AEF / LGND reads blocked → committed synthetic fixtures).
+
+- `src/treehouse/tools/sources/embedding_source.py`: `EmbeddingSource` protocol
+  (`index(aoi_bbox, cell_size_m, year) -> CellIndex`), `CellIndex` (grid, cell size, CRS, centroids, float32
+  unit embeddings, source, dates, resolution, licence, cost, provenance), `pool_to_grid` mean-pooling.
+  `CellIndex.to_npz_arrays()` matches the existing `clay` server's npz layout, so the server works unchanged.
+- `aef.py` (AEF, 10 m, CC BY 4.0; pools to any cell ≥ the fixture's 160 m base) and `clay_lgnd.py` (LGND
+  Clay, 1,280 / 2,560 m only, CC BY 4.0). `clay_compute` (Should) not built; seam documented.
+- `scripts/make_embedding_fixtures.py` → `fixtures/embeddings/{aef,lgnd}-{nagoya,gifu,chattogram}.npz`
+  (byte-stable, 16 dims, `synthetic: true`; cells holding a reference warehouse share a direction so retrieval
+  has signal).
+
+### Blockers (worked around)
+- **AEF access path not verified** from the Workshop (Earth Engine export / public mirror not reachable
+  here) → committed AOI-sized fixture, `access: fixture` + real path in provenance.
+- **LGND GeoParquet not parsed**: `pyarrow` is not a dependency (design says no new deps) → committed
+  fixture with the same 1,280 m cells; real path `s3://us-west-2.opendata.source.coop/clay/lgnd-embeddings/`.
