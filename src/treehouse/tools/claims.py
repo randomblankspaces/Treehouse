@@ -63,13 +63,15 @@ class ClaimLedger:
 def make_claims_server(ledger: ClaimLedger) -> MCPServer:
     srv = MCPServer("claims")
 
-    @srv.tool()
+    # Explicit metadata preserves cassette whitespace when Python cleans function docstrings.
+    @srv.tool(description=(
+        'Record one claim (a crossing and its status) for a task step. Cite the result_id of every image\n'
+        '        window you relied on in evidence_refs, with role pre, post or existence. A claim is grounded only when\n'
+        '        every cited ref is a successful imagery_window result.'
+    ))
     def record_claim(step_id: str, lon: float, lat: float, cls: str, status: ClaimStatus,
                      confidence: Annotated[float, Field(ge=0, le=1)], reason: str,
                      evidence_refs: list[EvidenceRef] | None = None, bbox: BBox | None = None) -> ClaimReceipt | ToolError:
-        """Record one claim (a crossing and its status) for a task step. Cite the result_id of every image
-        window you relied on in evidence_refs, with role pre, post or existence. A claim is grounded only when
-        every cited ref is a successful imagery_window result."""
         return ledger.record(step_id=step_id, lon=lon, lat=lat, cls=cls, status=status, confidence=confidence,
                              reason=reason, evidence_refs=evidence_refs or [], bbox=bbox)
 

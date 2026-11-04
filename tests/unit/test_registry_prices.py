@@ -83,10 +83,10 @@ def test_fake_roles_are_not_registry_checked():
 
 
 # -- CLI -------------------------------------------------------------------------------------------
-def test_prices_check_fails_on_null_table_and_passes_on_filled(tmp_path):
-    r = CliRunner().invoke(app, ["prices", "check"])
+def test_prices_check_fails_on_null_table_and_passes_on_filled(tmp_path, unpriced_table_path):
+    r = CliRunner().invoke(app, ["prices", "check", "--table", str(unpriced_table_path)])
     assert r.exit_code == 1 and "UNPRICED" in r.output and "claude-sonnet-5-5 [worker]" in r.output
-    text = (repo_root() / "config/prices/bedrock-us-east-1.2026-11-04.yaml").read_text()
+    text = unpriced_table_path.read_text()
     filled = (text.replace("input: null, output: null", "input: 0.003, output: 0.015")
               .replace("source: null", "source: test").replace("retrieved: null", "retrieved: 2026-11-04"))
     (tmp_path / "t.yaml").write_text(filled)
@@ -96,7 +96,8 @@ def test_prices_check_fails_on_null_table_and_passes_on_filled(tmp_path):
     assert r.exit_code == 1 and "synthetic" in r.output
 
 
-def test_budget_status_and_plan(monkeypatch, tmp_path):
+def test_budget_status_and_plan(monkeypatch, tmp_path, isolated_repo_ledger, unpriced_prices):
+    monkeypatch.setattr("treehouse.providers.prices.load_default", lambda: unpriced_prices)
     r = CliRunner().invoke(app, ["budget", "status"])
     assert r.exit_code == 4 and "NO LEDGER" in r.output  # B1: a missing ledger is loud, never "$0 ok"
     assert CliRunner().invoke(app, ["budget", "init"]).exit_code == 0
@@ -128,7 +129,7 @@ def test_budget_status_and_plan(monkeypatch, tmp_path):
     assert r.exit_code == 0 and "$0.0450" in r.output
 
 
-def test_budget_status_exit_code_over_alarm(tmp_path):
+def test_budget_status_exit_code_over_alarm(tmp_path, isolated_repo_ledger):
     from treehouse.providers.prices import Price, PriceTable
 
     big = PriceTable(version="b", region="any", synthetic=True, models={"claude-sonnet-5-5": Price(input=1.0, output=5.0)})

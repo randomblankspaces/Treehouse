@@ -87,10 +87,12 @@ class StacCatalog:
 def make_stac_server(cat: StacCatalog) -> MCPServer:
     srv = MCPServer("stac")
 
-    @srv.tool()
+    # Explicit metadata preserves cassette whitespace when Python cleans function docstrings.
+    @srv.tool(description=(
+        'Search the pinned scene catalogue: scenes whose footprint meets aoi_bbox\n'
+        "        [min_lon, min_lat, max_lon, max_lat] between start and end (ISO dates), up to the task's as_of."
+    ))
     def stac_search(aoi_bbox: tuple[float, float, float, float], start: str, end: str) -> StacSearchResult | ToolError:
-        """Search the pinned scene catalogue: scenes whose footprint meets aoi_bbox
-        [min_lon, min_lat, max_lon, max_lat] between start and end (ISO dates), up to the task's as_of."""
         return cat.search(aoi_bbox, start, end)
 
     @srv.tool()

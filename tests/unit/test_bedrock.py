@@ -27,7 +27,7 @@ from treehouse.providers.bedrock import (  # noqa: E402
     default_client_factory,
 )
 from treehouse.providers.cassette import Cassette, RecordingProvider, ReplayProvider  # noqa: E402
-from treehouse.providers.prices import PriceTable, load_default, load_fixture  # noqa: E402
+from treehouse.providers.prices import PriceTable, load_fixture  # noqa: E402
 from treehouse.providers.registry import ModelRegistry  # noqa: E402
 from treehouse.providers.spend import SpendLedger, UnpricedModel  # noqa: E402
 from treehouse.schemas.config import InferenceParams  # noqa: E402
@@ -249,9 +249,9 @@ def test_stop_reason_mapping_covers_botocore_enum(ledger):  # F3
     assert all(STOP_REASONS[raw] == ("guardrail" if raw == "guardrail_intervened" else raw) for raw in enum)
 
 
-def test_unpriced_model_refused_before_any_call(tmp_path):
-    led = new_ledger(tmp_path / "s.jsonl", prices=load_default(), registry=ModelRegistry.load())
-    p, stub, client = make(led, prices=load_default())
+def test_unpriced_model_refused_before_any_call(tmp_path, unpriced_prices):
+    led = new_ledger(tmp_path / "s.jsonl", prices=unpriced_prices, registry=ModelRegistry.load())
+    p, stub, client = make(led, prices=unpriced_prices)
     calls = []
     client.meta.events.register("before-parameter-build.bedrock-runtime.Converse", lambda **kw: calls.append(1))
     with pytest.raises(UnpricedModel):
@@ -388,8 +388,8 @@ def test_f1_legacy_max_attempts_1_makes_two_http_attempts(throttle_server):
     assert _Throttler.hits == 2
 
 
-def test_price_table_null_is_unpriced():
-    t = load_default()
+def test_price_table_null_is_unpriced(unpriced_prices):
+    t = unpriced_prices
     assert not t.is_priced("claude-sonnet-5-5") and not t.is_priced("nova-pro")
     assert PriceTable.load
 

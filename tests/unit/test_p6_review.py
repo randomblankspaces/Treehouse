@@ -384,7 +384,7 @@ def test_m10_near_matches_find_suffixed_ids():
 
 
 # -- M12: reconcile with the AWS bill ---------------------------------------------------------------------
-def test_m12_reconcile_recorded_and_shown(tmp_path, monkeypatch):
+def test_m12_reconcile_recorded_and_shown(tmp_path, monkeypatch, isolated_repo_ledger):
     p = tmp_path / "s.jsonl"
     new_ledger(p)
     monkeypatch.setenv("TREEHOUSE_SPEND_LEDGER", str(p))

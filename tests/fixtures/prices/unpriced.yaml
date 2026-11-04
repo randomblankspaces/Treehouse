@@ -1,0 +1,15 @@
+# Test-only unpriced table. Intentionally missing prices; never used for live spend.
+schema_version: treehouse.prices/1
+version: test-unpriced-1
+region: us-east-1
+currency: USD
+unit: per_1k_tokens
+source: null        # URL or "aws pricing get-products"
+retrieved: null     # YYYY-MM-DD
+unit_source: null   # e.g. "page quotes per 1M tokens; divided by 1000"
+synthetic: false
+estimated: false
+models:
+  claude-sonnet-5-5@us: {input: null, output: null, cache_read: null, cache_write: null}
+  claude-sonnet-5-5@global: {input: null, output: null, cache_read: null, cache_write: null}
+  nova-pro@us: {input: null, output: null, cache_read: null, cache_write: null}

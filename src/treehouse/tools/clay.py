@@ -81,11 +81,13 @@ class ClayIndex:
 def make_clay_server(index: ClayIndex) -> MCPServer:
     srv = MCPServer("clay")
 
-    @srv.tool()
+    # Explicit metadata preserves cassette whitespace when Python cleans function docstrings.
+    @srv.tool(description=(
+        'Cells in aoi_bbox most similar to the query cell (cell_id, or the cell at lon/lat), by cosine\n'
+        '        similarity of Clay embeddings. Read the coverage report: cells are coarse and may predate the event.'
+    ))
     def clay_search(aoi_bbox: tuple[float, float, float, float], lon: float | None = None, lat: float | None = None,
                     cell_id: str | None = None, k: int = 10) -> ClaySearchResult | ToolError:
-        """Cells in aoi_bbox most similar to the query cell (cell_id, or the cell at lon/lat), by cosine
-        similarity of Clay embeddings. Read the coverage report: cells are coarse and may predate the event."""
         return index.search(aoi_bbox, lon, lat, cell_id, max(1, min(k, 500)))
 
     return srv

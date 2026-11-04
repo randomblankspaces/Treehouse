@@ -11,7 +11,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from treehouse.paths import repo_root
-from treehouse.providers.prices import Price, PriceTable, load_default, load_fixture, load_probe_ceiling
+from treehouse.providers.prices import Price, PriceTable, load_fixture, load_probe_ceiling
 from treehouse.providers.spend import (
     BudgetAlarm,
     BudgetHardStop,
@@ -78,8 +78,8 @@ def test_thresholds(tmp_path):
     assert led.status().level == "over_alarm"
 
 
-def test_unpriced_refused_unless_capped(tmp_path):
-    led = new_ledger(tmp_path / "s.jsonl", prices=load_default())
+def test_unpriced_refused_unless_capped(tmp_path, unpriced_prices):
+    led = new_ledger(tmp_path / "s.jsonl", prices=unpriced_prices)
     with pytest.raises(UnpricedModel):
         led.reserve("nova-pro", 10, 10)
     r = led.reserve("nova-pro", 10, 32, unpriced_cap_usd=0.25)
