@@ -86,6 +86,7 @@ class Manifest(Frozen):
     trials: list[TrialHead]
     cassettes: Cassettes = Cassettes()
     data_pointers: list[DataPointer] = []
+    files: dict[str, str] = {}  # run-relative path -> sha256 of every sealed file except manifest.json/SEALED
     key_isolation_statement: str
     license_floor: str
     nc_notice: str | None = None

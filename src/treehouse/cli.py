@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Annotated
 
 import typer
 
@@ -57,6 +58,29 @@ def task_validate(path: Path) -> None:
     if report.errors:
         raise typer.Exit(1)
     typer.echo(f"ok {path}\ncard hash: {report.card_hash}\nlicense floor: {report.license_floor}")
+
+
+@app.command("verify")
+def verify_cmd(
+    run_id: str = typer.Argument(None, help="Run id; omit to verify the whole store."),
+    store: Annotated[
+        Path | None, typer.Option("--store", help="Store root (default $TREEHOUSE_STORE or ./.treehouse).")
+    ] = None,
+) -> None:
+    """Verify traces, file hashes, manifests, the ledger chain, blobs and evals. Exits 1 on any problem."""
+    from treehouse.store.local import LocalStore, default_store_root
+    from treehouse.store.verify import verify
+
+    root = store or default_store_root()
+    if not root.is_dir():
+        typer.echo(f"FAIL {root}: store not found", err=True)
+        raise typer.Exit(1)
+    report = verify(LocalStore(root), run_id)
+    for p in report.problems:
+        typer.echo(str(p))
+    if not report.ok:
+        raise typer.Exit(1)
+    typer.echo(f"ok {root}: {report.runs} run(s), {report.records} record(s), {report.blobs} blob(s)")
 
 
 if __name__ == "__main__":  # pragma: no cover
