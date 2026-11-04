@@ -21,6 +21,6 @@ def stub_passport(run: SealedRun, *, trust_config_hash: str, code_sha: str = "un
         estimand=Estimand(name="precision", kind="precision", step_id=step.step_id,
                           question_id=step.question_id, population="claim_table"),
         headline=head, n_gold_cannot_assess=0, gate="Do not rely", gate_reasons=[REASON],
-        controls=ControlsReport(unavailable=[f"controls: {REASON}"]), beat_baseline=f"not computed: {REASON}",
+        controls=ControlsReport(unavailable=[REASON]), beat_baseline=f"not computed: {REASON}",
         sample_design_id="none", trust_config_hash=trust_config_hash, estimator_version=VERSION,
         code_sha=code_sha, manifest_ref=run.manifest_ref, synthetic=run.synthetic)
