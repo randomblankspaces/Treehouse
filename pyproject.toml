@@ -11,11 +11,11 @@ dependencies = [
     "numpy>=2.0",
     "scipy>=1.13",
     "typer>=0.12",
+    "mcp>=2.3,<3",
 ]
 
 [project.optional-dependencies]
 aws = ["boto3>=1.35"]
-mcp = ["mcp>=2.3,<3"]
 strands = ["strands-agents>=1.60,<2"]
 geo = ["rasterio>=1.4"]
 api = ["fastapi>=0.115", "uvicorn>=0.30"]
@@ -24,7 +24,7 @@ api = ["fastapi>=0.115", "uvicorn>=0.30"]
 treehouse = "treehouse.cli:app"
 
 [dependency-groups]
-dev = ["pytest>=8", "ruff>=0.6", "boto3>=1.35", "mcp>=2.3,<3"]
+dev = ["pytest>=8", "ruff>=0.6", "hypothesis>=6.100", "boto3>=1.35"]
 
 [build-system]
 requires = ["hatchling"]
@@ -39,11 +39,14 @@ addopts = "-q"
 markers = [
     "live: needs real AWS/Bedrock (skipped unless TREEHOUSE_LIVE=1)",
     "allow_loopback: test may open sockets to 127.0.0.1",
+    "slow: long-running study; deselected unless -m slow is given",
+    "method: A13 method test; all method tests share an 8 s session budget",
 ]
 
 [tool.ruff]
 line-length = 110
 src = ["src", "tests"]
+extend-exclude = ["wip"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]

@@ -13,3 +13,4 @@ jobs:
       - run: uv sync --all-extras
       - run: uv run ruff check .
       - run: uv run pytest
+      - run: uv run treehouse --help
