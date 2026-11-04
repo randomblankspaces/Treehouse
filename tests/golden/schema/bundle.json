@@ -1472,7 +1472,7 @@
     },
     "WindowResult": {
       "additionalProperties": false,
-      "description": "One image window. ``pixel_sha256`` hashes the decoded C-order uint8 array plus its shape\n(one implementation: ``treehouse.pixels.array_sha256``). ``effective_gsd_m`` = side_m / out_px.\n\n``detail.bytes_model`` (required) says whether ``bytes_read`` was measured or comes from the declared\n``synthetic-overview-block-v1`` model (RS-B1); the synthetic reader always models its bytes and is\nalways synthetic, and a rasterio reader always measures.",
+      "description": "One image window. ``pixel_sha256`` hashes the decoded C-order uint8 array plus its shape\n(one implementation: ``treehouse.pixels.array_sha256``). ``effective_gsd_m`` =\nmax(side_m / out_px, pixel_spacing_m): upsampling past the pixels read adds no detail.\n\n``detail.bytes_model`` (required) says whether ``bytes_read`` was measured or comes from the declared\n``synthetic-overview-block-v1`` model (RS-B1); the synthetic reader always models its bytes and is\nalways synthetic, and a rasterio reader always measures.",
       "properties": {
         "bbox_read": {
           "maxItems": 4,

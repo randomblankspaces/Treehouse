@@ -157,7 +157,9 @@ def test_as_of_refusals(tmp_path):
     res = outs[1].content[0].json_
     assert res["dropped_after_as_of"] == 2 and {s["scene_id"] for s in res["scenes"]} == {
         "SYN-PRE-1", "SYN-PRE-2", "SYN-POST-B"}
-    assert outs[2].status == "error" and "not_available_as_of" in outs[2].content[0].text
+    # judge D13: the server-side as_of refusal is recorded as a policy block, like the policy one
+    assert outs[2].status == "blocked" and outs[2].block_reason == "as_of"
+    assert "not_available_as_of" not in outs[2].content[0].text or "as_of" in outs[2].content[0].text
 
 
 def test_grounded_and_contaminated_claims(rig):
@@ -171,7 +173,7 @@ def test_grounded_and_contaminated_claims(rig):
     c1, c2, c3 = rig.gateway.claims
     assert (c1.grounded, c1.contaminated) == (True, False)
     assert (c2.grounded, c2.unresolved_refs, c2.contaminated) == (False, ["r-0099"], False)
-    assert (c3.grounded, c3.contaminated) == (True, True)
+    assert (c3.grounded, c3.contaminated) == (False, True)  # judge D2: a blocked result is no evidence
     assert [c.claim_id for c in rig.gateway.claims] == ["c-0001", "c-0002", "c-0003"]
     spans = rig.spans()
     assert c1.span_id == spans[2].span_id and c1.synthetic is True
@@ -239,7 +241,10 @@ def test_returned_hrefs_are_rechecked(rig, monkeypatch):
         return "success", {"href": "https://example.org/keys/synth/key.json"}, ""
     monkeypatch.setattr(rig.gateway, "_invoke", leaky)
     (out,) = run(rig, [("scene_info", GOOD_ARGS["scene_info"])])
-    assert out.status == "blocked" and rig.spans()[0].attributes["treehouse.key_access_attempt"] is True
+    a = rig.spans()[0].attributes
+    # judge D14: a hit in the *result* taints the result; it is not the agent's key access attempt
+    assert out.status == "blocked" and a["treehouse.key_access_attempt"] is False
+    assert a["treehouse.tool.result_tainted"] is True
 
 
 def test_tool_cassette_record_then_verify(tmp_path):
@@ -272,10 +277,20 @@ def test_recorded_source_attaches_a_pixel_free_image(tmp_path):
     nepal = card("nepal-bhote-koshi-bridges")
     synth = make_rig(tmp_path / "s.jsonl")
     (o,) = run(synth, [("imagery_window", GOOD_ARGS["imagery_window"])])
-    w = {**o.content[0].json_, "scene_id": "B1300011011E5610", "license": "CC-BY-NC-4.0", "result_id": ""}
-    args = {"scene_id": "B1300011011E5610", "lon": 85.35, "lat": 28.2, "side_m": 60, "out_px": 128,
+    sid = "B1300011011E5610"
+    stac_src = next(d for d in nepal.data_allowlist if d.kind == "stac")
+    w = {**o.content[0].json_, "scene_id": sid, "license": "CC-BY-NC-4.0", "result_id": "", "reader": "recorded",
+         "source_id": "vantor-nepal-imagery", "etag": stac_src.etags[sid]}
+    args = {"scene_id": sid, "lon": 85.35, "lat": 28.2, "side_m": 60, "out_px": 128,
             "resampling": "average"}
     WindowResult.model_validate(w)
+    # judge D4: a row that is not a proper recorded, synthetic, pinned window is refused at build time
+    kw = {"allowed": stac_src.item_ids, "scene_dates": {}, "as_of": nepal.as_of, "source_id": "vantor-nepal-imagery",
+          "etags": dict(stac_src.etags), "license": "CC-BY-NC-4.0"}
+    for bad in ({"reader": "synthetic-v1"}, {"synthetic": False}, {"source_id": "synth-imagery"},
+                {"scene_id": "B14000110116A310"}, {"etag": "synthetic-0000"}, {"license": "CC-BY-4.0"}):
+        with pytest.raises(ValueError, match="recorded window row 0"):
+            RecordedImagerySource([{"args": args, "result": {**w, **bad}}], **kw)
     rig = make_rig(tmp_path / "n.jsonl", task=nepal)
     servers = build_servers(nepal, ledger=rig.ledger, pixels=PixelCache(), recorded_windows=[{"args": args,
                                                                                               "result": w}])

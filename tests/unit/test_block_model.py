@@ -66,4 +66,4 @@ def test_bytes_read_is_the_block_model_sum_with_one_header_per_scene():
     assert src.bytes_total == r1.bytes_read + r2.bytes_read + r3.bytes_read
     for r in (r1, r2, r3):
         assert r.detail["bytes_model"] == "synthetic-overview-block-v1" and r.reader == "synthetic-v1"
-    assert r3.out_shape == (2048, 2048) and r1.effective_gsd_m == 60 / 128
+    assert r3.out_shape == (2048, 2048) and r1.effective_gsd_m == round(max(60 / 128, r1.pixel_spacing_m), 6)

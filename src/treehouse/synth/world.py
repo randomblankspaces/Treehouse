@@ -1,7 +1,7 @@
 """``synth-crossings-v1``: the generated river-crossings world (IMPLEMENTATION-DESIGN §5.1). SYNTHETIC.
 
-A 1.2 km AOI at "Null Island" ([0, 0, 0.0108, 0.0108], EPSG:4326) rendered at 2400 x 2400 px
-(about 0.5 m). A 30 m river follows y = 0.0054 + 0.0018 sin(3 pi x / 0.0108). 40 crossings (24
+A 1.2 km AOI at "Null Island" ([0, 0, 0.0108, 0.0108], EPSG:4326) rendered at 2405 x 2405 px
+(0.4999 m, so the native pixel is no coarser than the declared 0.5 m pan GSD; judge D3). A 30 m river follows y = 0.0054 + 0.0018 sin(3 pi x / 0.0108). 40 crossings (24
 road_bridge 6 x 15 m decks, 16 footbridge 2 x 15 m decks), at least 20 m apart, four of them in the
 western 15 % strip that no clear post scene shows. 15 bright rooftops are distractors. Everything is
 derived from ``SEED`` and is identical on every machine with the locked numpy.
@@ -23,9 +23,9 @@ SEED = 20261104
 WORLD_ID = "synth-crossings-v1"
 AOI = (0.0, 0.0, 0.0108, 0.0108)
 W = AOI[2] - AOI[0]
-NPX = 2400
+NPX = 2405  # 2400 gave 0.50094 m, coarser than PAN_GSD_M; 2405 gives 0.499905 m (judge D3)
 DEG_PER_PX = W / NPX
-M_PER_PX = DEG_PER_PX * M_PER_DEG  # about 0.501 m
+M_PER_PX = DEG_PER_PX * M_PER_DEG  # 0.499905 m <= PAN_GSD_M
 RIVER_HALF_M = 15.0
 DECK_LEN_M = 15.0
 DECK_W_M = {"road_bridge": 6.0, "footbridge": 2.0}

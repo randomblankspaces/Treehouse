@@ -38,7 +38,8 @@ class Obscuration(Frozen):
 
 class WindowResult(Frozen):
     """One image window. ``pixel_sha256`` hashes the decoded C-order uint8 array plus its shape
-    (one implementation: ``treehouse.pixels.array_sha256``). ``effective_gsd_m`` = side_m / out_px.
+    (one implementation: ``treehouse.pixels.array_sha256``). ``effective_gsd_m`` =
+    max(side_m / out_px, pixel_spacing_m): upsampling past the pixels read adds no detail.
 
     ``detail.bytes_model`` (required) says whether ``bytes_read`` was measured or comes from the declared
     ``synthetic-overview-block-v1`` model (RS-B1); the synthetic reader always models its bytes and is

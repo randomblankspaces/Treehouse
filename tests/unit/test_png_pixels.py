@@ -34,3 +34,16 @@ def test_pixel_cache_keys_by_array_hash():
 def test_rejects_non_uint8():
     with pytest.raises(ValueError):
         encode_png(np.zeros((2, 2), np.float32))
+
+
+def test_hxwx1_hashes_as_the_hxw_it_decodes_to():  # judge D23
+    import numpy as np
+
+    from treehouse.gateway.pixel_cache import PixelCache
+    from treehouse.pixels import array_sha256
+    from treehouse.tools.png import decode_png
+
+    a = np.arange(64, dtype=np.uint8).reshape(8, 8, 1)
+    pc = PixelCache()
+    sha = pc.put(a)
+    assert sha == array_sha256(decode_png(pc.get(sha))) == array_sha256(a[:, :, 0])

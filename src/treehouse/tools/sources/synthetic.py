@@ -2,7 +2,7 @@
 
 ``bytes_read`` is modelled, not measured (§0 row 6, RS-B1, fact-check F7): overview level
 ``L = max(0, floor(log2(native_px_per_side / out_px)))`` capped at the overviews the scene would have
-(halving while the level is still >= one 512 px block wide: the 2400 px scene has factors 2 and 4 only),
+(halving while the level is still >= one 512 px block wide: the 2405 px scene has factors 2 and 4 only),
 then the 512 px blocks the window intersects at level L, x 48 KiB, plus a 16 KiB header on the first
 read of each scene. Results carry ``reader="synthetic-v1"`` and ``detail.bytes_model``.
 """
@@ -25,6 +25,12 @@ BLOCK_BYTES = 48 * 1024
 HEADER_BYTES = 16 * 1024
 BYTES_MODEL = "synthetic-overview-block-v1"
 MIN_COVERAGE = 0.5
+
+
+def effective_gsd(side_m: float, out_px: int, pixel_spacing_m: float) -> float:
+    """The detail a window actually shows: ``max(side_m / out_px, pixel_spacing_m)`` at the overview read.
+    Upsampling (out_px above the native pixels of the window) cannot make it finer (judge D3)."""
+    return max(side_m / out_px, pixel_spacing_m)
 
 
 def max_overview_level(npx: int, block: int = BLOCK) -> int:
@@ -70,11 +76,22 @@ def resample(a: np.ndarray, out_px: int, method: str) -> np.ndarray:
 
 
 def obscuration(a: np.ndarray, tile: int = 8) -> Obscuration:
-    n = (a.shape[0] // tile) * tile
-    t = a[:n, :n].astype(np.float32).reshape(n // tile, tile, n // tile, tile)
-    bright = (t.mean(axis=(1, 3)) > 235) & (t.std(axis=(1, 3)) < 5)
-    return Obscuration(bright_lowvar_fraction=round(float(bright.mean()), 6),
-                       nodata_fraction=round(float((a == 0).mean()), 6))
+    """``bright_lowvar_fraction``: share of the window's *valid* tiles (tiles with any non-nodata pixel;
+    edge tiles count) that are bright and flat (cloud-like). Nodata is reported separately in
+    ``nodata_fraction`` and never dilutes the cloud share (judge D12). 0.0 when no tile is valid (D1)."""
+    h, w = a.shape
+    bright = valid = 0
+    for r in range(0, h, tile):
+        for c in range(0, w, tile):
+            t = a[r:r + tile, c:c + tile]
+            v = t[t != 0]
+            if v.size == 0:
+                continue
+            valid += 1
+            vf = v.astype(np.float32)
+            bright += bool(vf.mean() > 235 and vf.std() < 5)
+    return Obscuration(bright_lowvar_fraction=round(bright / valid, 6) if valid else 0.0,
+                       nodata_fraction=round(float((a == 0).mean()), 6) if a.size else 1.0)
 
 
 class SyntheticImagerySource:
@@ -102,7 +119,8 @@ class SyntheticImagerySource:
             return ToolError(code="out_of_bounds", message="window centre is outside the scene raster")
         dlon, dlat = m_to_deg(side_m, lat)
         req = (lon - dlon / 2, lat - dlat / 2, lon + dlon / 2, lat + dlat / 2)
-        read = (max(req[0], a[0]), max(req[1], a[1]), min(req[2], a[2]), min(req[3], a[3]))
+        fp = s.footprint  # bbox_read is clipped to the scene footprint, not the AOI raster (judge D11)
+        read = (max(req[0], fp[0]), max(req[1], fp[1]), min(req[2], fp[2]), min(req[3], fp[3]))
         win = [[[(req[0], req[1]), (req[2], req[1]), (req[2], req[3]), (req[0], req[3]), (req[0], req[1])]]]
         cov = coverage_fraction(s.footprint_polygons(), win, n=16)
         if cov == 0:
@@ -121,11 +139,12 @@ class SyntheticImagerySource:
         self.bytes_total += nbytes
         arr = resample(self._cut(scene_id, level, cx, cy, native_px), out_px, resampling)
         sha = self.pixels.put(arr)
+        spacing = world.M_PER_PX * 2**level
         return WindowResult(
             result_id="", source_id=self.source_id, scene_id=scene_id, etag=world.stac_item(s)["assets"]["visual"]
             ["etag"], bbox_requested=req, bbox_read=read, footprint_coverage_fraction=round(cov, 6),
             scene_datetime=s.datetime, phase=s.phase, nominal_gsd_m=world.PAN_GSD_M,
-            pixel_spacing_m=round(world.M_PER_PX * 2**level, 6), effective_gsd_m=round(side_m / out_px, 6),
+            pixel_spacing_m=round(spacing, 6), effective_gsd_m=round(effective_gsd(side_m, out_px, spacing), 6),
             overview_level=level, scene_cloud_pct=s.cloud_pct, off_nadir_deg=s.off_nadir_deg,
             out_shape=(out_px, out_px), resampling=resampling, pixel_sha256=sha, bytes_read=nbytes,
             requests=n_blocks + int(header), block_size=BLOCK, reader="synthetic-v1", obscuration=obscuration(arr),

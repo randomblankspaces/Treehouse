@@ -1,4 +1,4 @@
-"""Deterministic numpy rendering of the synthetic scenes (uint8 grayscale, 2400 x 2400). SYNTHETIC.
+"""Deterministic numpy rendering of the synthetic scenes (uint8 grayscale, NPX x NPX = 2405 x 2405). SYNTHETIC.
 
 Land ~90, water ~40, decks 200, rooftops 230, cloud 250 (low variance), outside the footprint 0
 (nodata; valid pixels are clipped to >= 1). Damaged decks lose their middle third; destroyed decks are

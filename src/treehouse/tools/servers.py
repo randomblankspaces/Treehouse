@@ -47,7 +47,8 @@ def build_servers(card: TaskCard, *, ledger: ClaimLedger, pixels: PixelCache, as
                                          max_out_px=w.max_out_px, max_bytes=w.max_bytes_per_run)
     elif img is not None and img.access == "recorded":
         imagery = RecordedImagerySource(recorded_windows or [], allowed=pinned, as_of=as_of, source_id=img.source_id,
-                                        scene_dates={i: it.datetime for i, it in items.items()})
+                                        scene_dates={i: it.datetime for i, it in items.items()},
+                                        etags=dict(stac_src.etags) if stac_src else {}, license=img.license)
     else:
         imagery = NoImagery()
 

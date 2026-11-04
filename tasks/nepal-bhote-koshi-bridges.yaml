@@ -27,7 +27,7 @@ data_allowlist:
     access: static_catalog
     fixture_path: fixtures/stac/vantor-nepal-aug-2026
     license: CC-BY-NC-4.0
-    status: pending_fixture   # scripts/build_vantor_fixture.py writes it (P4); then status: pinned
+    status: pinned   # fixture written by scripts/build_vantor_fixture.py (P4); ETags from etags.json
     item_ids:
       - 10300100C86CED00  # pre 2021-10-16, cloud 22 %
       - 10500100364E8400  # pre 2023-09-17, cloud 46 %

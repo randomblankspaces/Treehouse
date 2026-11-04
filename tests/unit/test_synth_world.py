@@ -51,7 +51,7 @@ def test_scene_table():
 
 def test_render_is_deterministic_and_shows_status():
     a = render_scene("SYN-POST-A")
-    assert a.dtype == np.uint8 and a.shape == (2400, 2400) and not a.flags.writeable
+    assert a.dtype == np.uint8 and a.shape == (world.NPX, world.NPX) == (2405, 2405) and not a.flags.writeable
     assert array_sha256(a) == array_sha256(render_scene.__wrapped__("SYN-POST-A"))
     assert (a[:, :300] == 0).all() and (a[:, 400:] > 0).all()  # western strip is nodata
     pre, post = render_scene("SYN-PRE-1"), a
