@@ -7,12 +7,11 @@ K3:  TREEHOUSE_LIVE=1 uv run pytest tests/live -k converse  (needs a filled pric
 from __future__ import annotations
 
 import asyncio
-import os
 
 import pytest
 
 pytestmark = pytest.mark.live
-REGION = os.environ.get("AWS_REGION", "us-east-1")
+REGION = "us-east-1"  # one default everywhere: the price table and registry are us-east-1 (minor 17)
 
 
 def test_live_probe_k1(tmp_path):
@@ -20,8 +19,10 @@ def test_live_probe_k1(tmp_path):
     from treehouse.providers.registry import ModelRegistry
     from treehouse.providers.spend import SpendLedger
 
+    ledger = SpendLedger()
+    assert ledger.initialized, f"{ledger.path} missing: run `uv run treehouse budget init` first"
     report = Probe(default_client_factory(REGION), region=REGION, registry=ModelRegistry.load(),
-                   ledger=SpendLedger(), log_group=None).run()
+                   ledger=ledger, log_group=None).run()
     assert report.spend.reserved_usd <= 3.0
     assert report.summary["ok"] >= 1
     assert any(m.user_turn_image == "ok" for m in report.models)

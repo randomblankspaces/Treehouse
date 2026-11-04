@@ -21,6 +21,15 @@ GOLDEN = Path(__file__).resolve().parents[1] / "golden" / "schema" / "aws-capabi
 ACCOUNT = "123456789012"
 NOW = datetime(2026, 11, 4, tzinfo=UTC)
 
+def new_ledger(*a, **kw):
+    """A test ledger: synthetic tables allowed, genesis written (B1: reserve refuses an un-initialised file)."""
+    kw.setdefault("allow_synthetic", True)
+    led = SpendLedger(*a, **kw)
+    if not led.initialized:
+        led.init(note="test")
+    return led
+
+
 
 def converse_ok(text="mixed"):
     return {"output": {"message": {"role": "assistant", "content": [{"text": text}]}}, "stopReason": "end_turn",
@@ -85,6 +94,7 @@ def queue_happy(cl: Clients, *, bucket=True, converse=4):
     lg = cl.stub("logs")
     lg.add_client_error("create_log_group", service_error_code="ResourceAlreadyExistsException")
     lg.add_response("create_log_stream", {})
+    lg.add_response("put_retention_policy", {}, {"logGroupName": "/treehouse/probe", "retentionInDays": 1})
     lg.add_response("put_log_events", {})
     cl.stub("stepfunctions").add_response("list_state_machines", {"stateMachines": []})
     cl.stub("bedrock-agentcore-control").add_client_error("list_agent_runtimes",
@@ -94,7 +104,7 @@ def queue_happy(cl: Clients, *, bucket=True, converse=4):
 
 @pytest.fixture
 def ledger(tmp_path):
-    return SpendLedger(tmp_path / "spend.jsonl")  # no price table at all: every probe call is unpriced
+    return new_ledger(tmp_path / "spend.jsonl")  # no price table at all: every probe call is unpriced
 
 
 async def _nosleep(_s):
@@ -124,7 +134,8 @@ def test_happy_path_matches_golden_schema(ledger):
     st = {c.name: c.status for c in report.checks}
     assert st["s3.get_bucket_versioning:tb"] == "ok" and st["s3.get_object_lock_configuration:tb"] == "ok"
     assert st["bedrock-agentcore-control.list_agent_runtimes"] == "denied"
-    assert report.execution["account"] == ACCOUNT
+    assert report.execution["account"] != ACCOUNT and report.execution["account"].endswith(ACCOUNT[-4:])  # minor 15
+    assert ACCOUNT not in report.model_dump_json()
     assert report.invocation_logging["image_data_delivery"] is True and "ARE logged" in report.invocation_logging[
         "policy"]
     assert report.quotas == [{"name": "On-demand model inference requests per minute for Amazon Nova Pro",
@@ -165,8 +176,8 @@ def test_ledger_hard_stop_reports_skipped_budget(tmp_path):
     from treehouse.providers.prices import Price, PriceTable
     from treehouse.schemas.model_io import Usage
 
-    big = PriceTable(version="b", region="t", models={"m": Price(input=1.0, output=5.0)})
-    led = SpendLedger(tmp_path / "s.jsonl", prices=big)
+    big = PriceTable(version="b", region="any", synthetic=True, models={"m": Price(input=1.0, output=5.0)})
+    led = new_ledger(tmp_path / "s.jsonl", prices=big)
     import warnings
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -226,7 +237,8 @@ def test_classification_never_aborts(ledger):
     names = [c.name for c in report.checks if c.name.startswith("bedrock.converse:claude")]
     assert names == ["bedrock.converse:claude-sonnet-5-5:user_turn:us.anthropic.claude-sonnet-5-5",
                      "bedrock.converse:claude-sonnet-5-5:user_turn:global.anthropic.claude-sonnet-5-5"]
-    assert {m.user_turn_image for m in report.models} == {"unavailable"}
+    # M9: a ValidationException that is not about the model id is our request shape, not "unavailable"
+    assert {m.user_turn_image for m in report.models} == {"invalid_request"}
     assert ledger.status().reserved_usd == 0 and ledger.status().calls == 0  # failed calls released
     assert sum(report.summary.values()) == len(report.checks)
     AwsCapabilities.model_validate(report.model_dump(mode="json"))
@@ -243,7 +255,7 @@ def sample_report() -> AwsCapabilities:
     import tempfile
 
     with tempfile.TemporaryDirectory() as d:
-        led = SpendLedger(Path(d) / "s.jsonl")
+        led = new_ledger(Path(d) / "s.jsonl")
         cl = Clients(led)
         queue_happy(cl)
         return make_probe(cl, led, bucket="tb").run()
@@ -256,7 +268,7 @@ def test_script_entrypoint_runs_with_stubbed_factory(monkeypatch, tmp_path, ledg
                                                   "aws_probe.py")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
-    cl = Clients(SpendLedger())
+    cl = Clients(new_ledger())
     queue_happy(cl, bucket=False)
     monkeypatch.setattr(mod, "default_client_factory", lambda region: cl)
     out = tmp_path / "caps.json"

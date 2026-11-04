@@ -39,6 +39,7 @@
             "ok",
             "denied",
             "unavailable",
+            "invalid_request",
             "error",
             "skipped_budget"
           ],
@@ -110,6 +111,14 @@
           "title": "Model Id",
           "type": "string"
         },
+        "near_matches": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Near Matches",
+          "type": "array"
+        },
         "profile_listed": {
           "anyOf": [
             {
@@ -144,6 +153,7 @@
                 "ok",
                 "denied",
                 "unavailable",
+                "invalid_request",
                 "error",
                 "skipped_budget"
               ],
@@ -162,6 +172,7 @@
                 "ok",
                 "denied",
                 "unavailable",
+                "invalid_request",
                 "error",
                 "skipped_budget"
               ],

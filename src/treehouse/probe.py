@@ -7,13 +7,22 @@ counted against a $3 probe cap; once the next one would pass it, the remaining B
 ``config/prices/probe-ceiling.yaml`` and are tagged ``estimated``.
 
 The tiny probe image is generated in memory (an 8x8 RGB gradient PNG) and never written to disk.
+
+Requests carry ``max_tokens`` only (no temperature/topP: recent Claude models reject some sampling
+params). A ``ValidationException`` about the model id, profile or on-demand throughput is ``unavailable``;
+any other is ``invalid_request`` with the message in ``detail``. Converse candidates are the registry
+profile, its alt profiles, then listed profile / model ids sharing the registry stem (``near_matches``).
+The account id and identity ARN are redacted in the report (minor 15). A created CloudWatch log group
+gets a 1-day retention.
 """
 
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import os
 import platform
+import re
 import struct
 import sys
 import zlib
@@ -39,7 +48,13 @@ LOG_GROUP = "/treehouse/probe"
 DENIED = {"AccessDenied", "AccessDeniedException", "UnauthorizedOperation", "UnrecognizedClientException",
           "InvalidClientTokenId", "ExpiredToken", "ExpiredTokenException", "NotAuthorized",
           "AuthorizationError", "AuthFailure", "SignatureDoesNotMatch", "MissingAuthenticationToken"}
-UNAVAILABLE = {"ResourceNotFoundException", "ValidationException", "UnknownOperationException",
+MAX_CANDIDATES = 4  # Converse candidates per model (user_turn), within the $3 cap
+LOG_RETENTION_DAYS = 1
+# ValidationException messages that mean "this model id / profile is not usable here"
+_MODEL_UNUSABLE = re.compile(r"model identifier|inference profile|on-demand throughput|provisioned throughput|"
+                             r"model id|access to the model|not supported in this region|end of its life",
+                             re.IGNORECASE)
+UNAVAILABLE = {"ResourceNotFoundException", "UnknownOperationException",
                "NoSuchBucket", "UnknownServiceError", "EndpointConnectionError", "NoSuchEntity",
                "OptInRequired", "SubscriptionRequiredException", "UnsupportedOperation",
                "InvalidAction", "NotFound", "NotFoundException"}
@@ -76,14 +91,41 @@ def error_code(e: BaseException) -> str:
 
 
 def classify(e: BaseException) -> CheckStatus:
+    """Botocore transport errors (ReadTimeoutError, ConnectTimeoutError, ...) fall through to ``error``."""
     if isinstance(e, BudgetHardStop | BudgetAlarm | UnpricedModel):
         return "skipped_budget"
     code = error_code(e)
     if code in DENIED or "AccessDenied" in code or "not authorized" in str(e):
         return "denied"
+    if code == "ValidationException":
+        return "unavailable" if _MODEL_UNUSABLE.search(str(e)) else "invalid_request"
     if code in UNAVAILABLE or code.endswith("NotFound") or code.endswith("NotFoundException"):
         return "unavailable"
     return "error"
+
+
+_ACCOUNT_RE = re.compile(r"\b\d{12}\b")
+
+
+def redact_account(account: str | None) -> str | None:
+    if not account:
+        return account
+    return f"sha256:{hashlib.sha256(account.encode()).hexdigest()[:12]}..{account[-4:]}"
+
+
+def redact_arn(arn: str | None) -> str | None:
+    """``arn:aws:sts::123456789012:assumed-role/Role/session`` -> ``assumed-role/Role``."""
+    if not arn:
+        return arn
+    res = arn.split(":", 5)[-1]
+    parts = res.split("/")
+    return "/".join(parts[:2]) if parts[0] == "assumed-role" else parts[0] + ("/" + parts[1] if len(parts) > 1 else "")
+
+
+def scrub(text: str) -> str:
+    """Drop account ids (and with them full ARNs) from free text."""
+    text = re.sub(r"arn:aws[\w-]*:[\w-]*:[\w-]*:\d{12}:\S+", "arn:<redacted>", text)
+    return _ACCOUNT_RE.sub("<account>", text)
 
 
 def execution_locus() -> dict[str, Any]:
@@ -155,7 +197,8 @@ class Probe:
 
     def _record(self, name: str, service: str, status: CheckStatus, detail: str = "", code: str | None = None,
                 **data: Any) -> ProbeCheck:
-        c = ProbeCheck(name=name, service=service, status=status, detail=detail[:500], error_code=code, data=data)
+        c = ProbeCheck(name=name, service=service, status=status, detail=scrub(detail)[:500], error_code=code,
+                       data=data)
         self.checks.append(c)
         return c
 
@@ -172,7 +215,7 @@ class Probe:
     def _request(self, entry: ModelEntry, mode: str) -> ModelRequest:
         png, sha = tiny_png()
         img = Image(format="png", sha256=sha, bytes_=png)
-        params = InferenceParams(max_tokens=self.max_tokens, temperature=0.0)
+        params = InferenceParams(max_tokens=self.max_tokens)  # M9: no sampling params
         ask = Text(text="Reply with one word: is the image mostly red, green, or mixed?")
         if mode == "user_turn":
             return ModelRequest(model_id=entry.key, system="You are a capability probe. Be brief.",
@@ -193,26 +236,24 @@ class Probe:
         if self.reserved_usd + self.per_call_cap_usd > self.cap_usd + 1e-9:
             return self._record(name, "bedrock-runtime", "skipped_budget",
                                 f"probe cap ${self.cap_usd:.2f} reached ({self.calls} calls reserved)")
-        e2 = entry.model_copy(update={"inference_profile": invoke_id, "alt_profiles": []})
+        e2 = entry.model_copy(update={"inference_profile": invoke_id, "alt_profiles": [], "region": self.region})
         reg = ModelRegistry(models=[e2])
         kw: dict[str, Any] = {}
         if self._sleep is not None:
             kw["sleep"] = self._sleep
         provider = BedrockConverseProvider(
-            lambda _region: self.client("bedrock-runtime"), reg, PriceTable(version="null", region=self.region),
-            self.ledger, self.region, concurrency=1, max_attempts=2, unpriced_cap_usd=self.per_call_cap_usd,
+            lambda _region: self.client("bedrock-runtime"), reg, None, self.ledger, self.region, concurrency=1, max_attempts=2, unpriced_cap_usd=self.per_call_cap_usd,
             commit_price_override=self.ceiling, image_delivery=mode, **kw)
-        before = self.ledger.status().spent_usd
         self.reserved_usd += self.per_call_cap_usd  # counted before the call: the cap holds even if it fails
         self.calls += 1
         try:
             resp = asyncio.run(provider.complete(self._request(entry, mode), role="probe", trial_index=0, turn=0))
         except Exception as e:  # noqa: BLE001
             self.events += [{"name": ev.name, **ev.attributes} for ev in getattr(e, "events", [])]
+            self.committed_usd += getattr(e, "cost_usd", None) or 0.0  # this call's own booking (minor 26)
             return self._record(name, "bedrock-runtime", classify(e), f"{type(e).__name__}: {e}", error_code(e),
                                 invoke_id=invoke_id, mode=mode)
-        finally:
-            self.committed_usd += self.ledger.status().spent_usd - before
+        self.committed_usd += resp.cost_usd or 0.0
         self.events += [{"name": ev.name, **ev.attributes} for ev in resp.events]
         text = "".join(b.text for b in resp.message.content if isinstance(b, Text))[:80]
         return self._record(name, "bedrock-runtime", "ok", "", None, invoke_id=invoke_id, mode=mode,
@@ -227,9 +268,9 @@ class Probe:
         def sts() -> dict[str, Any]:
             r = self.client("sts").get_caller_identity()
             ident.update(account=r.get("Account"), arn=r.get("Arn"))
-            return {"account": r.get("Account"), "arn": r.get("Arn")}
+            return {"account": redact_account(r.get("Account")), "identity": redact_arn(r.get("Arn"))}
         self.check("sts.get_caller_identity", "sts", sts)
-        execution.update(identity_arn=ident.get("arn"), account=ident.get("account"))
+        execution.update(identity_arn=redact_arn(ident.get("arn")), account=redact_account(ident.get("account")))
         try:
             import boto3
             execution["boto3"] = boto3.__version__
@@ -283,7 +324,7 @@ class Probe:
                 f" ({', '.join(sorted({str(e.get('error_code')) for e in throttles})) or 'none'}). "
                 "The adapter runs at concurrency 2 with botocore total_max_attempts=1 and its own jittered loop.")
         summary = {s: sum(1 for c in self.checks if c.status == s)
-                   for s in ("ok", "denied", "unavailable", "error", "skipped_budget")}
+                   for s in ("ok", "denied", "unavailable", "invalid_request", "error", "skipped_budget")}
         return AwsCapabilities(
             generated_at=datetime.now(UTC).isoformat(timespec="seconds"), probe_version=PROBE_VERSION,
             region=self.region, execution=execution, checks=self.checks, models=models,
@@ -300,7 +341,9 @@ class Probe:
         fm = fms.get(entry.model_id)
         listed = (fm is not None) if fm_ok else None
         image_input = ("IMAGE" in (fm.get("inputModalities") or [])) if fm else None
-        candidates = [p for p in [entry.inference_profile, *entry.alt_profiles] if p] or [entry.model_id]
+        registered = [p for p in [entry.inference_profile, *entry.alt_profiles] if p] or [entry.model_id]
+        near = near_matches(entry, profiles, set(fms))
+        candidates = list(dict.fromkeys([*registered, *near]))[:MAX_CANDIDATES]
         results: dict[str, CheckStatus | None] = {"user_turn": None, "tool_result": None}
         used: str | None = None
         for cand in candidates:
@@ -309,7 +352,7 @@ class Probe:
             if c.status == "ok":
                 used = cand
                 break
-            if c.status not in ("unavailable",):
+            if c.status not in ("unavailable", "invalid_request"):
                 break  # denied / error / skipped_budget: another profile will not help
         if used is not None:
             results["tool_result"] = self.converse(entry, "tool_result", used).status
@@ -322,7 +365,7 @@ class Probe:
                           listed=listed, profile_listed=(entry.inference_profile in profiles) if pr_ok else None,
                           image_input=image_input, user_turn_image=results["user_turn"],
                           tool_result_image=results["tool_result"], invoke_id_used=used,
-                          recommended_image_delivery=rec)
+                          recommended_image_delivery=rec, near_matches=near)
 
     def _list_models(self, out: dict[str, dict[str, Any]]) -> dict[str, Any]:
         r = self.client("bedrock").list_foundation_models()
@@ -386,14 +429,34 @@ class Probe:
 
     def _put_log_events(self) -> dict[str, Any]:
         c = self.client("logs")
-        for fn, kw in ((c.create_log_group, {"logGroupName": self.log_group}),
-                       (c.create_log_stream, {"logGroupName": self.log_group, "logStreamName": "probe"})):
+        created: dict[str, bool] = {}
+        for what, fn, kw in (("group", c.create_log_group, {"logGroupName": self.log_group}),
+                             ("stream", c.create_log_stream, {"logGroupName": self.log_group,
+                                                              "logStreamName": "probe"})):
             try:
                 fn(**kw)
+                created[what] = True
             except Exception as e:
                 if error_code(e) != "ResourceAlreadyExistsException":
                     raise
+                created[what] = False
+        retention = None
+        try:  # minor 16: never leave a forever log group behind
+            c.put_retention_policy(logGroupName=self.log_group, retentionInDays=LOG_RETENTION_DAYS)
+            retention = LOG_RETENTION_DAYS
+        except Exception as e:  # noqa: BLE001
+            retention = f"not set: {error_code(e)}"
         ts = int(datetime.now(UTC).timestamp() * 1000)
         c.put_log_events(logGroupName=self.log_group, logStreamName="probe",
                          logEvents=[{"timestamp": ts, "message": "treehouse probe"}])
-        return {"log_group": self.log_group}
+        return {"log_group": self.log_group, "created": created.get("group", False), "retention_days": retention}
+
+
+def near_matches(entry: ModelEntry, profiles: set[str], model_ids: set[str]) -> list[str]:
+    """Listed ids that extend a registry id (``us.anthropic.claude-sonnet-5-5-20261001-v1:0``), profiles first;
+    the registry's own exact ids are excluded."""
+    stems = [p for p in [entry.inference_profile, *entry.alt_profiles] if p]
+    exact = {entry.model_id, *stems}
+    prof = sorted(p for p in profiles if p not in exact and any(p.startswith(st) for st in stems))
+    fm = sorted(m for m in model_ids if m not in exact and m.startswith(entry.model_id))
+    return prof + fm

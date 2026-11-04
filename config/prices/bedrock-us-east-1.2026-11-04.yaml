@@ -1,7 +1,18 @@
 # Bedrock on-demand prices, us-east-1, as of 2026-11-04. ALL NULL until Kiro fills them (K2a) from the
 # Bedrock pricing page or `aws pricing get-products --service-code AmazonBedrock --region us-east-1`.
 # A null price means UNPRICED: the SpendLedger refuses the call (except the K1 probe, AWS-B1).
-# Units: USD per 1,000 tokens. Then run `uv run treehouse prices check`.
+#
+# UNITS: USD per 1,000 tokens. Most pricing pages quote per 1M tokens: DIVIDE BY 1000
+# (e.g. $3.00 per 1M input -> 0.003). Prices must be > 0 and inside a plausibility band
+# (input 0.00001..0.2, output 0.00001..1.0 per 1K); `treehouse prices check` prints the $/1M back to you.
+#
+# ROWS ARE PER (model, inference profile): `<price_ref>@us` is the price when calling the `us.` profile,
+# `@global` the `global.` profile. Geographic profiles (us./eu./apac.) can cost MORE (about +10% for recent
+# Claude) than global.; copy the row for the profile config/models.yaml actually calls. If the page gives
+# only one number and you cannot tell which profile it is for, put it in the @us row (the one we call) and,
+# when two numbers disagree, use the MORE EXPENSIVE. The ledger uses the most expensive priced row
+# (+10% for a geographic profile) when the exact row is null, so it never under-counts.
+# Then run `uv run treehouse prices check`.
 schema_version: treehouse.prices/1
 version: bedrock-us-east-1.2026-11-04
 region: us-east-1
@@ -9,8 +20,10 @@ currency: USD
 unit: per_1k_tokens
 source: null        # URL or "aws pricing get-products"
 retrieved: null     # YYYY-MM-DD
+unit_source: null   # e.g. "page quotes per 1M tokens; divided by 1000"
 synthetic: false
 estimated: false
 models:
-  claude-sonnet-5-5: {input: null, output: null, cache_read: null, cache_write: null}
-  nova-pro: {input: null, output: null, cache_read: null, cache_write: null}
+  claude-sonnet-5-5@us: {input: null, output: null, cache_read: null, cache_write: null}
+  claude-sonnet-5-5@global: {input: null, output: null, cache_read: null, cache_write: null}
+  nova-pro@us: {input: null, output: null, cache_read: null, cache_write: null}

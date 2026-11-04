@@ -10,6 +10,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
+from treehouse.paths import repo_root
 from treehouse.providers.prices import Price, PriceTable, load_default, load_fixture, load_probe_ceiling
 from treehouse.providers.spend import (
     BudgetAlarm,
@@ -21,19 +22,31 @@ from treehouse.providers.spend import (
 )
 from treehouse.schemas.model_io import Usage
 
-BIG = PriceTable(version="big-test", region="t", synthetic=True,
+BIG = PriceTable(version="big-test", region="any", synthetic=True,
                  models={"m": Price(input=1.0, output=5.0)})  # $1 / $5 per 1k tokens
+
+def new_ledger(*a, **kw):
+    """A test ledger: synthetic tables allowed, genesis written (B1: reserve refuses an un-initialised file)."""
+    kw.setdefault("allow_synthetic", True)
+    led = SpendLedger(*a, **kw)
+    if not led.initialized:
+        led.init(note="test")
+    return led
+
 
 
 def test_default_path_from_env(tmp_path, monkeypatch):
     monkeypatch.setenv("TREEHOUSE_SPEND_LEDGER", str(tmp_path / "x.jsonl"))
     assert default_ledger_path() == tmp_path / "x.jsonl"
     monkeypatch.delenv("TREEHOUSE_SPEND_LEDGER")
-    assert default_ledger_path().name == "spend.jsonl" and ".treehouse" in str(default_ledger_path())
+    # B1: inside a checkout the default is the repo's committed .spend/spend.jsonl
+    assert default_ledger_path() == repo_root() / ".spend" / "spend.jsonl"
+    monkeypatch.setenv("TREEHOUSE_SPEND_LEDGER", "rel/x.jsonl")
+    assert default_ledger_path().is_absolute()  # a relative env path is resolved once, not per cwd
 
 
 def test_worst_case_and_commit(tmp_path):
-    led = SpendLedger(tmp_path / "s.jsonl", prices=load_fixture())
+    led = new_ledger(tmp_path / "s.jsonl", prices=load_fixture())
     r = led.reserve("claude-sonnet-5-5", 1000, 100)
     assert r.worst_usd == pytest.approx((1000 * 0.003 + 100 * 0.015) / 1000)
     assert led.status().reserved_usd == pytest.approx(r.worst_usd)
@@ -44,7 +57,7 @@ def test_worst_case_and_commit(tmp_path):
 
 
 def test_thresholds(tmp_path):
-    led = SpendLedger(tmp_path / "s.jsonl", prices=BIG)
+    led = new_ledger(tmp_path / "s.jsonl", prices=BIG)
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         led.commit(led.reserve("m", 0, 50_000), Usage(input_tokens=0, output_tokens=50_000))  # $250
@@ -66,7 +79,7 @@ def test_thresholds(tmp_path):
 
 
 def test_unpriced_refused_unless_capped(tmp_path):
-    led = SpendLedger(tmp_path / "s.jsonl", prices=load_default())
+    led = new_ledger(tmp_path / "s.jsonl", prices=load_default())
     with pytest.raises(UnpricedModel):
         led.reserve("nova-pro", 10, 10)
     r = led.reserve("nova-pro", 10, 32, unpriced_cap_usd=0.25)
@@ -81,9 +94,9 @@ def test_unpriced_refused_unless_capped(tmp_path):
 
 def test_persists_across_instances_and_release(tmp_path):
     p = tmp_path / "s.jsonl"
-    a = SpendLedger(p, prices=load_fixture())
+    a = new_ledger(p, prices=load_fixture())
     r = a.reserve("nova-pro", 1000, 1000)
-    b = SpendLedger(p, prices=load_fixture())
+    b = new_ledger(p, prices=load_fixture())
     assert b.status().reserved_usd == pytest.approx(r.worst_usd) and b.status().open_reservations == [r.id]
     b.release(r, "failed")
     assert a.status().reserved_usd == 0
@@ -100,7 +113,7 @@ def test_property_never_passes_hard_stop(seq):
     and a reserve is refused exactly when spent + reserved + worst case would."""
     with tempfile.TemporaryDirectory() as d, warnings.catch_warnings():
         warnings.simplefilter("ignore", SpendWarning)
-        led = SpendLedger(Path(d) / "s.jsonl", prices=BIG)
+        led = new_ledger(Path(d) / "s.jsonl", prices=BIG)
         for est, mx, fin, fout, release in seq:
             before = led.status()
             worst = (est * 1.0 + mx * 5.0) / 1000

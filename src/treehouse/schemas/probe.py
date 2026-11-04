@@ -6,7 +6,9 @@ from typing import Any, Literal
 
 from treehouse.schemas.base import Frozen
 
-CheckStatus = Literal["ok", "denied", "unavailable", "error", "skipped_budget"]
+# invalid_request: a ValidationException that is NOT about the model id / profile / on-demand throughput,
+# i.e. our request shape or parameters; the detail says why (M9)
+CheckStatus = Literal["ok", "denied", "unavailable", "invalid_request", "error", "skipped_budget"]
 
 
 class ProbeCheck(Frozen):
@@ -29,6 +31,8 @@ class ProbeModel(Frozen):
     tool_result_image: CheckStatus | None
     invoke_id_used: str | None = None
     recommended_image_delivery: Literal["tool_result", "user_turn"] | None = None
+    # listed model ids / profile ids that share the registry id's stem (e.g. dated -v1:0 suffixes) (M10)
+    near_matches: list[str] = []
 
 
 class ProbeSpend(Frozen):

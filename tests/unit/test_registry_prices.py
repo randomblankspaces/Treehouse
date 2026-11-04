@@ -15,6 +15,15 @@ from treehouse.schemas.model_io import Usage
 
 P = InferenceParams(max_tokens=100)
 
+def new_ledger(*a, **kw):
+    """A test ledger: synthetic tables allowed, genesis written (B1: reserve refuses an un-initialised file)."""
+    kw.setdefault("allow_synthetic", True)
+    led = SpendLedger(*a, **kw)
+    if not led.initialized:
+        led.init(note="test")
+    return led
+
+
 
 def role(key, family, provider="bedrock", tools=()):
     return RoleConfig(provider=provider, model_key=key, family=family, params=P, tools=list(tools))
@@ -40,7 +49,8 @@ def test_registry_defaults_u1_u2():
 def test_every_registry_model_has_a_price_row():
     reg = ModelRegistry.load()
     for t in (load_default(), load_fixture()):
-        assert {m.price_ref for m in reg.models} <= set(t.models)
+        # M6: one row per (model, inference profile) the registry calls
+        assert {f"{m.price_ref}@{m.invoke_id.split('.')[0]}" for m in reg.models} <= set(t.models)
     assert load_probe_ceiling().estimated and load_probe_ceiling().default.priced
     assert load_fixture().synthetic and not load_default().synthetic
 
@@ -88,17 +98,31 @@ def test_prices_check_fails_on_null_table_and_passes_on_filled(tmp_path):
 
 def test_budget_status_and_plan(monkeypatch, tmp_path):
     r = CliRunner().invoke(app, ["budget", "status"])
-    assert r.exit_code == 0 and "spent $0.0000" in r.output and ": ok" in r.output
-    led = SpendLedger(prices=load_fixture())
+    assert r.exit_code == 4 and "NO LEDGER" in r.output  # B1: a missing ledger is loud, never "$0 ok"
+    assert CliRunner().invoke(app, ["budget", "init"]).exit_code == 0
+    assert CliRunner().invoke(app, ["budget", "init"]).exit_code == 1  # never re-init
+    r = CliRunner().invoke(app, ["budget", "status"])
+    assert r.exit_code == 0 and "spent $0.0000" in r.output and ": ok" in r.output and "EMPTY LEDGER" in r.output
+    assert "NOT the AWS bill" in r.output
+    led = new_ledger(prices=load_fixture())
     led.commit(led.reserve("nova-pro", 1000, 1000), Usage(input_tokens=1000, output_tokens=1000))
     r = CliRunner().invoke(app, ["budget", "status"])
     assert "over 1 call(s)" in r.output
     r = CliRunner().invoke(app, ["budget", "plan", "--trials", "3"])
     assert r.exit_code == 1 and "UNPRICED" in r.output
-    r = CliRunner().invoke(app, ["budget", "plan", "--task", str(repo_root() / "tasks/synth-crossings-v1.yaml"),
-                                 "--trials", "3"])
+    task = str(repo_root() / "tasks/synth-crossings-v1.yaml")
+    r = CliRunner().invoke(app, ["budget", "plan", "--task", task, "--trials", "3"])
+    assert r.exit_code == 1 and "UNPRICED" in r.output  # M11c: a null table never plans "ok"
+    fx = str(repo_root() / "config/prices/fixture.yaml")
+    r = CliRunner().invoke(app, ["budget", "plan", "--task", task, "--trials", "3", "--calls", "100", "--prices", fx])
     assert r.exit_code == 0, r.output
-    assert "3 trial(s) x $5.0000 = $15.0000" in r.output
+    # M11a: the $5 per-run cap plus one call's worst case (20k in x 0.003 + 4096 out x 0.015 per 1K = $0.12144)
+    assert "3 trial(s) x $5.1214 = $15.3643" in r.output
+    r = CliRunner().invoke(app, ["budget", "plan", "--task", task, "--trials", "1", "--calls", "100", "--prices", fx,
+                                 "--verifier-calls", "10", "--verifier-input-tokens", "1000",
+                                 "--verifier-max-tokens", "100"])
+    # M11b: + nova-pro 10 x (1000 x 0.0008 + 100 x 0.0032) / 1000 = $0.0112
+    assert r.exit_code == 0 and "$5.1326" in r.output, r.output
     r = CliRunner().invoke(app, ["budget", "plan", "--prices", str(repo_root() / "config/prices/fixture.yaml"),
                                  "--calls", "10", "--input-tokens", "1000", "--max-tokens", "100"])
     assert r.exit_code == 0 and "$0.0450" in r.output
@@ -107,8 +131,8 @@ def test_budget_status_and_plan(monkeypatch, tmp_path):
 def test_budget_status_exit_code_over_alarm(tmp_path):
     from treehouse.providers.prices import Price, PriceTable
 
-    big = PriceTable(version="b", region="t", models={"claude-sonnet-5-5": Price(input=1.0, output=5.0)})
-    led = SpendLedger(prices=big)
+    big = PriceTable(version="b", region="any", synthetic=True, models={"claude-sonnet-5-5": Price(input=1.0, output=5.0)})
+    led = new_ledger(prices=big)
     import warnings
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")

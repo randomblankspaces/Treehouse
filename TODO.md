@@ -24,9 +24,17 @@ Rules:
 Setup:
   git pull
   uv sync --extra aws --extra strands --extra geo
-  export TREEHOUSE_SPEND_LEDGER=$PWD/.spend/spend.jsonl
+  export TREEHOUSE_SPEND_LEDGER=$PWD/.spend/spend.jsonl   # also the default inside the repo; keep it absolute
 Spend guard (stop if the guard says so):
-  uv run treehouse budget status   # stop if spent + reserved > $350 and tell Suhas
+  uv run treehouse budget status   # exit 2/3: spent + reserved > $350: STOP and tell Suhas
+                                   # exit 4 NO LEDGER: expected only before K1 (K0: carry on; K1: follow its init
+                                   #   step); from K2a on: STOP and tell Suhas
+                                   # exit 4 WRONG LEDGER, or "EMPTY LEDGER" after K1: STOP and tell Suhas
+  uv run treehouse budget open     # open reservations left by a crashed earlier step, if any
+  NEVER delete, move, truncate or re-create .spend/spend.jsonl (that zeroes the $450 guard). If it reports a
+  corrupt line, stop and tell Suhas. If open reservations are from a crashed step:
+    uv run treehouse budget release-stale --reason "<step> crashed"   # books them as spent (conservative)
+  The ledger is NOT the AWS bill: it counts only Treehouse's Bedrock calls at our price table.
 At the end of the step:
   git add .spend/ and the step's outputs, commit, push.
 Report back: the commands run, their output (trimmed), and anything denied.
@@ -54,9 +62,19 @@ Needs: P6 (`scripts/aws_probe.py`, `treehouse probe import`, `config/models.yaml
 
 ```
 <preamble>
-Run the Treehouse AWS capability probe. It makes one cheap call per service and never aborts.
+First live step only: create the spend ledger if (and only if) `budget status` said NO LEDGER and
+`git log --oneline -- .spend/spend.jsonl` shows nothing:
+  uv run treehouse budget init --note "K1 first live step"
+  git add .spend/spend.jsonl && git commit -m "spend ledger genesis"
+Run the Treehouse AWS capability probe. It makes one cheap call per service and never aborts (it refuses to
+start without the ledger). Region is us-east-1 everywhere; do not change it.
   uv run python scripts/aws_probe.py --region us-east-1 --out aws-capabilities.json
   uv run treehouse probe import aws-capabilities.json
+Status meanings: unavailable = the model id/profile is not usable here; invalid_request = Bedrock rejected our
+request shape or a parameter (report the detail; do NOT edit models.yaml for it); denied = IAM.
+`probe import` prints near matches (listed ids that extend the registry id, e.g. dated -v1:0 suffixes) and,
+when another id worked, the exact `inference_profile:` line to put in config/models.yaml.
+The report redacts the account id and ARN; the CloudWatch log group it creates gets 1-day retention.
 Then show me:
 - (a) which Bedrock models are listed and usable, with exact model ids and inference profiles. Report especially Claude Sonnet 5.5 (anthropic.claude-sonnet-5-5 via a us./global. profile) and Amazon Nova Pro (amazon.nova-pro-v1:0 via us.);
 - (b) whether each model accepts an image in a user turn and inside a tool result;
@@ -73,12 +91,18 @@ Needs: P6 (`treehouse prices check`).
 
 ```
 <preamble>
-Fill config/prices/bedrock-us-east-1.2026-11-04.yaml with the on-demand USD per 1k input and output tokens (plus cache read/write if listed) for every model in config/models.yaml.
+Fill config/prices/bedrock-us-east-1.2026-11-04.yaml with the on-demand USD per 1,000 (1K) input and output tokens (plus cache read/write if listed).
+UNITS: pages usually quote per 1M tokens: DIVIDE BY 1000 ($3.00 per 1M -> 0.003). Prices must be > 0 and in a
+plausibility band, or the table will not load.
+ROWS ARE PER (model, inference profile): fill claude-sonnet-5-5@us (the us. profile we call), claude-sonnet-5-5@global
+and nova-pro@us. us./eu. geographic profiles can cost ~10% more than global.; if unsure which profile a number is
+for, use the MORE EXPENSIVE number in the @us row.
 Use the AWS Bedrock pricing page or the Pricing API:
   aws pricing get-products --service-code AmazonBedrock --region us-east-1
-Write the source and the retrieval date into the file. Then run:
+Write source, retrieved (date) and unit_source (e.g. "page per 1M; divided by 1000") into the file. Then run:
   uv run treehouse prices check
-It must report no null prices for the worker and verifier models.
+It must exit 0 (no null or FALLBACK rows for the worker and verifier). It prints each price back as $/1M:
+compare every number with the pricing page before committing.
 Commit on kiro/k2a-prices and push.
 ```
 
@@ -89,10 +113,15 @@ Needs: P5–P7 merged. `treehouse run` supports `--mode record` and `--live`.
 ```
 <preamble>
 Run the first live Treehouse run on Bedrock with the plain-loop harness on the SYNTHETIC keyed task (tasks/synth-crossings-v1.yaml), K=3 trials, recording cassettes:
-  uv run treehouse budget plan --task tasks/synth-crossings-v1.yaml --trials 3
+  uv run treehouse budget plan --task tasks/synth-crossings-v1.yaml --trials 3   # exit 1 = unpriced: do K2a first
   uv run treehouse run --task tasks/synth-crossings-v1.yaml --config fixtures/demo/configs/live-bedrock.yaml --mode record --trials 3
   uv run treehouse check <run_id> && uv run treehouse score <run_id> && uv run treehouse report <run_id>
   uv run treehouse verify
+  uv run treehouse budget status
+Then check the real bill (Cost Explorer lags hours; ~$0.01 per call) and record it:
+  aws ce get-cost-and-usage --region us-east-1 --time-period Start=$(date -u +%Y-%m-01),End=$(date -u -d tomorrow +%Y-%m-%d) --granularity MONTHLY --metrics UnblendedCost
+  uv run treehouse budget reconcile --aws-usd <Amount> --source "aws ce $(date -u +%F)"   # exit 2: AWS >> ledger: STOP
+  (or read it from the AWS Billing console). Report both numbers.
 Report:
 - per-trial cost, p90 cost, tokens (incl. image tokens), wall time;
 - any throttles (span events);
@@ -149,7 +178,10 @@ Report:
 - verifier abstention rate;
 - the trust passport headline and tier;
 - the test-retest kappa.
-Commit the bundle (no pixels) on kiro/k4-nepal.
+Before step 2, plan with the verifier counted:
+  uv run treehouse budget plan --task tasks/nepal-bhote-koshi-bridges.yaml --trials 3 --verifier-calls 40
+After the run, repeat the K3 Cost Explorer check and `treehouse budget reconcile`, and report AWS vs ledger.
+Commit the bundle (no pixels) and .spend/ on kiro/k4-nepal.
 ```
 
 ### K5. Export pixel-free cassettes for replay (10 min, $0)

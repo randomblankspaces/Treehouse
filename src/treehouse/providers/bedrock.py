@@ -12,8 +12,13 @@
   never retried. A semaphore caps concurrency (default 2).
 * Usage maps cacheRead/cacheWrite; ``reasoningContent`` becomes a ``Reasoning`` block (never scored).
 * Spend: ``ledger.reserve()`` before the call, ``commit()`` after (usage × dated price), reported as
-  ``ModelResponse.cost_usd`` / ``price_table_version``; a failed call releases its reservation. An unpriced
-  model is refused before any call.
+  ``ModelResponse.cost_usd`` / ``price_table_version``. The ledger's price table is the ONLY price source
+  (M5); the provider's ``prices`` argument must carry the same version. Usage is committed BEFORE the
+  response content is mapped (M4). A call that failed with a service error response (4xx, throttling,
+  5xx codes) or before connecting releases its reservation; an AMBIGUOUS failure (read timeout, dropped
+  connection, cancel, interrupt, any unknown exception) commits the full reservation as
+  ``estimated``/``ambiguous`` (M3), because Bedrock may have billed it. An unpriced model is refused before
+  any call; ``unpriced_cap_usd`` (the K1 probe only) is limited to $0.25 and ``max_tokens <= 32``.
 * Images (F4): the adapter rejects formats other than png|jpeg|gif|webp and bytes whose magic number
   does not match the declared format; live calls need pixels whose decoded hash matches ``Image.sha256``
   (``require_pixels(decode=decode_png)``, M10).
@@ -24,6 +29,7 @@ boto3/botocore are imported lazily, so this module imports without them.
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import random
 import threading
 import time
@@ -31,8 +37,16 @@ from collections.abc import Awaitable, Callable
 from typing import Any
 
 from treehouse.canon import canonical_json
-from treehouse.providers.base import ProviderError, decode_png, iter_images, pixel_free, require_pixels
-from treehouse.providers.prices import PriceTable
+from treehouse.pixels import array_sha256
+from treehouse.providers.base import (
+    PixelHashMismatch,
+    ProviderError,
+    decode_png,
+    iter_images,
+    pixel_free,
+    require_pixels,
+)
+from treehouse.providers.prices import PriceTable, profile_of
 from treehouse.providers.registry import ModelEntry, ModelRegistry
 from treehouse.providers.spend import SpendLedger
 from treehouse.schemas.model_io import (
@@ -80,6 +94,11 @@ _MAGIC: dict[str, Callable[[bytes], bool]] = {
     "webp": lambda b: b[:4] == b"RIFF" and b[8:12] == b"WEBP",
 }
 IMAGE_TOKEN_ESTIMATE = 1600  # conservative per-image input-token estimate for the reservation
+TOOLS_TOKEN_ALLOWANCE = 1000  # hidden tool-use system prompt the chars/3 estimate never sees (minor 13)
+UNPRICED_CAP_MAX_USD, UNPRICED_MAX_TOKENS = 0.25, 32  # unpriced calls: the K1 probe only (minor 20)
+# failures known to happen before Bedrock bills: the client never sent the request (M3)
+UNBILLED_TRANSPORT = frozenset({"EndpointConnectionError", "ConnectTimeoutError", "ParamValidationError",
+                                "NoCredentialsError", "PartialCredentialsError", "NoRegionError"})
 
 
 # -- errors -------------------------------------------------------------------------------------
@@ -88,6 +107,8 @@ class BedrockError(ProviderError):
         super().__init__(message)
         self.code, self.request_id = code, request_id
         self.events: list[ProviderEvent] = []
+        self.service_error = False  # True: Bedrock answered with an error code (not billed)
+        self.cost_usd: float | None = None  # set when the ledger booked spend for this failed call
 
 
 class BedrockValidationError(BedrockError):
@@ -146,9 +167,19 @@ def _error_request_id(exc: BaseException) -> str | None:
 
 
 def typed_error(exc: BaseException) -> BedrockError:
-    code = _error_code(exc) or type(exc).__name__
+    """ClientErrors map by error code; other botocore errors (ReadTimeoutError, ConnectTimeoutError,
+    ConnectionClosedError, ...) by class name, as plain BedrockError (``service_error`` False)."""
+    service_code = _error_code(exc)
+    code = service_code or type(exc).__name__
     cls = _TYPED.get(code, BedrockError)
-    return cls(f"{code}: {exc}", code=code, request_id=_error_request_id(exc))
+    err = cls(f"{code}: {exc}", code=code, request_id=_error_request_id(exc))
+    err.service_error = service_code is not None
+    return err
+
+
+def known_unbilled(exc: BaseException) -> bool:
+    """True only when the failure provably happened before Bedrock could bill (M3)."""
+    return isinstance(exc, BedrockError) and (exc.service_error or exc.code in UNBILLED_TRANSPORT)
 
 
 # -- client -------------------------------------------------------------------------------------
@@ -234,6 +265,9 @@ def build_converse_kwargs(req: ModelRequest, entry: ModelEntry, *, delivery: str
         kw["toolConfig"] = {"tools": [{"toolSpec": {"name": t.name, "description": t.description,
                                                      "inputSchema": {"json": t.input_schema}}}
                                        for t in req.tools]}
+    if (entry.family == "anthropic-claude" and req.params.temperature is not None
+            and req.params.top_p is not None):
+        raise BedrockValidationError(f"{entry.key}: recent Claude models reject temperature and top_p together")
     inf: dict[str, Any] = {"maxTokens": req.params.max_tokens}
     if req.params.temperature is not None:
         inf["temperature"] = req.params.temperature
@@ -247,7 +281,8 @@ def estimate_input_tokens(req: ModelRequest) -> int:
     """A deliberately high estimate: 1 token per 3 characters of the pixel-free request, plus a fixed
     allowance per image."""
     n_images = sum(1 for _ in iter_images(req.messages))
-    return len(canonical_json(pixel_free(req))) // 3 + 1 + IMAGE_TOKEN_ESTIMATE * n_images
+    return (len(canonical_json(pixel_free(req))) // 3 + 1 + IMAGE_TOKEN_ESTIMATE * n_images
+            + (TOOLS_TOKEN_ALLOWANCE if req.tools else 0))
 
 
 # -- response mapping ---------------------------------------------------------------------------
@@ -299,7 +334,7 @@ class BedrockConverseProvider:
         self,
         client_factory: Callable[[str], Any] | None,
         registry: ModelRegistry,
-        prices: PriceTable,
+        prices: PriceTable | None,
         ledger: SpendLedger,
         region: str = "us-east-1",
         concurrency: int = 2,
@@ -317,6 +352,14 @@ class BedrockConverseProvider:
     ) -> None:
         if max_attempts < 1 or concurrency < 1:
             raise ValueError("max_attempts and concurrency must be >= 1")
+        if unpriced_cap_usd is not None and unpriced_cap_usd > UNPRICED_CAP_MAX_USD:
+            raise ValueError(f"unpriced_cap_usd may be at most ${UNPRICED_CAP_MAX_USD} (the K1 probe cap)")
+        lp = ledger.prices
+        if prices is not None and lp is not None and prices.version != lp.version:
+            raise ValueError(f"provider price table {prices.version} != ledger price table {lp.version}: the ledger's "
+                             "table is the only price source; pass the same table (M5)")
+        if lp is not None and lp.region not in (region, "any"):
+            raise ValueError(f"price table {lp.version} is for {lp.region}, provider region is {region}")
         self._factory = client_factory or default_client_factory
         self.registry, self.prices, self.ledger, self.region = registry, prices, ledger, region
         self.concurrency, self.max_attempts = concurrency, max_attempts
@@ -325,7 +368,8 @@ class BedrockConverseProvider:
         self.unpriced_cap_usd, self.commit_price_override = unpriced_cap_usd, commit_price_override
         self.image_delivery = image_delivery
         self.allow_over_alarm, self.over_alarm_reason = allow_over_alarm, over_alarm_reason
-        self.price_table_version = prices.version
+        self.price_table_version = lp.version if lp is not None else (prices.version if prices else "none")
+        self._verified: dict[tuple[str, str], tuple[int, ...] | None] = {}  # (bytes sha, Image.sha256) -> shape
         self._client: Any = None
         self._client_lock = threading.Lock()
         self._sems: dict[int, asyncio.Semaphore] = {}
@@ -350,35 +394,87 @@ class BedrockConverseProvider:
     def prepare(self, req: ModelRequest) -> tuple[ModelEntry, dict[str, Any]]:
         """Validate and build the wire request (no ledger, no network)."""
         entry = self.registry.get(req.model_id)
-        images = [img for _, img in iter_images(req.messages)]
+        if entry.region != self.region:
+            raise BedrockValidationError(f"{entry.key} is registered in {entry.region}; provider region is {self.region}")
+        images = list(iter_images(req.messages))
         if images and not entry.vision:
             raise VisionNotSupported(f"{entry.key} has vision: false but the request carries {len(images)} image(s)")
         require_pixels(req)  # byte-less or empty images first (MissingPixels)
-        for img in images:
+        for _, img in images:
             check_image(img)  # F4: allowed format and matching magic number
-        require_pixels(req, decode=decode_png)  # M10: decoded pixels reproduce Image.sha256
+        for i, img in images:
+            shape = self._verify_pixels(i, img)  # M10: decoded pixels reproduce Image.sha256 (cached, M8)
+            if shape is not None and entry.max_image_px is not None and max(shape[:2]) > entry.max_image_px:
+                raise UnsupportedImage(f"image {img.sha256}: {shape[1]}x{shape[0]} px exceeds {entry.key} "
+                                       f"max_image_px {entry.max_image_px}")
         return entry, build_converse_kwargs(req, entry, delivery=self.image_delivery)
+
+    def _verify_pixels(self, i: int, img: Image) -> tuple[int, ...] | None:
+        """Decode once per (bytes, claimed hash): the history resends every image each turn (M8)."""
+        key = (hashlib.sha256(img.bytes_ or b"").hexdigest(), img.sha256)
+        if key in self._verified:
+            return self._verified[key]
+        try:
+            arr = decode_png(img.bytes_ or b"", img.format)
+        except ValueError as e:
+            raise PixelHashMismatch(f"message {i}: image {img.sha256} does not decode as {img.format}: {e}") from e
+        if arr is not None and array_sha256(arr) != img.sha256:
+            raise PixelHashMismatch(f"message {i}: decoded pixels hash to {array_sha256(arr)}, not {img.sha256}")
+        shape = tuple(arr.shape) if arr is not None else None
+        self._verified[key] = shape
+        return shape
 
     async def complete(self, req: ModelRequest, *, role: str, trial_index: int, turn: int) -> ModelResponse:
         entry, kwargs = self.prepare(req)
+        if self.unpriced_cap_usd is not None and req.params.max_tokens > UNPRICED_MAX_TOKENS:
+            raise BedrockValidationError(f"unpriced calls (probe) need max_tokens <= {UNPRICED_MAX_TOKENS}")
         reservation = self.ledger.reserve(
             entry.key, estimate_input_tokens(req), req.params.max_tokens,
             allow_over_alarm=self.allow_over_alarm, reason=self.over_alarm_reason,
-            unpriced_cap_usd=self.unpriced_cap_usd,
+            unpriced_cap_usd=self.unpriced_cap_usd, price_ref=entry.price_ref, profile=profile_of(entry.invoke_id),
         )
         events: list[ProviderEvent] = []
         try:
             raw, elapsed_ms = await self._call_with_retries(kwargs, events)
         except BaseException as e:
-            self.ledger.release(reservation, why=type(e).__name__)
+            if known_unbilled(e):
+                self.ledger.release(reservation, why=type(e).__name__)
+            else:  # M3: Bedrock may have billed (timeout, dropped connection, cancel): book the worst case
+                cost = self.ledger.commit_worst(reservation, why=f"ambiguous: {type(e).__name__}")
+                try:
+                    e.cost_usd = cost  # type: ignore[attr-defined]
+                except AttributeError:  # pragma: no cover
+                    pass
             if isinstance(e, BedrockError):
                 e.events = events
             raise
-        resp = map_response(raw, model_id=entry.invoke_id, elapsed_ms=elapsed_ms)
-        cost = self.ledger.commit(reservation, resp.usage, price_override=self.commit_price_override)
-        version = (self.commit_price_override.version if reservation.unpriced and self.commit_price_override
-                   else self.prices.version)
+        # M4: the call returned (billed). Book its usage before anything else can raise.
+        if not isinstance(raw.get("usage"), dict):
+            cost = self.ledger.commit_worst(reservation, why="ambiguous: response without usage")
+            raise self._failed(BedrockError("Bedrock response has no usage block", code="MalformedResponse"),
+                               events, cost)
+        try:
+            usage = map_usage(raw["usage"])
+        except Exception as e:  # noqa: BLE001
+            cost = self.ledger.commit_worst(reservation, why=f"ambiguous: unparseable usage ({e})")
+            raise self._failed(BedrockError(f"unparseable usage: {e}", code="MalformedResponse"), events, cost) from e
+        cost = self.ledger.commit(reservation, usage, price_override=self.commit_price_override)
+        try:
+            resp = map_response(raw, model_id=entry.invoke_id, elapsed_ms=elapsed_ms)
+        except Exception as e:  # noqa: BLE001
+            err = e if isinstance(e, BedrockError) else BedrockError(
+                f"unmappable Bedrock response: {type(e).__name__}: {e}", code="MalformedResponse")
+            raise self._failed(err, events, cost) from e
+        if reservation.unpriced:
+            version = self.commit_price_override.version if self.commit_price_override else "unpriced-cap"
+        else:
+            version = self.price_table_version
         return resp.model_copy(update={"cost_usd": cost, "price_table_version": version, "events": events})
+
+    @staticmethod
+    def _failed(err: BedrockError, events: list[ProviderEvent], cost: float) -> BedrockError:
+        err.events, err.cost_usd = events, cost
+        return err
 
     async def _call_with_retries(self, kwargs: dict[str, Any], events: list[ProviderEvent]) -> tuple[dict[str, Any], int]:
         async with self._sem():
@@ -402,8 +498,10 @@ class BedrockConverseProvider:
                     if not retryable:
                         raise typed_error(e) from e
                     if not will_retry:
-                        raise BedrockRetriesExhausted(
-                            f"{code} after {attempt} attempts", code=code, request_id=_error_request_id(e)) from e
+                        err = BedrockRetriesExhausted(
+                            f"{code} after {attempt} attempts", code=code, request_id=_error_request_id(e))
+                        err.service_error = True
+                        raise err from e
                     await self._sleep(delay)
         raise AssertionError("unreachable")  # pragma: no cover
 

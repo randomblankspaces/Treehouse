@@ -50,6 +50,15 @@ SONNET_PROFILE = "us.anthropic.claude-sonnet-5-5"
 async def _nosleep(_s: float) -> None:
     return None
 
+def new_ledger(*a, **kw):
+    """A test ledger: synthetic tables allowed, genesis written (B1: reserve refuses an un-initialised file)."""
+    kw.setdefault("allow_synthetic", True)
+    led = SpendLedger(*a, **kw)
+    if not led.initialized:
+        led.init(note="test")
+    return led
+
+
 
 def ok_response(content=None, stop="end_turn", usage=None) -> dict[str, Any]:
     return {
@@ -62,7 +71,7 @@ def ok_response(content=None, stop="end_turn", usage=None) -> dict[str, Any]:
 
 @pytest.fixture
 def ledger(tmp_path):
-    return SpendLedger(tmp_path / "spend.jsonl", prices=load_fixture(), registry=ModelRegistry.load())
+    return new_ledger(tmp_path / "spend.jsonl", prices=load_fixture(), registry=ModelRegistry.load())
 
 
 def make(ledger, prices=None, registry=None, **kw):
@@ -241,7 +250,7 @@ def test_stop_reason_mapping_covers_botocore_enum(ledger):  # F3
 
 
 def test_unpriced_model_refused_before_any_call(tmp_path):
-    led = SpendLedger(tmp_path / "s.jsonl", prices=load_default(), registry=ModelRegistry.load())
+    led = new_ledger(tmp_path / "s.jsonl", prices=load_default(), registry=ModelRegistry.load())
     p, stub, client = make(led, prices=load_default())
     calls = []
     client.meta.events.register("before-parameter-build.bedrock-runtime.Converse", lambda **kw: calls.append(1))

@@ -74,7 +74,18 @@ class PlainLoop:
                                        tools=gateway.specs(), params=self.params)
                     with tracer.span(f"chat {self.model_id}", "chat", {"treehouse.turn": turn}) as s:
                         in_ref = self._put(pixel_free_json(req))  # == req.key()
-                        resp = await provider.complete(req, role=role, trial_index=trial_index, turn=turn)
+                        try:
+                            resp = await provider.complete(req, role=role, trial_index=trial_index, turn=turn)
+                        except BaseException as e:
+                            # M7: a failed call keeps its retry/throttle events on the span; spend the ledger
+                            # booked for it (ambiguous failure, unparseable response) is charged too
+                            for ev in getattr(e, "events", None) or []:
+                                s.event(ev.name, ev.attributes)
+                            failed_cost = getattr(e, "cost_usd", None)
+                            if failed_cost:
+                                s.set("treehouse.cost.usd", failed_cost)
+                                budget.commit(None, usd=failed_cost)
+                            raise
                         turn_text = "".join(b.text for b in resp.message.content if isinstance(b, Text))
                         s.update({
                             "treehouse.output.messages_ref": self._put(pixel_free_json(resp)),
@@ -84,7 +95,9 @@ class PlainLoop:
                         })
                         n_events = len(budget.events)
                         cost = resp.cost_usd or 0.0
-                        budget.commit(None, tokens=resp.usage.input_tokens + resp.usage.output_tokens, usd=cost)
+                        u = resp.usage
+                        budget.commit(None, tokens=u.input_tokens + u.output_tokens + u.cache_read + u.cache_write,
+                                      usd=cost)
                         s.update({
                             "gen_ai.provider.name": provider.provider_name,
                             "gen_ai.request.model": self.model_id,
@@ -105,6 +118,7 @@ class PlainLoop:
                             s.set("treehouse.usage.image_input_tokens", resp.usage.image_input_tokens)
                         if provider.provider_name == "replay":
                             s.set("treehouse.cost.replayed", True)  # recorded cost; the SpendLedger pays $0
+                            s.set("treehouse.cost.ledger_usd", 0.0)  # panels summing real spend use this
                         for ev in resp.events:
                             s.event(ev.name, ev.attributes)
                         remaining = budget.remaining("usd")
