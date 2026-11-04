@@ -61,6 +61,7 @@ class WindowResult(Frozen):
     obscuration: Obscuration
     license: str
     synthetic: bool
+    detail: dict[str, str | int | float | bool] = {}  # e.g. bytes_model="synthetic-overview-block-v1"
 
 
 class ClayCell(Frozen):

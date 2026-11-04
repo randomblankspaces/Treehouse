@@ -77,6 +77,27 @@
       "title": "Bytes Read",
       "type": "integer"
     },
+    "detail": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          }
+        ]
+      },
+      "default": {},
+      "title": "Detail",
+      "type": "object"
+    },
     "effective_gsd_m": {
       "title": "Effective Gsd M",
       "type": "number"

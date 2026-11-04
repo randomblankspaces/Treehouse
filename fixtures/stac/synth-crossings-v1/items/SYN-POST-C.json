@@ -1,0 +1,55 @@
+{
+ "assets": {
+  "visual": {
+   "etag": "synthetic-708bbe120aaf7107",
+   "href": "synthetic://synth-crossings-v1/SYN-POST-C",
+   "type": "synthetic/raster"
+  }
+ },
+ "bbox": [
+  0.0016200000000000001,
+  0.0,
+  0.0108,
+  0.0108
+ ],
+ "geometry": {
+  "coordinates": [
+   [
+    [
+     0.0016200000000000001,
+     0.0
+    ],
+    [
+     0.0108,
+     0.0
+    ],
+    [
+     0.0108,
+     0.0108
+    ],
+    [
+     0.0016200000000000001,
+     0.0108
+    ],
+    [
+     0.0016200000000000001,
+     0.0
+    ]
+   ]
+  ],
+  "type": "Polygon"
+ },
+ "id": "SYN-POST-C",
+ "license": "LicenseRef-synthetic",
+ "properties": {
+  "datetime": "2026-08-30T10:05:00Z",
+  "eo:cloud_cover": 3.0,
+  "pan_gsd": 0.5,
+  "treehouse:phase": "post",
+  "treehouse:synthetic": true,
+  "view:off_nadir": 10.0,
+  "view:sun_elevation": 60.0
+ },
+ "stac_version": "1.0.0",
+ "type": "Feature"
+}
