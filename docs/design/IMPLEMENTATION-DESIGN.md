@@ -573,11 +573,11 @@ The corruption series (used by test I4) flips 0, 10, 20 and 40 % of good's corre
 - `as_of`: 2026-09-18T23:59Z.
 - Steps: `inventory` is partly keyed against OSM (`pending_fetch`); `damage` is unkeyed, with a gold plan of 24.
 - Forbidden sources: `overpass-api.de`, `*.openstreetmap.org`, `keys/`, OSM tools.
-- Controls: retest pair E5610/E5810. Placebo is "unavailable: 2 pre scenes, ~51 % overlap, 3–5-year gap".
+- Controls: retest pair E5610/E5810. Placebo is "unavailable: 2 pre scenes, ~63 % of the AOI covered by both (fixture footprints; RS measured ~51 %), 3–5-year gap".
 
 **Demo inputs.**
 - **Points.** 30 synthetic candidate points along `fixtures/demo/nepal/corridor.geojson`, each inside both the AOI and E5610's footprint. Every row and CSV line carries `synthetic: true` and the text "illustrative, not surveyed bridges".
-- **`nepal-good` cassette.** Picks E5610 and avoids the 13 cloud-trap scenes. Its `RecordedImagerySource` WindowResults use real scene ids and `pan_gsd`, computed bboxes and effective GSD, and a modelled `bytes_read`. `pixel_sha256` is the sha256 of a deterministic synthetic array keyed by `result_id` (same array-hash rule as OBS-B2). Every WindowResult has `synthetic: true` and shows a SYNTHETIC chip on its row in the claim and evidence table. It makes 22 status claims and 8 `cannot_assess`, the latter where recorded obscuration exceeds 0.3.
+- **`nepal-good` cassette.** Picks E5610 and avoids the 16 cloud-trap scenes. Its `RecordedImagerySource` WindowResults use real scene ids and `pan_gsd`, computed bboxes and effective GSD, and a modelled `bytes_read`. `pixel_sha256` is the sha256 of a deterministic synthetic array keyed by `result_id` (same array-hash rule as OBS-B2). Every WindowResult has `synthetic: true` and shows a SYNTHETIC chip on its row in the claim and evidence table. It makes 22 status claims and 8 `cannot_assess`, the latter where recorded obscuration exceeds 0.3.
 - **`nepal-guesser` cassette.** Makes status claims on those 8 obscured windows.
 - **Verdicts.** Recorded from a fake verifier against `keys/synth/nepal-demo-truth.json`: sensitivity 0.85, specificity 0.80, 15 % abstention, plus 10 recorded retest pairs.
 - **Gold.** Synthetic, n=24.
@@ -847,3 +847,16 @@ A fact-checker tested 35 library and API claims, mostly by running code against 
   - When calling the oracle, pass `pseudo=0.5`; the prototype defaults to 1.0.
 
 The full table, with the commands and URLs used, is kept in `wip/council2/d-factcheck.md`.
+
+---
+
+## Post-adoption factual corrections (2026-11-04)
+
+These edits came from the spec-sheet doubter/judge pass ([reviews/review2-spec-sheet.md](../reviews/review2-spec-sheet.md)). They fix facts and declare one deviation. **The council's decisions are unchanged.**
+
+| Where | Change | Why |
+|---|---|---|
+| §5.2 `nepal-good` cassette | "13 cloud-trap scenes" → "16" | The pinned STAC fixture has 16 post scenes that intersect the AOI at 71–94 % cloud (2026-08-27 to 09-09; 15 cover at least 60 % of the AOI). The P1 Nepal card pins all 16. "13" came from a bbox count in wip/council2/a-rs.md that could not be reproduced. |
+| §5.2 Controls | Placebo reason now says "~63 % of the AOI covered by both (fixture footprints; RS measured ~51 %)" | Re-measured on the fixture footprints. §0 row 24 keeps RS's original figure as a record of what RS measured. |
+| §2 `unreported_frame # W10`, §7 W10 | **Deviation from DD1, now declared** (SCOPE D74). Text unchanged | DD1 (Suhas) puts "claimed items + unreported places" in the MVP verifier sample. This design deferred the unreported-places frame to W10 with no [DEV] mark and no §10 entry. Until W10 the verifier samples claimed items and controls only, and the passport says "unreported places not sampled (W10)". Suhas to confirm. |
+| Golden Nepal scene list (P4 acceptance) | No text change. Note only: an AOI search returns the **23** intersecting scenes (2 pre, 21 post), not the 33-item catalog | Matches the card's pinned ids. |
