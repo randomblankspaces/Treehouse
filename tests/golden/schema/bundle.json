@@ -1,5 +1,84 @@
 {
   "$defs": {
+    "CardSummary": {
+      "additionalProperties": false,
+      "description": "Text-only view of the task card the report shows.",
+      "properties": {
+        "goal": {
+          "title": "Goal",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "known_limits": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Known Limits",
+          "type": "array"
+        },
+        "license_floor": {
+          "title": "License Floor",
+          "type": "string"
+        },
+        "license_obligations": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "License Obligations",
+          "type": "array"
+        },
+        "must_notice": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Must Notice",
+          "type": "array"
+        },
+        "steps": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/StepSummary"
+          },
+          "title": "Steps",
+          "type": "array"
+        },
+        "synthetic_notice": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Synthetic Notice"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "title",
+        "goal",
+        "license_floor"
+      ],
+      "title": "CardSummary",
+      "type": "object"
+    },
     "CheckLedger": {
       "additionalProperties": false,
       "description": "Resolution order: rule fail > human > key > verifier > unchecked.",
@@ -106,16 +185,8 @@
           "type": "string"
         },
         "record_ref": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Record Ref"
+          "title": "Record Ref",
+          "type": "string"
         },
         "result": {
           "enum": [
@@ -137,7 +208,8 @@
         "layer",
         "check_id",
         "version",
-        "result"
+        "result",
+        "record_ref"
       ],
       "title": "CheckResult",
       "type": "object"
@@ -182,6 +254,8 @@
           "type": "string"
         },
         "confidence": {
+          "maximum": 1,
+          "minimum": 0,
           "title": "Confidence",
           "type": "number"
         },
@@ -339,7 +413,7 @@
     },
     "Estimand": {
       "additionalProperties": false,
-      "description": "``verified_precision`` is the trust headline: a lower bound on precision, since a claim\nnobody could verify never counts as correct.",
+      "description": "``verified_precision`` is the trust headline whenever any gold label is ``cannot_assess``: a lower\nbound on precision, since a claim nobody could verify never counts as correct. ``precision`` is used\nonly when ``n_gold_cannot_assess == 0`` (the passport validator enforces both directions).",
       "properties": {
         "kind": {
           "enum": [
@@ -479,8 +553,107 @@
       "title": "Interval",
       "type": "object"
     },
+    "ManifestSummary": {
+      "additionalProperties": false,
+      "description": "Text-only view of the manifest. Numbers (bytes, cost, counts) belong in ``ReportBundle.facts``.",
+      "properties": {
+        "backends": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "default": {},
+          "title": "Backends",
+          "type": "object"
+        },
+        "key_isolation_statement": {
+          "title": "Key Isolation Statement",
+          "type": "string"
+        },
+        "license_floor": {
+          "title": "License Floor",
+          "type": "string"
+        },
+        "license_obligations": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "License Obligations",
+          "type": "array"
+        },
+        "mode": {
+          "enum": [
+            "fake",
+            "replay",
+            "record",
+            "live"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "nc_notice": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Nc Notice"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "task_ref": {
+          "title": "Task Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "run_id",
+        "mode",
+        "task_ref",
+        "key_isolation_statement",
+        "license_floor"
+      ],
+      "title": "ManifestSummary",
+      "type": "object"
+    },
+    "Obscuration": {
+      "additionalProperties": false,
+      "properties": {
+        "bright_lowvar_fraction": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Bright Lowvar Fraction",
+          "type": "number"
+        },
+        "method": {
+          "const": "heuristic:v1",
+          "default": "heuristic:v1",
+          "title": "Method",
+          "type": "string"
+        },
+        "nodata_fraction": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Nodata Fraction",
+          "type": "number"
+        }
+      },
+      "required": [
+        "bright_lowvar_fraction",
+        "nodata_fraction"
+      ],
+      "title": "Obscuration",
+      "type": "object"
+    },
     "Panel": {
       "additionalProperties": false,
+      "description": "A score panel. Every number in it belongs to it (``number.panel == name``); output and trust\npanels never hold MEASURED numbers (the container half of the MEASURED fence).",
       "properties": {
         "evidence_span_ids": {
           "additionalProperties": {
@@ -811,6 +984,51 @@
       "title": "SpanRecord",
       "type": "object"
     },
+    "StepSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "completeness_caveat": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Completeness Caveat"
+        },
+        "keying_mode": {
+          "enum": [
+            "keyed",
+            "partly_keyed",
+            "unkeyed"
+          ],
+          "title": "Keying Mode",
+          "type": "string"
+        },
+        "question_id": {
+          "enum": [
+            "exists",
+            "damaged"
+          ],
+          "title": "Question Id",
+          "type": "string"
+        },
+        "step_id": {
+          "title": "Step Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "step_id",
+        "question_id",
+        "keying_mode"
+      ],
+      "title": "StepSummary",
+      "type": "object"
+    },
     "SummaryLint": {
       "additionalProperties": false,
       "properties": {
@@ -847,6 +1065,7 @@
     },
     "TrustPassport": {
       "additionalProperties": false,
+      "description": "The trust panel for one estimand.\n\nContainer fence (\u00a72): ``headline``, ``alternatives`` and ``truth_reveal`` are trust-panel numbers and\nare never MEASURED; every ``controls`` number sits on the controls panel. ``narrowing_note`` is plain\ntext rendered inside the headline's chip element; any count it mentions repeats ``headline.n_gold``.\nGolden comparisons use ``canon.stable_view`` (``code_sha`` and ``manifest_ref`` are volatile).",
       "properties": {
         "alternatives": {
           "default": [],
@@ -928,6 +1147,23 @@
           "title": "Manifest Ref",
           "type": "string"
         },
+        "n_gold_cannot_assess": {
+          "minimum": 0,
+          "title": "N Gold Cannot Assess",
+          "type": "integer"
+        },
+        "narrowing_note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Narrowing Note"
+        },
         "process_facts": {
           "additionalProperties": {
             "$ref": "#/$defs/TypedNumber"
@@ -977,6 +1213,7 @@
       "required": [
         "estimand",
         "headline",
+        "n_gold_cannot_assess",
         "gate",
         "controls",
         "beat_baseline",
@@ -997,6 +1234,8 @@
         "abstention_rate": {
           "anyOf": [
             {
+              "maximum": 1,
+              "minimum": 0,
               "type": "number"
             },
             {
@@ -1065,6 +1304,7 @@
         "n": {
           "anyOf": [
             {
+              "minimum": 0,
               "type": "integer"
             },
             {
@@ -1076,6 +1316,7 @@
         "n_gold": {
           "anyOf": [
             {
+              "minimum": 0,
               "type": "integer"
             },
             {
@@ -1088,6 +1329,7 @@
         "n_verified": {
           "anyOf": [
             {
+              "minimum": 0,
               "type": "integer"
             },
             {
@@ -1187,6 +1429,288 @@
       ],
       "title": "TypedNumber",
       "type": "object"
+    },
+    "UnderstandingStatement": {
+      "additionalProperties": false,
+      "properties": {
+        "goal_restated": {
+          "title": "Goal Restated",
+          "type": "string"
+        },
+        "known_limits": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Known Limits",
+          "type": "array"
+        },
+        "planned_data": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Planned Data",
+          "type": "array"
+        },
+        "scope": {
+          "title": "Scope",
+          "type": "string"
+        },
+        "span_id": {
+          "title": "Span Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "goal_restated",
+        "scope",
+        "span_id"
+      ],
+      "title": "UnderstandingStatement",
+      "type": "object"
+    },
+    "WindowResult": {
+      "additionalProperties": false,
+      "description": "One image window. ``pixel_sha256`` hashes the decoded C-order uint8 array plus its shape\n(one implementation: ``treehouse.pixels.array_sha256``). ``effective_gsd_m`` = side_m / out_px.\n\n``detail.bytes_model`` (required) says whether ``bytes_read`` was measured or comes from the declared\n``synthetic-overview-block-v1`` model (RS-B1); the synthetic reader always models its bytes and is\nalways synthetic, and a rasterio reader always measures.",
+      "properties": {
+        "bbox_read": {
+          "maxItems": 4,
+          "minItems": 4,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Bbox Read",
+          "type": "array"
+        },
+        "bbox_requested": {
+          "maxItems": 4,
+          "minItems": 4,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Bbox Requested",
+          "type": "array"
+        },
+        "block_size": {
+          "title": "Block Size",
+          "type": "integer"
+        },
+        "bytes_read": {
+          "minimum": 0,
+          "title": "Bytes Read",
+          "type": "integer"
+        },
+        "detail": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "title": "Detail",
+          "type": "object"
+        },
+        "effective_gsd_m": {
+          "title": "Effective Gsd M",
+          "type": "number"
+        },
+        "etag": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Etag"
+        },
+        "footprint_coverage_fraction": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Footprint Coverage Fraction",
+          "type": "number"
+        },
+        "gdal_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Gdal Version"
+        },
+        "license": {
+          "title": "License",
+          "type": "string"
+        },
+        "nominal_gsd_m": {
+          "title": "Nominal Gsd M",
+          "type": "number"
+        },
+        "obscuration": {
+          "$ref": "#/$defs/Obscuration"
+        },
+        "off_nadir_deg": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Off Nadir Deg"
+        },
+        "out_shape": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "title": "Out Shape",
+          "type": "array"
+        },
+        "overview_level": {
+          "title": "Overview Level",
+          "type": "integer"
+        },
+        "phase": {
+          "anyOf": [
+            {
+              "enum": [
+                "pre",
+                "post"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Phase"
+        },
+        "pixel_sha256": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Pixel Sha256",
+          "type": "string"
+        },
+        "pixel_spacing_m": {
+          "title": "Pixel Spacing M",
+          "type": "number"
+        },
+        "reader": {
+          "title": "Reader",
+          "type": "string"
+        },
+        "requests": {
+          "minimum": 0,
+          "title": "Requests",
+          "type": "integer"
+        },
+        "resampling": {
+          "title": "Resampling",
+          "type": "string"
+        },
+        "result_id": {
+          "title": "Result Id",
+          "type": "string"
+        },
+        "scene_cloud_pct": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Scene Cloud Pct",
+          "type": "number"
+        },
+        "scene_datetime": {
+          "format": "date-time",
+          "title": "Scene Datetime",
+          "type": "string"
+        },
+        "scene_id": {
+          "title": "Scene Id",
+          "type": "string"
+        },
+        "source_id": {
+          "title": "Source Id",
+          "type": "string"
+        },
+        "synthetic": {
+          "title": "Synthetic",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "result_id",
+        "source_id",
+        "scene_id",
+        "bbox_requested",
+        "bbox_read",
+        "footprint_coverage_fraction",
+        "scene_datetime",
+        "nominal_gsd_m",
+        "pixel_spacing_m",
+        "effective_gsd_m",
+        "overview_level",
+        "scene_cloud_pct",
+        "out_shape",
+        "resampling",
+        "pixel_sha256",
+        "bytes_read",
+        "requests",
+        "block_size",
+        "reader",
+        "obscuration",
+        "license",
+        "synthetic",
+        "detail"
+      ],
+      "title": "WindowResult",
+      "type": "object"
     }
   },
   "additionalProperties": false,
@@ -1196,11 +1720,7 @@
       "type": "string"
     },
     "card_summary": {
-      "additionalProperties": {
-        "type": "string"
-      },
-      "title": "Card Summary",
-      "type": "object"
+      "$ref": "#/$defs/CardSummary"
     },
     "claims": {
       "default": [],
@@ -1208,6 +1728,14 @@
         "$ref": "#/$defs/Claim"
       },
       "title": "Claims",
+      "type": "array"
+    },
+    "evidence": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/WindowResult"
+      },
+      "title": "Evidence",
       "type": "array"
     },
     "facts": {
@@ -1234,11 +1762,7 @@
       "type": "string"
     },
     "manifest_summary": {
-      "additionalProperties": {
-        "type": "string"
-      },
-      "title": "Manifest Summary",
-      "type": "object"
+      "$ref": "#/$defs/ManifestSummary"
     },
     "passports": {
       "default": [],
@@ -1271,6 +1795,14 @@
         "$ref": "#/$defs/SpanRecord"
       },
       "title": "Trace Rows",
+      "type": "array"
+    },
+    "understanding": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/UnderstandingStatement"
+      },
+      "title": "Understanding",
       "type": "array"
     }
   },

@@ -11,9 +11,12 @@
 | Running Clay's whole eval backlog | One representative eval proves the loop |
 | Partner-account (ADB) deployment, multi-account or cross-account setups | We use a single sandbox account only |
 | Continental-scale builds, SageMaker HyperPod or large Trainium clusters | Too big for a 2-day sandbox and on the disallow list |
-| Full production observability or warehouse stack (Snowflake/Iceberg/Athena, Managed Grafana) | A lightweight trace/metadata store is enough |
+| Full production observability or warehouse stack (Snowflake/Iceberg/Athena, Managed Grafana) | A lightweight trace/metadata store is enough. (Athena with DuckDB parity is a Could, SD A10.) |
 | Any private or sensitive customer data | Public or synthetic data only |
 | Integrating with Clay's production systems | Greenfield sandbox, but the shapes should map back cleanly |
+| Bedrock Knowledge Bases, Guardrails, SageMaker, DynamoDB | SD A10 "Cut": the gateway owns enforcement |
+| Public S3 static hosting | Block Public Access is on by default; use a local file, a presigned URL or CloudFront/OAC (SD A9) |
+| An LLM judge as the output grade | The verifier is a separately reported signal, never the grade (SCOPE D43) |
 
 ## Stretch reference: caption-generation task (recorded here, not MVP)
 

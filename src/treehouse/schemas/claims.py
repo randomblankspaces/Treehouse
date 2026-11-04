@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Literal
 
+from pydantic import Field
+
 from treehouse.schemas.base import Frozen
 from treehouse.schemas.geo import BBox, Point
 from treehouse.schemas.task import ClaimStatus
@@ -23,7 +25,7 @@ class Claim(Frozen):
     bbox: BBox | None = None
     cls: str
     status: ClaimStatus
-    confidence: float  # the agent's own figure; shown as "agent's claim", never as a Treehouse number
+    confidence: float = Field(ge=0, le=1)  # the agent's own figure; shown as "agent's claim", never as a Treehouse number
     reason: str
     evidence_refs: list[EvidenceRef] = []
     span_id: str

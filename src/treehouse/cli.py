@@ -55,7 +55,7 @@ def schema(
 @task_app.command("validate")
 def task_validate(path: Path) -> None:
     """Validate a task card. Exits 1 on any error; warnings do not fail."""
-    from treehouse.cards import validate_card
+    from treehouse.cards import describe_obligations, validate_card
 
     report = validate_card(path)
     for e in report.errors:
@@ -65,6 +65,7 @@ def task_validate(path: Path) -> None:
     if report.errors:
         raise typer.Exit(1)
     typer.echo(f"ok {path}\ncard hash: {report.card_hash}\nlicense floor: {report.license_floor}")
+    typer.echo(f"license obligations: {describe_obligations(report.license_obligations)}")
 
 
 @app.command("verify")
@@ -73,8 +74,13 @@ def verify_cmd(
     store: Annotated[
         Path | None, typer.Option("--store", help="Store root (default $TREEHOUSE_STORE or ./.treehouse).")
     ] = None,
+    expect_head: Annotated[
+        str | None, typer.Option("--expect-head", help="A ledger head recorded earlier; FAIL if it is no longer "
+                                                        "a line of the ledger (the store was rewritten).")
+    ] = None,
 ) -> None:
-    """Verify traces, file hashes, manifests, the ledger chain, blobs and evals. Exits 1 on any problem."""
+    """Verify traces, file hashes, manifests, the ledger chain, blobs and evals. Exits 1 on any problem.
+    Prints the ledger head: record it outside the store, since the store alone cannot detect a full rewrite."""
     from treehouse.store.local import LocalStore, default_store_root
     from treehouse.store.verify import verify
 
@@ -82,12 +88,14 @@ def verify_cmd(
     if not root.is_dir():
         typer.echo(f"FAIL {root}: store not found", err=True)
         raise typer.Exit(1)
-    report = verify(LocalStore(root), run_id)
+    report = verify(LocalStore(root), run_id, expected_head=expect_head)
     for p in report.problems:
         typer.echo(str(p))
+    head = f"ledger head: {report.ledger_head} ({report.ledger_n_lines} line(s))"
     if not report.ok:
+        typer.echo(head)
         raise typer.Exit(1)
-    typer.echo(f"ok {root}: {report.runs} run(s), {report.records} record(s), {report.blobs} blob(s)")
+    typer.echo(f"ok {root}: {report.runs} run(s), {report.records} record(s), {report.blobs} blob(s)\n{head}")
 
 
 @probe_app.command("import")

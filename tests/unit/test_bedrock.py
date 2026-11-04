@@ -236,7 +236,8 @@ def test_stop_reason_mapping_covers_botocore_enum(ledger):  # F3
     for t, raw in enumerate(enum):
         r = run(p.complete(text_req(), role="worker", trial_index=0, turn=t))
         assert r.stop_reason == STOP_REASONS[raw] and r.stop_reason in allowed
-    assert all(STOP_REASONS[raw] == raw for raw in enum)  # identity: never folded into end_turn
+    # never folded into end_turn: identity except guardrail_intervened -> guardrail (main's StopReason)
+    assert all(STOP_REASONS[raw] == ("guardrail" if raw == "guardrail_intervened" else raw) for raw in enum)
 
 
 def test_unpriced_model_refused_before_any_call(tmp_path):
@@ -395,7 +396,7 @@ def test_pixel_hash_mismatch_refused(ledger):
     with pytest.raises(PixelHashMismatch):
         p.prepare(req)
     req = text_req().model_copy(update={"messages": [
-        Message(role="user", content=[Image(format="png", sha256="sha256:x", bytes_=b"")])]})
+        Message(role="user", content=[Image(format="png", sha256="sha256:" + "1" * 64, bytes_=b"")])]})
     with pytest.raises(MissingPixels):
         p.prepare(req)
 

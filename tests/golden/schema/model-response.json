@@ -26,6 +26,7 @@
           "type": "string"
         },
         "sha256": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
           "title": "Sha256",
           "type": "string"
         },
@@ -318,6 +319,7 @@
     }
   },
   "additionalProperties": false,
+  "description": "``stop_reason`` covers botocore's Converse stopReason enum (F3); ``guardrail_intervened`` maps to\n``guardrail``, every other provider value maps to itself.",
   "properties": {
     "cost_usd": {
       "anyOf": [
@@ -382,7 +384,6 @@
         "stop_sequence",
         "content_filtered",
         "guardrail",
-        "guardrail_intervened",
         "malformed_model_output",
         "malformed_tool_use",
         "model_context_window_exceeded"

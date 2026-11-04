@@ -42,6 +42,7 @@ def chat_attrs(**over):
         "gen_ai.usage.input_tokens": 10,
         "gen_ai.usage.output_tokens": 3,
         "treehouse.input.messages_ref": "sha256:" + "a" * 64,
+        "treehouse.output.messages_ref": "sha256:" + "b" * 64,
         "treehouse.cost.usd": 0.0,
         "treehouse.price_table.version": "none",
         "treehouse.cassette": "",

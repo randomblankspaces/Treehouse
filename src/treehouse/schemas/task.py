@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import UTC, date, datetime
 from typing import Literal
 
-from pydantic import AwareDatetime, model_validator
+from pydantic import AwareDatetime, Field, field_validator, model_validator
 
 from treehouse.canon import sha256_json
 from treehouse.schemas.base import Frozen
@@ -13,6 +13,10 @@ from treehouse.schemas.config import Budget
 from treehouse.schemas.geo import BBox, Polygon
 
 ClaimStatus = Literal["present", "absent", "intact", "damaged", "destroyed", "cannot_assess"]
+STATUSES_FOR = {
+    "exists": {"present", "absent", "cannot_assess"},
+    "damaged": {"intact", "damaged", "destroyed", "cannot_assess"},
+}
 
 
 class DataSource(Frozen):
@@ -49,7 +53,7 @@ class Keying(Frozen):
     completeness_caveat: str | None = None
     key_coverage_mask: Polygon | None = None
     match_rule: MatchRule | None = None
-    status: Literal["present", "pending_fetch", "none"]
+    status: Literal["present", "pending_fetch", "pending_generation", "none"]
 
     @model_validator(mode="after")
     def _rules(self) -> Keying:
@@ -58,12 +62,14 @@ class Keying(Frozen):
                 raise ValueError("an unkeyed step has status 'none' and no key_source or key_path")
         else:
             if self.status == "none":
-                raise ValueError("a keyed step needs status 'present' or 'pending_fetch'")
+                raise ValueError("a keyed step needs status 'present', 'pending_fetch' or 'pending_generation'")
             missing = [f for f in ("key_source", "key_path", "license", "match_rule") if getattr(self, f) is None]
             if missing:
                 raise ValueError(f"a keyed step needs {', '.join(missing)}")
             if self.status == "present" and not self.version_hash:
                 raise ValueError("a present key needs version_hash")
+            if self.mode == "partly_keyed" and not self.completeness_caveat:
+                raise ValueError("a partly_keyed step needs completeness_caveat")
         return self
 
 
@@ -72,6 +78,13 @@ class Step(Frozen):
     question_id: Literal["exists", "damaged"]
     statuses_allowed: list[ClaimStatus]
     keying: Keying
+
+    @model_validator(mode="after")
+    def _statuses(self) -> Step:
+        bad = sorted(set(self.statuses_allowed) - STATUSES_FOR[self.question_id])
+        if bad or not self.statuses_allowed:
+            raise ValueError(f"statuses_allowed: {bad or 'empty'} not allowed for question {self.question_id}")
+        return self
 
 
 class ForbiddenSource(Frozen):
@@ -96,12 +109,19 @@ class Controls(Frozen):
 
 class SamplingPlan(Frozen):
     strata_keys: list[Literal["class", "conf_tercile", "cloud_class"]]
-    min_N_h: int = 4
-    n_total: int
-    census_if_N_le: int = 60
+    min_N_h: int = Field(default=4, ge=1)
+    n_total: int = Field(ge=1)
+    census_if_N_le: int = Field(default=60, ge=0)
     seed: int
     controls: Controls = Controls()
     unreported_frame: dict[str, str] | None = None  # W10
+
+    @field_validator("strata_keys")
+    @classmethod
+    def _unique(cls, v: list[str]) -> list[str]:
+        if len(set(v)) != len(v):
+            raise ValueError("strata keys must be unique")
+        return v
 
 
 class BlindProtocol(Frozen):
@@ -112,7 +132,7 @@ class BlindProtocol(Frozen):
 
 
 class GoldPlan(Frozen):
-    n_gold: int
+    n_gold: int = Field(ge=1)
     rubric: str
     labeller: str
     date: date
@@ -126,9 +146,9 @@ class Event(Frozen):
 
 
 class Windows(Frozen):
-    max_side_m: float
-    max_out_px: int
-    max_bytes_per_run: int
+    max_side_m: float = Field(gt=0)
+    max_out_px: int = Field(ge=1)
+    max_bytes_per_run: int = Field(ge=0)
 
 
 class Thresholds(Frozen):
@@ -136,6 +156,18 @@ class Thresholds(Frozen):
 
 
 class TaskCard(Frozen):
+    """A task card.
+
+    ``synthetic`` means *synthetic task* (written by the team, not a partner's), which requires
+    ``synthetic_notice``. It does not decide the per-number ``synthetic`` flag: that comes from the data
+    a number was computed on (a source with ``access: synthetic``, a synthetic key or labeller, or a
+    ``WindowResult.synthetic``), so a real-data run of a synthetic task is not chipped SYNTHETIC.
+
+    The worker sees ``goal``, the AOI, the time window and the tools only. ``known_limits``,
+    ``must_notice``, keys and plans are grader-side and never enter a worker prompt. ``as_of`` is
+    normalised to UTC so the card hash does not depend on the offset it was written with.
+    """
+
     schema_version: Literal["treehouse.task/1"] = "treehouse.task/1"
     id: str
     version: str
@@ -163,16 +195,30 @@ class TaskCard(Frozen):
     thresholds: Thresholds
     budget: Budget
 
+    @field_validator("as_of")
+    @classmethod
+    def _utc(cls, v: datetime) -> datetime:
+        return v.astimezone(UTC)
+
     @model_validator(mode="after")
     def _rules(self) -> TaskCard:
+        # Card-level messages start with their field path (pydantic gives model-level errors no loc).
         if self.synthetic and not self.synthetic_notice:
-            raise ValueError("a synthetic card needs synthetic_notice")
+            raise ValueError("synthetic_notice: a synthetic card needs synthetic_notice")
         if any(s.keying.mode != "unkeyed" for s in self.steps) and not self.forbidden_sources:
-            raise ValueError("forbidden_sources must be non-empty when any step is keyed")
+            raise ValueError("forbidden_sources: must be non-empty when any step is keyed")
         if self.time_window[0] > self.time_window[1]:
-            raise ValueError("time_window start must not be after its end")
-        if len({s.step_id for s in self.steps}) != len(self.steps):
-            raise ValueError("step ids must be unique")
+            raise ValueError("time_window: start must not be after its end")
+        if self.as_of.date() < self.time_window[0]:
+            raise ValueError("as_of: must not precede the time_window start")
+        ids = [s.step_id for s in self.steps]
+        if len(set(ids)) != len(ids):
+            raise ValueError("steps: step ids must be unique")
+        for i, s in enumerate(self.steps):
+            mr = s.keying.match_rule
+            unknown = sorted(set(mr.tolerance_m) - set(self.classes)) if mr else []
+            if unknown:
+                raise ValueError(f"steps.{i}.keying.match_rule.tolerance_m: unknown classes {unknown}")
         return self
 
     def card_hash(self) -> str:

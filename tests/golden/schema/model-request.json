@@ -26,6 +26,7 @@
           "type": "string"
         },
         "sha256": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
           "title": "Sha256",
           "type": "string"
         },

@@ -4,6 +4,12 @@
 ``commit()`` records actual use (it never raises; overshoot makes the next ``check()`` fail).
 Threshold events fire once per axis at 50, 80 and 100 % of a limit. ``Budget.enabled=False``
 removes every limit and every event. The run-wide dollar ceiling lives in ``providers/spend.py`` (P6).
+
+Limit semantics: ``None`` means no limit on that axis; ``0`` is a real limit of zero (nothing may be spent,
+so ``check()`` stops before the first call). A replay that costs $0 should leave ``usd`` as None. ``wall_s``
+reads the guard's clock: under a LogicalClock it counts logical ticks, so give the guard its own clock (or
+leave ``wall_s`` None) when replay stop points must not depend on how many other reads the clock served.
+A reservation is settled once: committing one that was already committed or released raises ``ValueError``.
 """
 
 from __future__ import annotations
@@ -21,6 +27,8 @@ THRESHOLDS = (50, 80, 100)
 
 
 class BudgetExceeded(RuntimeError):
+    span_error_source = "budget"  # TrialTracer tags the span error source "budget", not "infra"
+
     def __init__(self, limit: str, limit_value: float, attempted: float) -> None:
         self.limit, self.limit_value, self.attempted = limit, limit_value, attempted
         super().__init__(f"budget limit {limit}={limit_value} would be exceeded ({attempted})")
@@ -89,6 +97,7 @@ class BudgetGuard:
         return r
 
     def release(self, reservation: Reservation) -> None:
+        """Drop an open reservation without spending it (a no-op if it is already settled)."""
         self._open.pop(reservation.id, None)
 
     def commit(self, reservation: Reservation | None, **actual: float) -> None:
@@ -96,6 +105,8 @@ class BudgetGuard:
         unknown = set(actual) - set(AXES)
         if unknown:
             raise ValueError(f"unknown budget axes {sorted(unknown)}")
+        if reservation is not None and reservation.id not in self._open:
+            raise ValueError(f"reservation {reservation.id} was already committed or released")
         amounts = dict(reservation.amounts) if reservation else {}
         amounts.update(actual)
         if reservation:

@@ -17,7 +17,7 @@ goal: >-
 aoi:   # RS parallelogram along the corridor; UNVERIFIED, to be confirmed at K2b
   type: Polygon
   coordinates: [[[85.330, 28.150], [85.375, 28.150], [85.400, 28.290], [85.345, 28.290], [85.330, 28.150]]]
-smoke_aoi: [85.33, 28.14, 85.37, 28.18]
+smoke_aoi: [85.335, 28.150, 85.375, 28.190]   # inside the AOI (the draft value crossed its south and west edges)
 time_window: [2021-10-01, 2026-09-18]
 as_of: 2026-09-18T23:59:00Z
 event: {date: 2026-08-26, footprint_ref: fixtures/stac/vantor-nepal-aug-2026/event.json}
@@ -133,7 +133,7 @@ must_notice:
   - {id: embeddings-predate-event, kind: declares_limit, terms: [embedding, before the flood, predate]}
   - {id: non-commercial, kind: mentions_any, terms: [non-commercial, CC-BY-NC]}
 known_limits:
-  - Thirteen post-event scenes are 71-94 % cloud; B1300011011E5610 and B1300011011E5810 are the clear ones.
+  - Sixteen of the 21 post-event scenes over the AOI are 71-94 % cloud; B1300011011E5610 and B1300011011E5810 are the clear ones.
   - Footbridge decks are 1-2 m wide; status needs windows at 0.5 m effective GSD or finer.
   - Clay embeddings end in April 2026 and predate the flood; they can narrow the corridor, not show damage.
   - "Placebo control unavailable: 2 pre scenes, about 51 % overlap, 3-5 year gap to the event. Test-retest uses E5610/E5810 only."

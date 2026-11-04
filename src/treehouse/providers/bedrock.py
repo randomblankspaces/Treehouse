@@ -61,12 +61,12 @@ RETRYABLE = frozenset({
     "InternalServerException",
 })
 NEVER_RETRY = frozenset({"ServiceQuotaExceededException"})
-STOP_REASONS: dict[str, str] = {  # identity: ModelResponse.stop_reason carries every Bedrock value (F3)
+STOP_REASONS: dict[str, str] = {  # F3: every Bedrock value maps to itself except guardrail_intervened -> guardrail
     "end_turn": "end_turn",
     "tool_use": "tool_use",
     "max_tokens": "max_tokens",
     "stop_sequence": "stop_sequence",
-    "guardrail_intervened": "guardrail_intervened",
+    "guardrail_intervened": "guardrail",
     "content_filtered": "content_filtered",
     "malformed_model_output": "malformed_model_output",
     "malformed_tool_use": "malformed_tool_use",

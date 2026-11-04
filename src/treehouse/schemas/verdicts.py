@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import AwareDatetime
+from pydantic import AwareDatetime, model_validator
 
 from treehouse.schemas.base import Frozen
 
@@ -24,7 +24,8 @@ class VerifierVerdict(Frozen):
 
 
 class GoldLabel(Frozen):
-    """A human ``cannot_assess`` counts as y=0 for precision and is reported as a count."""
+    """A human ``cannot_assess`` counts as y=0 for ``verified_precision`` (a lower bound) and is reported
+    as ``TrustPassport.n_gold_cannot_assess``; the estimand ``precision`` applies only when that count is 0."""
 
     unit_id: str
     question_id: Literal["exists", "damaged"]
@@ -36,3 +37,9 @@ class GoldLabel(Frozen):
     sealed_ref: str
     is_relabel: bool = False
     synthetic: bool
+
+    @model_validator(mode="after")
+    def _synthetic(self) -> GoldLabel:
+        if self.labeller_kind == "synthetic" and not self.synthetic:
+            raise ValueError("synthetic: a synthetic labeller produces synthetic gold")
+        return self

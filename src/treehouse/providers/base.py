@@ -15,6 +15,7 @@ from typing import Protocol, runtime_checkable
 
 import numpy as np
 
+from treehouse.canon import canonical_json
 from treehouse.pixels import array_sha256
 from treehouse.schemas.model_io import (
     Image,
@@ -147,3 +148,10 @@ def pixel_free(req: ModelRequest) -> ModelRequest:
 
 def pixel_free_response(resp: ModelResponse) -> ModelResponse:
     return ModelResponse.model_validate(_strip_image_bytes(resp.model_dump(mode="json")))
+
+
+def pixel_free_json(obj: ModelRequest | ModelResponse) -> bytes:
+    """Canonical UTF-8 JSON of ``obj`` with image ``bytes_`` removed: the only form in which a request or
+    response may be written to a blob or trace (never base64 pixels). For a request,
+    ``sha256_bytes(pixel_free_json(req)) == req.key()``."""
+    return canonical_json(_strip_image_bytes(obj.model_dump(mode="json"))).encode("utf-8")

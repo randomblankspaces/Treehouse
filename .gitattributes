@@ -1,0 +1,6 @@
+* text=auto eol=lf
+# Hashed byte-for-byte (goldens, cassettes, fixtures, traces): never convert line ends.
+*.jsonl -text
+tests/golden/** -text
+fixtures/** -text
+*.csv -text

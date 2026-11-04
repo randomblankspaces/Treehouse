@@ -14,8 +14,8 @@ class CheckResult(Frozen):
     version: str
     result: Literal["pass", "fail", "flag", "n/a"]
     code: str | None = None
-    detail: dict[str, str | int | float | bool] = {}
-    record_ref: str | None = None
+    detail: dict[str, str | int | float | bool] = {}  # raw rule evidence; rendered inside a data-tier element
+    record_ref: str
 
 
 class CheckLedger(Frozen):
