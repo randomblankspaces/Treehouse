@@ -1,6 +1,6 @@
 """Treehouse AWS prototype as CDK stacks (A4/A10 of docs/design/SYSTEM-DESIGN.md).
 
-* ``RunStoreStack``: the sealed run store (S3 versioned + Object Lock GOVERNANCE with a default retention, so
+* ``RunStoreStack``: the sealed run store (S3 versioned + Object Lock COMPLIANCE (default; GOVERNANCE opt-in for dev) with a default retention, so
   every new version is locked), the KMS-encrypted key bucket with an explicit Deny for the worker role (bucket
   policy and key policy), and the worker and grader roles.
 * ``EvalStack``: the Treehouse code-based evaluator Lambda code (``treehouse.aws.lambda_evaluator.handler``) as two
@@ -9,7 +9,7 @@
 
 ``cdk synth`` needs no credentials. Pass ``-c agentcore=false`` to leave out the AgentCore resources where the
 service is unavailable, and ``-c retention_days=N`` to change the default Object Lock retention (1 day), and
-``-c lock_mode=compliance`` for the submission bucket (default governance).
+``-c lock_mode=governance`` for dev stacks only (default compliance: no principal, root included, can delete early).
 """
 
 from __future__ import annotations
@@ -65,7 +65,7 @@ def evaluator_code() -> lambda_.Code:
 
 
 class RunStoreStack(Stack):
-    def __init__(self, scope: Construct, cid: str, *, retention_days: int = 1, lock_mode: str = "governance",
+    def __init__(self, scope: Construct, cid: str, *, retention_days: int = 1, lock_mode: str = "compliance",
                  **kw) -> None:
         super().__init__(scope, cid, **kw)
         # Compliance: no principal (root included) can delete or shorten retention; use it for the submission
