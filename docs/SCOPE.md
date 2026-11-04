@@ -92,10 +92,14 @@ The team's answers are recorded close to their own words. Anything the assistant
 | # | Decision |
 |---|---|
 | D23 | **Partners (e.g. ADB) use the product through a UI.** The UI is essential, and it's built **last**, after the backend works |
-| D24 | **Solo build.** Suhas builds alone. `docs/` (this file plus the MVP files) is the only spec. The SRS and per-member plans were removed from the fork. `dev-docs/` is background only |
+| D24 | **Solo build.** Suhas builds alone. `docs/` (this file plus the MVP files) is the only spec. The SRS, the per-member plans, and all of `dev-docs/` were removed from the fork (see D29) |
 | D25 | **All defaults in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) are accepted as decisions.** For OQ12, output is scored by deterministic checks against an answer key, with no LLM judge. OQ13 (team roles) doesn't apply to a solo build. OQ14 is still open |
 | D26 | **Workflow:** code is written and tested locally, then pushed to a branch on the fork. Kiro (a web IDE inside the AWS Workshop Studio account) pulls the branch, runs only the steps that need AWS (Bedrock calls, deploys, live runs), and reports back |
-| D27 | **Work happens on the fork** [randomblankspaces/team-43-renaissance-philanthropy-clay](https://github.com/randomblankspaces/team-43-renaissance-philanthropy-clay). Each milestone goes on its own branch with a PR into the fork's `main`. The team repo (`VishalPatil18/…`) is `upstream` |
+| D27 | **Work happens on the fork** [randomblankspaces/team-43-renaissance-philanthropy-clay](https://github.com/randomblankspaces/team-43-renaissance-philanthropy-clay). Each milestone goes on its own branch with a PR into the fork's `main`. The team repo (`VishalPatil18/…`) is `upstream`. **Nothing is pushed or PR'd to upstream**, and everything is built and tested in the fork |
+
+| D28 | **License switched to Apache-2.0** in the fork, as Clay requires |
+| D29 | `dev-docs/` (design decisions, architecture, UI style guide) was **scrapped**. Its conflicts with this spec far exceeded the team's limit of 15 (references to the deleted SRS, five-person workstreams, MIT, team release dates). The UI style guide was copied from a banking site and used proprietary fonts. The architecture will be redone from scratch. The teammates' agent skills (`.agents/`, `skills-lock.json`) were also removed |
+| D30 | **AWS is reached only through the browser** (Workshop Studio + Kiro web IDE). There are no AWS credentials on the dev Mac. Every AWS step is a prompt for Kiro, which reports back (extends D26) |
 
 **Pending from round 4:** whether the API and UI get a hosted AWS deployment with login for partners (to discuss next).
 

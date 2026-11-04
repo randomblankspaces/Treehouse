@@ -15,7 +15,7 @@
 | Scope creep into captions or the other tasks | Medium | Medium | ADB fully working first. Captions only after the ADB stretch goals |
 | LLM-based evaluator scores (if one is used, OQ1/OQ12) are noisy | Medium | Medium | Fixed prompt and temperature 0. Score several times and report the spread. Keep deterministic metrics separate |
 | Too few trials for statistics to show real differences (F10) | Medium | High | Choose N from the measured per-run cost on Day 1. Report uncertainty honestly. Prefer fewer configurations with more trials |
-| License mismatch: Clay requires Apache-2.0, but the repo LICENSE is MIT | Certain | Medium | **Team decision:** swap LICENSE to Apache-2.0 (one file) before submission |
+| Data licenses need attribution: LGND embeddings are CC BY 4.0, OSM is ODbL | Certain | Low | Credit both in the README and in any report that uses them. (The code license is now Apache-2.0, SCOPE D28) |
 | Bedrock model access not enabled in the sandbox account or region | Medium | High | Request model access in the first hour of Day 1 and confirm with a one-line test call |
 | Sandbox wiped after the event | Certain | Medium | Everything that matters goes in the public repo: infrastructure as code, sample traces, reports |
 

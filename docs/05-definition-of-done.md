@@ -14,7 +14,7 @@
 - [ ] Optional budget guard works when on and is absent when off (**J7**).
 - [ ] Every parameter is exposed through the run/eval spec and API (**J9**).
 - [ ] A teammate reproduces it on a fresh machine from the README (**J8**).
-- [ ] Code in a **public, open-source GitHub repo** that Clay can access after the event, with infrastructure as code where it applies. **License: Clay's doc requires Apache-2.0, but the repo currently has MIT. Team decision needed** (see [06](06-risks-and-dependencies.md)).
+- [ ] Code in a **public, open-source GitHub repo** that Clay can access after the event, with infrastructure as code where it applies. Licensed **Apache-2.0**, as Clay requires (SCOPE D28).
 - [ ] At least one recorded trace and its report committed to the repo, so the demo works even after the sandbox is wiped.
 - [ ] [FUTURE-WORK.md](FUTURE-WORK.md) lists every feature cut or deferred during the build.
 - [ ] README explains how to run live, replay, swap components, run a comparison, and set a budget.
