@@ -1,0 +1,47 @@
+{
+ "geometry": {
+  "coordinates": [
+   [
+    [
+     [
+      85.358121,
+      28.310632
+     ],
+     [
+      85.010925,
+      27.914437
+     ],
+     [
+      84.397732,
+      27.899037
+     ],
+     [
+      84.389333,
+      27.704439
+     ],
+     [
+      85.127124,
+      27.750639
+     ],
+     [
+      85.481319,
+      28.310632
+     ],
+     [
+      85.358121,
+      28.310632
+     ]
+    ]
+   ]
+  ],
+  "type": "MultiPolygon"
+ },
+ "id": "Nepal-Flooding-Aug-2026",
+ "properties": {
+  "description": "On August 26, 2026, a major flash flood caused by a glacier collapse struck Rasuwa District in northern Nepal after a sudden and intense surge of water entered the Bhote Koshi River from the Tibet (China) side at approximately 9:15 AM local time. The event rapidly affected the border areas of Timure and Rasuwagadhi before moving downstream towards Syabrubesi and the Trishuli River corridor.",
+  "event_date": "2026-08-26T03:30:00Z",
+  "mask": false,
+  "title": "Nepal-Flooding-Aug-2026"
+ },
+ "type": "Feature"
+}

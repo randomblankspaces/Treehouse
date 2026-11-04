@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import time
+from datetime import UTC, datetime
 from typing import Protocol, runtime_checkable
 
 
@@ -31,3 +32,11 @@ class LogicalClock:
         t = self._next
         self._next += self._tick
         return t
+
+
+def parse_when(s: str, *, end: bool = False) -> datetime:
+    """ISO date or datetime; naive means UTC; a bare date as ``end`` means the end of that day."""
+    t = datetime.fromisoformat(s.replace("Z", "+00:00"))
+    if len(s) == 10 and end:
+        t = t.replace(hour=23, minute=59, second=59)
+    return t if t.tzinfo else t.replace(tzinfo=UTC)

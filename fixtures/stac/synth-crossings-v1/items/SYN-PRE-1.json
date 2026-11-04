@@ -1,0 +1,55 @@
+{
+ "assets": {
+  "visual": {
+   "etag": "synthetic-87527593ee690f48",
+   "href": "synthetic://synth-crossings-v1/SYN-PRE-1",
+   "type": "synthetic/raster"
+  }
+ },
+ "bbox": [
+  0.0,
+  0.0,
+  0.0108,
+  0.0108
+ ],
+ "geometry": {
+  "coordinates": [
+   [
+    [
+     0.0,
+     0.0
+    ],
+    [
+     0.0108,
+     0.0
+    ],
+    [
+     0.0108,
+     0.0108
+    ],
+    [
+     0.0,
+     0.0108
+    ],
+    [
+     0.0,
+     0.0
+    ]
+   ]
+  ],
+  "type": "Polygon"
+ },
+ "id": "SYN-PRE-1",
+ "license": "LicenseRef-synthetic",
+ "properties": {
+  "datetime": "2026-07-01T10:00:00Z",
+  "eo:cloud_cover": 0.0,
+  "pan_gsd": 0.5,
+  "treehouse:phase": "pre",
+  "treehouse:synthetic": true,
+  "view:off_nadir": 10.0,
+  "view:sun_elevation": 60.0
+ },
+ "stac_version": "1.0.0",
+ "type": "Feature"
+}

@@ -24,8 +24,14 @@ data_allowlist:
     access: synthetic
     fixture_path: fixtures/stac/synth-crossings-v1
     item_ids: [SYN-PRE-1, SYN-PRE-2, SYN-POST-A, SYN-POST-B, SYN-POST-C]
+    etags:   # deterministic: "synthetic-" + sha256 of the item body (synth/world.py stac_item)
+      SYN-PRE-1: "synthetic-87527593ee690f48"
+      SYN-PRE-2: "synthetic-22e261683d704095"
+      SYN-POST-A: "synthetic-db1e8203256e0457"
+      SYN-POST-B: "synthetic-d6a1b247ccc74eab"
+      SYN-POST-C: "synthetic-708bbe120aaf7107"
     license: LicenseRef-synthetic
-    status: pending_fixture   # written by P4
+    status: pinned   # fixture written by P4 (synth/fixtures.py)
   - source_id: synth-imagery
     kind: imagery
     access: synthetic

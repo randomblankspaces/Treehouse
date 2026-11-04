@@ -30,8 +30,10 @@ def test_shipped_cards_validate(name):
     report = validate_card(TASKS / name)
     assert report.errors == [], report.errors
     assert report.license_floor
-    # No shipped card has a pinned STAC source yet (P4 pins them), so the footprint check only warns.
-    assert any("footprint" in w for w in report.warnings)
+    # P4 pinned the synth and Nepal STAC sources (judge D8), so their AOI/footprint check runs; the other
+    # cards have no pinned STAC source yet and the check only warns.
+    pinned = name in ("synth-crossings-v1.yaml", "nepal-bhote-koshi-bridges.yaml")
+    assert any("footprint" in w for w in report.warnings) is not pinned
 
 
 def test_card_hashes_are_stable():
@@ -123,6 +125,7 @@ def test_pinned_source_needs_fixture_and_etags(synth, tmp_path):
     bad = copy.deepcopy(synth)
     bad["data_allowlist"][0]["status"] = "pinned"
     bad["data_allowlist"][0]["fixture_path"] = "fixtures/does-not-exist.json"
+    bad["data_allowlist"][0]["etags"] = {}  # the shipped synth card pins ETags (judge D8)
     errs = validate_card(_write(tmp_path, bad)).errors
     assert any("fixture" in e for e in errs) and any("etag" in e.lower() for e in errs), errs
 
