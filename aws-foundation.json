@@ -1,0 +1,41 @@
+{
+  "schema": "treehouse.aws-foundation/v1",
+  "generated_at": "2026-11-04",
+  "region": "us-east-1",
+  "account": "redacted",
+  "cdk": {
+    "bootstrapped_us_east_1": true,
+    "stacks": {
+      "TreehouseRunStore": "CREATE_COMPLETE",
+      "TreehouseEval": "CREATE_COMPLETE"
+    }
+  },
+  "run_store": {
+    "bucket": "treehouserunstore-runstoreaf8b1064-wapqrtvd7vel",
+    "object_lock": {"enabled": true, "mode": "COMPLIANCE", "retention_days": 1},
+    "versioning": "Enabled"
+  },
+  "key_bucket": {
+    "bucket": "treehouserunstore-keybucketdb247822-oszn2r6nlkep",
+    "encryption": "aws:kms",
+    "worker_deny": "bucket policy + key policy explicit Deny for worker role"
+  },
+  "agentcore_evaluators": [
+    {"name": "treehouse_rules", "id": "treehouse_rules-1TFgyM6Ia5", "level": "TRACE", "status": "ACTIVE"},
+    {"name": "treehouse_guard", "id": "treehouse_guard-mPbFQPFGH9", "level": "SESSION", "status": "ACTIVE"}
+  ],
+  "lambda_evaluators": [
+    "TreehouseEval-RulesFn (handler treehouse.aws.lambda_evaluator.handler)",
+    "TreehouseEval-GuardFn (handler treehouse.aws.lambda_evaluator.handler)"
+  ],
+  "transaction_search": {
+    "trace_segment_destination": "CloudWatchLogs",
+    "status_at_record_time": "PENDING",
+    "indexing_rule": {"Default": {"Probabilistic": {"DesiredSamplingPercentage": 100.0}}},
+    "logs_resource_policy": "TransactionSearchAccess"
+  },
+  "online_evaluation_config": {
+    "created": false,
+    "reason": "no hosted AgentCore runtime log group yet; gated behind -c online=true (KA3)"
+  }
+}

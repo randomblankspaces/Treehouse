@@ -111,7 +111,8 @@ class RunStoreStack(Stack):
 
 
 class EvalStack(Stack):
-    def __init__(self, scope: Construct, cid: str, *, with_agentcore: bool = True, **kw) -> None:
+    def __init__(self, scope: Construct, cid: str, *, with_agentcore: bool = True, with_online: bool = False,
+                 **kw) -> None:
         super().__init__(scope, cid, **kw)
         code = evaluator_code()  # one asset; two functions, because the L2 Evaluator adds a fixed-id invoke
         fns = {}                 # permission to its Lambda, so one function cannot back two evaluators
@@ -137,6 +138,14 @@ class EvalStack(Stack):
         self.guard = agentcore.Evaluator(self, "GuardEvaluator", evaluator_name="treehouse_guard",
                                          level=agentcore.EvaluationLevel.SESSION, evaluator_config=config("guard"),
                                          description="forbidden-source access and cost/tool-call/byte limits")
+        # The online eval config references a hosted-agent log group that must already exist; the control
+        # plane validates it at create time even though the config ships DISABLED. We have no hosted runtime
+        # yet (KA3), so it is opt-in via ``-c online=true`` once a runtime log group exists.
+        if not with_online:
+            for name, value in (("RulesEvaluatorId", self.rules.evaluator_id),
+                                ("GuardEvaluatorId", self.guard.evaluator_id)):
+                CfnOutput(self, name, value=value)
+            return
         agent_logs = CfnParameter(self, "AgentLogGroup", default="/aws/bedrock-agentcore/runtimes/treehouse-DEFAULT",
                                   description="Log group with the hosted agent's spans (online eval only)")
         agent_service = CfnParameter(self, "AgentServiceName", default="treehouse.DEFAULT",

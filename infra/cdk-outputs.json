@@ -1,0 +1,14 @@
+{
+  "TreehouseRunStore": {
+    "RunStoreBucketName": "treehouserunstore-runstoreaf8b1064-wapqrtvd7vel",
+    "KeyBucketName": "treehouserunstore-keybucketdb247822-oszn2r6nlkep",
+    "GraderRoleArn": "arn:aws:iam::REDACTED:role/TreehouseRunStore-GraderRoleEC26A3B1-xhT5gcPnkzwp",
+    "WorkerRoleArn": "arn:aws:iam::REDACTED:role/TreehouseRunStore-WorkerRole8DD27D41-2UttOLuJxYPA"
+  },
+  "TreehouseEval": {
+    "GuardEvaluatorId": "treehouse_guard-mPbFQPFGH9",
+    "RulesEvaluatorId": "treehouse_rules-1TFgyM6Ia5",
+    "GuardFunctionArn": "arn:aws:lambda:us-east-1:REDACTED:function:TreehouseEval-GuardFnE14F07B4-OkIHziW839Vu",
+    "RulesFunctionArn": "arn:aws:lambda:us-east-1:REDACTED:function:TreehouseEval-RulesFn030E8167-uTkEBUENOB27"
+  }
+}

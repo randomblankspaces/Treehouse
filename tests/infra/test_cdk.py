@@ -81,8 +81,16 @@ def test_evaluators_registered_against_the_lambda(evals):
     evals.has_resource_properties("AWS::Lambda::Permission", {"Principal": "bedrock-agentcore.amazonaws.com"})
 
 
-def test_online_eval_disabled_and_parameterised(evals):
-    evals.has_resource_properties("AWS::BedrockAgentCore::OnlineEvaluationConfig", Match.object_like({
+def test_online_eval_off_by_default(evals):
+    # The online config references a hosted-agent log group that must already exist; the control plane
+    # validates it at create time even though the config is DISABLED. We have no runtime yet (KA3), so the
+    # config is opt-in via with_online / -c online=true and absent from the default stack.
+    evals.resource_count_is("AWS::BedrockAgentCore::OnlineEvaluationConfig", 0)
+
+
+def test_online_eval_disabled_and_parameterised_when_opted_in():
+    t = Template.from_stack(EvalStack(_app(), "EOnline", with_online=True))
+    t.has_resource_properties("AWS::BedrockAgentCore::OnlineEvaluationConfig", Match.object_like({
         "OnlineEvaluationConfigName": "treehouse_online", "ExecutionStatus": "DISABLED",
         "DataSourceConfig": {"CloudWatchLogs": {"LogGroupNames": [{"Ref": "AgentLogGroup"}],
                                                 "ServiceNames": [{"Ref": "AgentServiceName"}]}},
