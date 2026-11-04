@@ -32,7 +32,7 @@ Harness on Bedrock + RODA MCP + 1–2 shortlist servers → **one trace captured
 
 - [Team Scope](SCOPE.md): the team's own problem, constraints, and solution requirements
 - [Future Work](FUTURE-WORK.md): post-build features we'd implement with more time (kept current during the build)
-- [Open Build Questions](OPEN-QUESTIONS.md): build-time questions, not yet decided, each with a recommended default
+- [Build Design Decisions](OPEN-QUESTIONS.md): build-time design questions, all decided (SCOPE D25)
 - [MVP Features in Scope](01-features-in-scope.md)
 - [MVP Success Criteria](02-success-criteria.md)
 - [MVP Features Explicitly Out of Scope](03-out-of-scope.md)

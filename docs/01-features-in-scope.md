@@ -1,6 +1,6 @@
 # MVP Features in Scope
 
-> **For agents — what this file is:** The MVP feature list (F1–F12). Each feature has a priority, a pass check, and the SCOPE requirement (S#) or decision (D#) it comes from. Use it to decide what to build and in what order. The F-numbers are referenced from SCOPE.md, 02, 04 and 05. Terms are defined in the [SCOPE glossary](SCOPE.md#glossary). How each feature works in detail (thresholds, statistics, schemas) is parked in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md).
+> **For agents — what this file is:** The MVP feature list (F1–F12). Each feature has a priority, a pass check, and the SCOPE requirement (S#) or decision (D#) it comes from. Use it to decide what to build and in what order. The F-numbers are referenced from SCOPE.md, 02, 04 and 05. Terms are defined in the [SCOPE glossary](SCOPE.md#glossary). How each feature works in detail (thresholds, statistics, schemas) is decided in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) (SCOPE D25).
 
 > Scope: **ADB agentic eval only**. Captions are a stretch after the ADB stretch goals. Index: [README.md](README.md)
 

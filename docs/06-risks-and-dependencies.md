@@ -24,7 +24,7 @@
 | Dependency | From | Status |
 |---|---|---|
 | Synthetic tasks with task references | Our team (D19) | Team generates them. Current state unconfirmed (OQ14) |
-| Harnesses under test (at least 2, for comparison) | Our team | Strands (D7) plus a second one: choice pending (OQ4) |
+| Harnesses under test (at least 2, for comparison) | Suhas | Strands (D7) plus a plain Bedrock Converse tool loop (OQ4, D25) |
 | Free/priority MCP shortlist | Clay | Catalog saved at [reference/geomcp-catalog.csv](reference/geomcp-catalog.csv). Confirm which servers are on the shortlist |
 | AWS sandbox account (Workshop Studio) with Bedrock access | AWS team lead | Provisioned at the event, capped at $500 |
 | LGND Geo MCP whitelist | Clay/LGND | Commercial tool. Confirm our access |
