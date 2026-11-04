@@ -116,6 +116,27 @@
       "title": "Message",
       "type": "object"
     },
+    "ProviderEvent": {
+      "additionalProperties": false,
+      "description": "A span event raised inside a provider call (e.g. ``treehouse.retry``); the harness copies it onto the\nchat span.",
+      "properties": {
+        "attributes": {
+          "additionalProperties": true,
+          "default": {},
+          "title": "Attributes",
+          "type": "object"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "ProviderEvent",
+      "type": "object"
+    },
     "Reasoning": {
       "additionalProperties": false,
       "properties": {
@@ -298,12 +319,44 @@
   },
   "additionalProperties": false,
   "properties": {
+    "cost_usd": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Cost Usd"
+    },
+    "events": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ProviderEvent"
+      },
+      "title": "Events",
+      "type": "array"
+    },
     "latency_ms": {
       "title": "Latency Ms",
       "type": "integer"
     },
     "message": {
       "$ref": "#/$defs/Message"
+    },
+    "price_table_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Price Table Version"
     },
     "request_id": {
       "anyOf": [
@@ -328,7 +381,11 @@
         "max_tokens",
         "stop_sequence",
         "content_filtered",
-        "guardrail"
+        "guardrail",
+        "guardrail_intervened",
+        "malformed_model_output",
+        "malformed_tool_use",
+        "model_context_window_exceeded"
       ],
       "title": "Stop Reason",
       "type": "string"

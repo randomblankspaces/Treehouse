@@ -94,6 +94,7 @@ class RecordingProvider:
     def __init__(self, inner: ModelProvider, cassette: Cassette) -> None:
         self.inner, self.cassette = inner, cassette
         self.provider_name = inner.provider_name
+        self.price_table_version = getattr(inner, "price_table_version", "none")
         self.cassette_ref = cassette.ref
 
     async def complete(self, req: ModelRequest, *, role: str, trial_index: int, turn: int) -> ModelResponse:

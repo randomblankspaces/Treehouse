@@ -52,7 +52,8 @@ class PlainLoop:
                     with tracer.span(f"chat {self.model_id}", "chat", {"treehouse.turn": turn}) as s:
                         resp = await provider.complete(req, role=role, trial_index=trial_index, turn=turn)
                         n_events = len(budget.events)
-                        budget.commit(None, tokens=resp.usage.input_tokens + resp.usage.output_tokens)
+                        cost = resp.cost_usd or 0.0
+                        budget.commit(None, tokens=resp.usage.input_tokens + resp.usage.output_tokens, usd=cost)
                         s.update({
                             "gen_ai.provider.name": provider.provider_name,
                             "gen_ai.request.model": self.model_id,
@@ -61,11 +62,20 @@ class PlainLoop:
                             "gen_ai.usage.output_tokens": resp.usage.output_tokens,
                             "treehouse.input.messages_ref": req.key(),
                             "treehouse.stop_reason": resp.stop_reason,
-                            "treehouse.cost.usd": 0.0,  # TODO(P6): cost from the SpendLedger commit
-                            "treehouse.price_table.version": getattr(provider, "price_table_version", "none"),
+                            "gen_ai.usage.cache_read.input_tokens": resp.usage.cache_read,
+                            "gen_ai.usage.cache_creation.input_tokens": resp.usage.cache_write,
+                            "treehouse.cost.usd": cost,
+                            "treehouse.price_table.version": resp.price_table_version
+                            or getattr(provider, "price_table_version", "none"),
                             "treehouse.cassette": getattr(provider, "cassette_ref", ""),
                             "treehouse.recorded_latency_ms": resp.latency_ms,
                         })
+                        if resp.usage.image_input_tokens is not None:
+                            s.set("treehouse.usage.image_input_tokens", resp.usage.image_input_tokens)
+                        if provider.provider_name == "replay":
+                            s.set("treehouse.cost.replayed", True)  # recorded cost; the SpendLedger pays $0
+                        for ev in resp.events:
+                            s.event(ev.name, ev.attributes)
                         remaining = budget.remaining("usd")
                         if remaining is not None:
                             s.set("treehouse.budget.remaining_usd", remaining)

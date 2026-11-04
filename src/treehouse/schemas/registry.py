@@ -12,6 +12,7 @@ from treehouse.schemas.manifest import Manifest
 from treehouse.schemas.model_io import ModelRequest, ModelResponse
 from treehouse.schemas.numbers import TypedNumber
 from treehouse.schemas.passport import TrustPassport
+from treehouse.schemas.probe import AwsCapabilities
 from treehouse.schemas.sampling import BlindItem, GoldDraw, SampleDesign
 from treehouse.schemas.scorecard import Scorecard
 from treehouse.schemas.task import TaskCard
@@ -46,4 +47,5 @@ SCHEMAS: dict[str, type[BaseModel]] = {
     "passport": TrustPassport,
     "manifest": Manifest,
     "bundle": ReportBundle,
+    "aws-capabilities": AwsCapabilities,
 }

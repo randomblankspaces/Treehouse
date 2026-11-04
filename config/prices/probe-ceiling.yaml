@@ -1,0 +1,15 @@
+# PLACEHOLDER CEILING prices for the K1 capability probe only (AWS-B1). Deliberately HIGH (several times any
+# plausible Bedrock on-demand price) so the spend ledger over-counts, never under-counts, the probe's cost
+# while the dated table is still null. Every commit at these prices is tagged estimated: true.
+# These are NOT real prices; never report them as a cost.
+schema_version: treehouse.prices/1
+version: probe-ceiling-1
+region: any
+currency: USD
+unit: per_1k_tokens
+source: placeholder-ceiling
+retrieved: null
+synthetic: false
+estimated: true
+default: {input: 0.05, output: 0.25, cache_read: 0.05, cache_write: 0.0625}
+models: {}

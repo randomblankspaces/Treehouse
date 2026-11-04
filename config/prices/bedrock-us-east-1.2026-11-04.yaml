@@ -1,0 +1,16 @@
+# Bedrock on-demand prices, us-east-1, as of 2026-11-04. ALL NULL until Kiro fills them (K2a) from the
+# Bedrock pricing page or `aws pricing get-products --service-code AmazonBedrock --region us-east-1`.
+# A null price means UNPRICED: the SpendLedger refuses the call (except the K1 probe, AWS-B1).
+# Units: USD per 1,000 tokens. Then run `uv run treehouse prices check`.
+schema_version: treehouse.prices/1
+version: bedrock-us-east-1.2026-11-04
+region: us-east-1
+currency: USD
+unit: per_1k_tokens
+source: null        # URL or "aws pricing get-products"
+retrieved: null     # YYYY-MM-DD
+synthetic: false
+estimated: false
+models:
+  claude-sonnet-5-5: {input: null, output: null, cache_read: null, cache_write: null}
+  nova-pro: {input: null, output: null, cache_read: null, cache_write: null}

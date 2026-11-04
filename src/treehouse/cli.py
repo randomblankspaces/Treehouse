@@ -15,6 +15,13 @@ app = typer.Typer(
 )
 task_app = typer.Typer(help="Task cards.", no_args_is_help=True)
 app.add_typer(task_app, name="task")
+probe_app = typer.Typer(help="AWS capability probe results (K1).", no_args_is_help=True)
+app.add_typer(probe_app, name="probe")
+budget_app = typer.Typer(help="Account-wide spend ledger ($250 planned / $350 alarm / $450 hard stop).",
+                         no_args_is_help=True)
+app.add_typer(budget_app, name="budget")
+prices_app = typer.Typer(help="Dated Bedrock price tables.", no_args_is_help=True)
+app.add_typer(prices_app, name="prices")
 
 
 @app.callback()
@@ -81,6 +88,155 @@ def verify_cmd(
     if not report.ok:
         raise typer.Exit(1)
     typer.echo(f"ok {root}: {report.runs} run(s), {report.records} record(s), {report.blobs} blob(s)")
+
+
+@probe_app.command("import")
+def probe_import(
+    path: Path,
+    store: Annotated[Path | None, typer.Option("--store", help="Store root (default $TREEHOUSE_STORE).")] = None,
+) -> None:
+    """Validate an aws-capabilities.json (treehouse.aws-capabilities/v1) and copy it into the store."""
+    from treehouse.schemas.probe import AwsCapabilities
+    from treehouse.store.local import default_store_root
+
+    try:
+        report = AwsCapabilities.model_validate_json(path.read_text(encoding="utf-8"))
+    except Exception as e:  # noqa: BLE001
+        typer.echo(f"FAIL {path}: not a treehouse.aws-capabilities/v1 document: {e}", err=True)
+        raise typer.Exit(1) from e
+    dest = (store or default_store_root()) / "probes" / "aws-capabilities.json"
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text(json.dumps(report.model_dump(mode="json"), indent=2, sort_keys=True) + "\n")
+    typer.echo(f"imported {path} -> {dest}")
+    typer.echo(f"identity: {report.execution.get('identity_arn')} locus: {report.execution.get('locus')} "
+               f"region: {report.region}")
+    typer.echo("summary: " + " ".join(f"{k}={v}" for k, v in report.summary.items()))
+    for m in report.models:
+        typer.echo(f"model {m.key}: listed={m.listed} profile_listed={m.profile_listed} "
+                   f"user_turn_image={m.user_turn_image} tool_result_image={m.tool_result_image} "
+                   f"invoke_id={m.invoke_id_used} recommended_image_delivery={m.recommended_image_delivery}")
+    for c in report.checks:
+        if c.status != "ok":
+            typer.echo(f"  {c.status:<14} {c.name} {c.error_code or ''}")
+    typer.echo(f"probe spend: reserved ${report.spend.reserved_usd:.2f} of ${report.spend.cap_usd:.2f}, "
+               f"committed ${report.spend.committed_usd:.4f} (estimated, {report.spend.price_table})")
+
+
+def _ledger(prices_path: Path | None = None):
+    from treehouse.providers.prices import PriceTable, load_default
+    from treehouse.providers.registry import ModelRegistry
+    from treehouse.providers.spend import SpendLedger
+
+    prices = PriceTable.load(prices_path) if prices_path else load_default()
+    return SpendLedger(prices=prices, registry=ModelRegistry.load()), prices
+
+
+def _level_exit(level: str) -> int:
+    return {"ok": 0, "over_planned": 0, "over_alarm": 2, "hard_stop": 3}[level]
+
+
+@budget_app.command("status")
+def budget_status() -> None:
+    """Spent, reserved and the threshold level. Exits 2 above the $350 alarm, 3 at the hard stop."""
+    ledger, _ = _ledger()
+    st = ledger.status()
+    typer.echo(f"ledger: {st.path}")
+    typer.echo(f"spent ${st.spent_usd:.4f} (estimated ${st.estimated_usd:.4f}) + reserved ${st.reserved_usd:.4f} "
+               f"= ${st.total_usd:.4f} over {st.calls} call(s)")
+    typer.echo(f"planned ${st.planned:.0f} / alarm ${st.alarm:.0f} / hard stop ${st.hard_stop:.0f}: {st.level}")
+    if st.open_reservations:
+        typer.echo(f"open reservations: {len(st.open_reservations)} (a crashed process leaves these reserved)")
+    for r in st.over_alarm_reasons:
+        typer.echo(f"over-alarm reason: {r}")
+    if st.level in ("over_alarm", "hard_stop"):
+        typer.echo("STOP: spend is above the alarm; tell Suhas before any further live call", err=True)
+    raise typer.Exit(_level_exit(st.level))
+
+
+@budget_app.command("plan")
+def budget_plan(
+    task: Annotated[Path | None, typer.Option("--task", help="Task card; uses its per-run budget.usd cap.")] = None,
+    trials: Annotated[int, typer.Option("--trials")] = 1,
+    model: Annotated[str | None, typer.Option("--model", help="Registry key (default: the default worker).")] = None,
+    calls: Annotated[int, typer.Option("--calls", help="Model calls per trial (without --task).")] = 40,
+    input_tokens: Annotated[int, typer.Option("--input-tokens", help="Estimated input tokens per call.")] = 20000,
+    max_tokens: Annotated[int, typer.Option("--max-tokens")] = 4096,
+    prices: Annotated[Path | None, typer.Option("--prices", help="Price table (default: the dated table).")] = None,
+) -> None:
+    """Worst-case cost of a planned run against the ledger thresholds. Exits 2/3 if it would pass alarm/hard stop."""
+    from treehouse.providers.registry import ModelRegistry
+
+    ledger, table = _ledger(prices)
+    reg = ModelRegistry.load()
+    key = model or reg.defaults.get("worker", "")
+    entry = reg.get(key)
+    price = table.price(entry.price_ref)
+    per_call = price.worst_case(input_tokens, max_tokens) if price is not None and price.priced else None
+    per_trial: float | None = per_call * calls if per_call is not None else None
+    basis = f"{calls} calls x (in {input_tokens} + out {max_tokens} tokens) at {table.version}"
+    if task is not None:
+        from treehouse.cards import load_card
+
+        card = load_card(task)
+        if card.budget.enabled and card.budget.usd is not None:
+            per_trial = card.budget.usd if per_trial is None else min(per_trial, card.budget.usd)
+            basis = f"per-run budget.usd cap ${card.budget.usd:.2f} from {task.name}" + (
+                "" if per_call is None else f" (or less: {basis})")
+    if per_trial is None:
+        typer.echo(f"UNPRICED: {entry.key} has a null price in {table.version} and no task usd cap; "
+                   "fill the price table (K2a) or pass --task", err=True)
+        raise typer.Exit(1)
+    plan = per_trial * trials
+    st = ledger.status()
+    total = st.total_usd + plan
+    level = ("hard_stop" if total > ledger.hard_stop else "over_alarm" if total > ledger.alarm
+             else "over_planned" if total > ledger.planned else "ok")
+    typer.echo(f"model {entry.key} ({entry.invoke_id}); basis: {basis}")
+    typer.echo(f"plan: {trials} trial(s) x ${per_trial:.4f} = ${plan:.4f} worst case")
+    typer.echo(f"ledger now ${st.total_usd:.4f}; after plan ${total:.4f} "
+               f"(planned ${ledger.planned:.0f} / alarm ${ledger.alarm:.0f} / hard stop ${ledger.hard_stop:.0f}): "
+               f"{level}")
+    raise typer.Exit(_level_exit(level))
+
+
+@prices_app.command("check")
+def prices_check(
+    table: Annotated[Path | None, typer.Option("--table", help="Price table (default: the dated table).")] = None,
+) -> None:
+    """Report null prices per registry model. Exits 1 if the default worker or verifier is unpriced."""
+    from treehouse.providers.prices import PriceTable, load_default
+    from treehouse.providers.registry import ModelRegistry
+
+    t = PriceTable.load(table) if table else load_default()
+    reg = ModelRegistry.load()
+    typer.echo(f"table {t.version} ({t.region}, {t.unit}); source={t.source} retrieved={t.retrieved}"
+               + (" SYNTHETIC" if t.synthetic else "") + (" ESTIMATED/PLACEHOLDER" if t.estimated else ""))
+    required = {v: k for k, v in reg.defaults.items()}
+    bad: list[str] = []
+    for m in reg.models:
+        p = t.price(m.price_ref)
+        fields = {f: getattr(p, f) if p else None for f in ("input", "output", "cache_read", "cache_write")}
+        nulls = [f for f, v in fields.items() if v is None]
+        state = "ok" if p is not None and p.priced else "UNPRICED"
+        role = f" [{required[m.key]}]" if m.key in required else ""
+        typer.echo(f"{m.key}{role}: {state} " + " ".join(f"{f}={v}" for f, v in fields.items())
+                   + (f" (null: {', '.join(nulls)})" if nulls else ""))
+        if state != "ok" and m.key in required:
+            bad.append(m.key)
+    problems = []
+    if bad:
+        problems.append(f"default role model(s) unpriced: {', '.join(bad)}")
+    if not t.synthetic and not t.estimated and (bad == [] and (not t.source or not t.retrieved)):
+        problems.append("source and retrieved date must be filled")
+    if t.synthetic:
+        problems.append("synthetic table: not usable for reported costs")
+    if t.estimated:
+        problems.append("placeholder table: probe use only")
+    for pr in problems:
+        typer.echo(f"FAIL {pr}", err=True)
+    if problems:
+        raise typer.Exit(1)
+    typer.echo("ok: worker and verifier are priced")
 
 
 if __name__ == "__main__":  # pragma: no cover

@@ -95,10 +95,27 @@ class Usage(Frozen):
     image_input_tokens: int | None = None
 
 
+class ProviderEvent(Frozen):
+    """A span event raised inside a provider call (e.g. ``treehouse.retry``); the harness copies it onto the
+    chat span."""
+
+    name: str
+    attributes: dict[str, Any] = {}
+
+
 class ModelResponse(Frozen):
     message: Message
-    stop_reason: Literal["end_turn", "tool_use", "max_tokens", "stop_sequence", "content_filtered", "guardrail"]
+    # fact-check F3: every Bedrock stopReason is kept as-is (never folded into end_turn); "guardrail" is the
+    # provider-neutral spelling used by fake scripts
+    stop_reason: Literal["end_turn", "tool_use", "max_tokens", "stop_sequence", "content_filtered", "guardrail",
+                         "guardrail_intervened", "malformed_model_output", "malformed_tool_use",
+                         "model_context_window_exceeded"]
     usage: Usage
     latency_ms: int
     response_model_id: str
     request_id: str | None = None
+    # set by live providers from the SpendLedger commit; cassettes keep them, replay reports them but the
+    # SpendLedger is charged $0
+    cost_usd: float | None = None
+    price_table_version: str | None = None
+    events: list[ProviderEvent] = []
