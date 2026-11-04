@@ -62,15 +62,14 @@ For each method, give what it catches, what it misses, its cost, and how the met
 - Network: Vantor bucket HTTPS **works**; data.source.coop and overpass-api.de are **blocked**; arxiv.org is blocked for fetch.
 - Vantor Nepal event: 33 scenes, **4 pre + 29 post** (STAC `phase`). Items carry `eo:cloud_cover`, `pan_gsd`, `view:off_nadir`, `view:sun_*`. There is no cloud mask.
 
-## Current state (update this as you go): checkpoint 2, ~02:00 EST Wed Nov 4
-- [x] **Step 1** is on main: SYSTEM-DESIGN.md with fact-check pass 2, §A13, and the judged doubt fixes.
-- [x] **Step 2** is on main: `docs/design/IMPLEMENTATION-DESIGN.md`, adopted unanimously at vote round 3, with fact-check corrections F1–F11 that override the body. The log is `docs/design/council-2-log.md`, and the round texts are in `wip/council2/`. **Build from IMPLEMENTATION-DESIGN §7 (package plan) and §6 (tests).**
-- [~] **Step 3** (spec sheet): an agent is writing it on branch `docs/spec-sheet`. Next it needs a doubter, a judge, then a merge.
-- [~] **Step 4** (build). Branches stack in this order: `pkg/p0b-guard` → `pkg/p1-schemas` → `pkg/p2-trace-store` → `pkg/p3-providers-loop`.
-  - Status: all green (P3: 182 tests). P0 is merged to main; P0b–P3 are **not merged yet**.
-  - Review: the P0b+P1 doubter found 40 doubts (`wip/reviews/doubt-p0b-p1.md`). A judge is applying the valid fixes on `pkg/p1-fixes`.
-  - **Merge order:** P0b → P1 → p1-fixes → P2 → P3, each merged after its review passes.
-  - Next packages: P4 (gateway + tools), P5 (demo skeleton, checkpoint C1 at H4.5), P6 (Bedrock adapter + probe, **must be merged by 08:00**), P7, P8.
-- [x] **Kiro prompts K0–K9** and the labelling block H are now in `TODO.md`.
-- [ ] Morning report (`docs/OVERNIGHT-REPORT.md`).
-- **Note:** the GitHub repo was renamed to `randomblankspaces/Treehouse`. The old URL redirects and pushes still work. Re-pointing the remote was blocked by the session's permission classifier, so it was left as is.
+## Current state: checkpoint 3, ~03:15 EST Wed Nov 4
+- [x] **Step 1** and **Step 2** are on main. Build from `docs/design/IMPLEMENTATION-DESIGN.md`: §7 is the package plan and §6 the tests; its final fact-check section overrides the body.
+- [~] **Step 3** (spec sheet) is on branch `docs/spec-sheet` (180c8e9). A doubter raised 41 doubts. A judge is applying the valid fixes, then the branch is merged.
+- [~] **Step 4: build.**
+  - **On main (02ac127): P0, P0b, P1 and the P1 review fixes.** 213 tests pass, 1 deselected; ruff is clean.
+  - **Built but not merged:** P2 and P3 on `pkg/p2-trace-store` and `pkg/p3-providers-loop`. Their review fixes are in progress on `pkg/p3-fixes` (blocking: seal and verify ledger holes).
+  - **P4** (gateway and tools) is on `pkg/p4-gateway-tools` (06cdc4a, 233 tests). Its doubter is running.
+  - **P6** (Bedrock adapter, spend ledger, probe) is on `pkg/p6-aws-a` (8a8f232, 234 tests). It is stacked on P3, **not** on P4. Its doubter is running. **It must be on main by 08:00 EST for Kiro.**
+  - **P5** (demo skeleton) is being built on `pkg/p5-demo-skeleton`, stacked on P4.
+  - **Merge order:** p3-fixes (which contains P2 and P3) → P4 (+ fixes) → P6 (+ fixes) → P5 → P7 → P8. Expect conflicts in `schemas/model_io.py`, `harness/plain_loop.py` and the golden schema files; keep both sides, then regenerate the goldens.
+- At about 03:10 EST every agent stopped at a usage limit and was then resumed. If this happens again, run `git status` in each worktree and push any WIP.
