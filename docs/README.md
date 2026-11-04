@@ -2,6 +2,8 @@
 
 ## Current product context — November 4, 2026
 
+**Build the MVP from [MVP-PLAN.md](MVP-PLAN.md)** (decisions DM1–DM10, panels, acceptance checklist), with the report digest [REPORT-TABLES.md](REPORT-TABLES.md) and the Kiro spec in `.kiro/specs/treehouse-mvp/`. Kiro's single prompt: [KIRO-MVP-PROMPT.md](KIRO-MVP-PROMPT.md). It refines the earlier [KIRO-NEXT-PROMPTS.md](KIRO-NEXT-PROMPTS.md).
+
 **Latest reading:** [LGND-REPORT-CONTEXT.md](LGND-REPORT-CONTEXT.md) preserves the supplied ADB/LGND
 report, corrected table map, benchmark/data constraints, result caveats and current gaps. It is an
 source-grounded reading. Suhas confirmed an agent-evaluation sandbox; the Strands/embedding/
