@@ -27,10 +27,81 @@ from treehouse.gateway.budget import BudgetExceeded, BudgetGuard
 from treehouse.harness.base import HarnessResult, Stop
 from treehouse.providers.base import ModelProvider, ProviderError, pixel_free_json
 from treehouse.schemas.config import InferenceParams
-from treehouse.schemas.model_io import Message, ModelRequest, Text, ToolResult, ToolUse
+from treehouse.schemas.model_io import Message, ModelRequest, ModelResponse, Text, ToolResult, ToolUse
 from treehouse.trace.tracer import TrialTracer
 
 DONE = {"end_turn", "stop_sequence"}
+
+
+async def chat_turn(req: ModelRequest, *, provider: ModelProvider, tracer: TrialTracer, budget: BudgetGuard,
+                    put: Callable[[bytes], str], role: str, trial_index: int, turn: int) -> ModelResponse:
+    """One traced, metered model call: the ``chat`` span every harness and verifier writes (§3)."""
+    with tracer.span(f"chat {req.model_id}", "chat", {"treehouse.turn": turn}) as s:
+        in_ref = put(pixel_free_json(req))  # == req.key()
+        try:
+            resp = await provider.complete(req, role=role, trial_index=trial_index, turn=turn)
+        except BaseException as e:
+            # M7: a failed call keeps its retry/throttle events on the span; spend the ledger
+            # booked for it (ambiguous failure, unparseable response) is charged too
+            for ev in getattr(e, "events", None) or []:
+                s.event(ev.name, ev.attributes)
+            failed_cost = getattr(e, "cost_usd", None)
+            if failed_cost:
+                s.set("treehouse.cost.usd", failed_cost)
+                budget.commit(None, usd=failed_cost)
+            raise
+        turn_text = "".join(b.text for b in resp.message.content if isinstance(b, Text))
+        s.update({
+            "treehouse.output.messages_ref": put(pixel_free_json(resp)),
+            "treehouse.output.text": turn_text,
+            "treehouse.output.tool_use_ids": [b.id for b in resp.message.content
+                                              if isinstance(b, ToolUse)],
+        })
+        n_events = len(budget.events)
+        cost = resp.cost_usd or 0.0
+        u = resp.usage
+        budget.commit(None, tokens=u.input_tokens + u.output_tokens + u.cache_read + u.cache_write,
+                      usd=cost)
+        s.update({
+            "gen_ai.provider.name": provider.provider_name,
+            "gen_ai.request.model": req.model_id,
+            "gen_ai.response.model": resp.response_model_id,
+            "gen_ai.usage.input_tokens": resp.usage.input_tokens,
+            "gen_ai.usage.output_tokens": resp.usage.output_tokens,
+            "treehouse.input.messages_ref": in_ref,
+            "treehouse.stop_reason": resp.stop_reason,
+            "gen_ai.usage.cache_read.input_tokens": resp.usage.cache_read,
+            "gen_ai.usage.cache_creation.input_tokens": resp.usage.cache_write,
+            "treehouse.cost.usd": cost,
+            "treehouse.price_table.version": resp.price_table_version
+            or getattr(provider, "price_table_version", "none"),
+            "treehouse.cassette": getattr(provider, "cassette_ref", ""),
+            "treehouse.recorded_latency_ms": resp.latency_ms,
+        })
+        if resp.usage.image_input_tokens is not None:
+            s.set("treehouse.usage.image_input_tokens", resp.usage.image_input_tokens)
+        if provider.provider_name == "replay":
+            s.set("treehouse.cost.replayed", True)  # recorded cost; the SpendLedger pays $0
+            s.set("treehouse.cost.ledger_usd", 0.0)  # panels summing real spend use this
+        for ev in resp.events:
+            s.event(ev.name, ev.attributes)
+        remaining = budget.remaining("usd")
+        if remaining is not None:
+            s.set("treehouse.budget.remaining_usd", remaining)
+        for e in budget.events[n_events:]:
+            s.event(e["name"], axis=e["axis"], pct=e["pct"])
+    return resp
+
+
+def text_of(resp: ModelResponse) -> str:
+    return "".join(b.text for b in resp.message.content if isinstance(b, Text))
+
+
+def put_blob(sink: Callable[[bytes], str] | None, data: bytes) -> str:
+    ref = sha256_bytes(data)
+    if sink is not None and sink(data) != ref:
+        raise ProviderError("blob_sink returned a ref that is not the sha256 of the bytes")
+    return ref
 
 
 class PlainLoop:
@@ -43,10 +114,7 @@ class PlainLoop:
         self.blob_sink = blob_sink  # bytes -> sha256 ref (e.g. a bound Store.put_blob)
 
     def _put(self, data: bytes) -> str:
-        ref = sha256_bytes(data)
-        if self.blob_sink is not None and self.blob_sink(data) != ref:
-            raise ProviderError("blob_sink returned a ref that is not the sha256 of the bytes")
-        return ref
+        return put_blob(self.blob_sink, data)
 
     async def run(
         self,
@@ -72,60 +140,9 @@ class PlainLoop:
                     budget.check()
                     req = ModelRequest(model_id=self.model_id, system=system, messages=messages,
                                        tools=gateway.specs(), params=self.params)
-                    with tracer.span(f"chat {self.model_id}", "chat", {"treehouse.turn": turn}) as s:
-                        in_ref = self._put(pixel_free_json(req))  # == req.key()
-                        try:
-                            resp = await provider.complete(req, role=role, trial_index=trial_index, turn=turn)
-                        except BaseException as e:
-                            # M7: a failed call keeps its retry/throttle events on the span; spend the ledger
-                            # booked for it (ambiguous failure, unparseable response) is charged too
-                            for ev in getattr(e, "events", None) or []:
-                                s.event(ev.name, ev.attributes)
-                            failed_cost = getattr(e, "cost_usd", None)
-                            if failed_cost:
-                                s.set("treehouse.cost.usd", failed_cost)
-                                budget.commit(None, usd=failed_cost)
-                            raise
-                        turn_text = "".join(b.text for b in resp.message.content if isinstance(b, Text))
-                        s.update({
-                            "treehouse.output.messages_ref": self._put(pixel_free_json(resp)),
-                            "treehouse.output.text": turn_text,
-                            "treehouse.output.tool_use_ids": [b.id for b in resp.message.content
-                                                              if isinstance(b, ToolUse)],
-                        })
-                        n_events = len(budget.events)
-                        cost = resp.cost_usd or 0.0
-                        u = resp.usage
-                        budget.commit(None, tokens=u.input_tokens + u.output_tokens + u.cache_read + u.cache_write,
-                                      usd=cost)
-                        s.update({
-                            "gen_ai.provider.name": provider.provider_name,
-                            "gen_ai.request.model": self.model_id,
-                            "gen_ai.response.model": resp.response_model_id,
-                            "gen_ai.usage.input_tokens": resp.usage.input_tokens,
-                            "gen_ai.usage.output_tokens": resp.usage.output_tokens,
-                            "treehouse.input.messages_ref": in_ref,
-                            "treehouse.stop_reason": resp.stop_reason,
-                            "gen_ai.usage.cache_read.input_tokens": resp.usage.cache_read,
-                            "gen_ai.usage.cache_creation.input_tokens": resp.usage.cache_write,
-                            "treehouse.cost.usd": cost,
-                            "treehouse.price_table.version": resp.price_table_version
-                            or getattr(provider, "price_table_version", "none"),
-                            "treehouse.cassette": getattr(provider, "cassette_ref", ""),
-                            "treehouse.recorded_latency_ms": resp.latency_ms,
-                        })
-                        if resp.usage.image_input_tokens is not None:
-                            s.set("treehouse.usage.image_input_tokens", resp.usage.image_input_tokens)
-                        if provider.provider_name == "replay":
-                            s.set("treehouse.cost.replayed", True)  # recorded cost; the SpendLedger pays $0
-                            s.set("treehouse.cost.ledger_usd", 0.0)  # panels summing real spend use this
-                        for ev in resp.events:
-                            s.event(ev.name, ev.attributes)
-                        remaining = budget.remaining("usd")
-                        if remaining is not None:
-                            s.set("treehouse.budget.remaining_usd", remaining)
-                        for e in budget.events[n_events:]:
-                            s.event(e["name"], axis=e["axis"], pct=e["pct"])
+                    resp = await chat_turn(req, provider=provider, tracer=tracer, budget=budget, put=self._put,
+                                           role=role, trial_index=trial_index, turn=turn)
+                    turn_text = text_of(resp)
                     turns = turn + 1
                     messages.append(resp.message)
                     final_text = turn_text

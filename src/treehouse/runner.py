@@ -1,4 +1,4 @@
-"""runner: task x config x K trials -> PlainLoop -> ToolGateway (live in-process MCP servers) -> TrialTracer -> seal.
+"""runner: task x config x K trials -> harness (``cfg.harness``) -> ToolGateway (live in-process MCP servers) -> TrialTracer -> seal.
 
 One code path for fake, record and replay. Under ``clock=logical`` with ids from ``IdSource(seed)`` a replay
 writes byte-identical traces, so trace heads are golden (``fixtures/golden/heads.json``).
@@ -27,6 +27,7 @@ from treehouse.gateway.policy import Policy
 from treehouse.gateway.tool_cassette import ToolCassette
 from treehouse.harness.base import HarnessResult
 from treehouse.harness.plain_loop import PlainLoop
+from treehouse.harness.strands_harness import StrandsHarness
 from treehouse.ids import IdSource
 from treehouse.providers.base import ModelProvider
 from treehouse.schemas.config import RunConfig
@@ -44,6 +45,7 @@ SYSTEM = ("You are a geospatial mapping agent. Use only the tools you are given.
           "record_claim and cite the result_id of each image window you relied on.")
 LOGICAL_CREATED_AT = datetime(2026, 11, 4, tzinfo=UTC)
 NC_LICENSES = {"CC-BY-NC-4.0"}
+HARNESSES = {"plain_loop": PlainLoop, "strands": StrandsHarness}
 
 
 def tool_cassette_path(model_cassette: Path | str, trial_index: int) -> Path:
@@ -112,7 +114,7 @@ async def _trial(spec: RunSpec, store: LocalStore, tmp: Path, i: int, floor: str
     tcas = ToolCassette(tc_path) if tc_path is not None else None
     gw = ToolGateway(servers, Policy(card), tracer, guard, Meter(), pixels, tool_cassette=tcas,
                      mode=cfg.tool_mode, store=store, ledger=ledger, license=floor, investigation=investigation)
-    loop = PlainLoop(model_id=cfg.worker.model_key, params=cfg.worker.params,
+    loop = HARNESSES[cfg.harness](model_id=cfg.worker.model_key, params=cfg.worker.params,
                      blob_sink=lambda b: store.put_blob(b, media_type="application/json", license=floor))
     async with gw:
         try:
@@ -164,13 +166,14 @@ def execute(store: LocalStore, spec: RunSpec) -> RunOutcome:
         parts["cassette/tool.jsonl"] = tool_data
         tool_sha = sha256_bytes(tool_data)
     backends = resolve_backends(cfg)
+    h = HARNESSES[cfg.harness]
     nc = sorted(set(_licenses(card)) & NC_LICENSES)
     m = seal(store, tmp_run, parts, manifest={
         "created_at": LOGICAL_CREATED_AT if cfg.clock == "logical" else datetime.now(UTC),
         "task": {"id": card.id, "version": card.version, "hash": card.card_hash()},
         "config_hash": sha256_bytes(canonical_json(cfg).encode()), "config": cfg, "mode": cfg.mode,
         "backends_resolved": backends,
-        "versions": {"treehouse": __version__, "python": platform.python_version(), "harness": "plain_loop/1"},
+        "versions": {"treehouse": __version__, "python": platform.python_version(), "harness": f"{h.name}/{h.version}"},
         "trials": heads, "cassettes": {"model_sha": model_sha, "tool_sha": tool_sha},
         "key_isolation_statement": backends["key_isolation"].statement, "license_floor": floor,
         "license_obligations": license_obligations(_licenses(card)),
