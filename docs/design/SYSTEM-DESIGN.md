@@ -99,7 +99,7 @@ Fields:
 
 **Models and providers.**
 - Model registry: id, provider, family, vision flag, tool-use flag, reasoning-trace flag, dated price per 1k tokens, region.
-- **Bedrock Converse is the default.** An OpenAI-compatible adapter (Ollama, vLLM, OpenRouter) is the "other providers" path (Could).
+- **Bedrock Converse is the default.** An OpenAI-compatible adapter (Ollama, vLLM, OpenRouter) is the "other providers" path (Could). Strands already ships OpenAI, Anthropic, Ollama, LiteLLM and a custom `Model` base class, so the adapter is only needed for the plain loop (fact-check pass 2).
 - Worker and verifier configured independently. Config validation rejects non-vision models on imagery tasks.
 - **Model choice by smoke test** on real Vantor 0.5 m windows ("bridge visible or not"), run before anything else. If no available model can see a footbridge at that resolution, the Nepal flagship reports that as a finding (`cannot_assess` dominates) rather than burning budget.
 - Record model id as returned, parameters, prompt hash. Never promise identical re-runs.
@@ -111,7 +111,7 @@ Fields:
 **Tools** (all through the gateway as small MCP servers).
 - `clay_search`: cosine search over the AOI subset of LGND GeoParquet (DuckDB or numpy). Source facts: Sentinel-2, 256-d, 1.28 km cells, Jan 2017 to Apr 2026, CC BY 4.0. Returns ranked cells, similarity and a **coverage report** (cannot see a single footbridge; predates the Aug 2026 flood). "Clay narrows, imagery decides." No text-prototype search is promised (no text encoder documented, UNVERIFIED).
 - `stac_search` / `scene_info`: footprint, date, GSD, **scene-level cloud % only**.
-- `imagery_window` (byte-range COG window read): downsampled image plus scene id, bbox, date, GSD, scene cloud %, **bytes actually read**, pixel hash; explicit no-coverage and out-of-bounds errors; a deterministic **obscuration heuristic** (near-white, low-variance fraction) labelled a heuristic, validated against human gold before any rule uses it. Implemented first as local HTTP range reads (rasterio or a small pure-Python TIFF reader); Lambda port only if time remains (GDAL packaging is a time sink).
+- `imagery_window` (byte-range COG window read): downsampled image plus scene id, bbox, date, GSD, scene cloud %, **bytes actually read**, pixel hash; explicit no-coverage and out-of-bounds errors; a deterministic **obscuration heuristic** (near-white, low-variance fraction) labelled a heuristic, validated against human gold before any rule uses it. Implemented first as local HTTP range reads (rasterio or a small pure-Python TIFF reader); Lambda port only if time remains (GDAL packaging is a time sink). Vantor COGs are anonymous HTTPS; NAIP is Requester Pays and needs signed reads with AWS credentials (fact-check pass 2).
 - `catalog_lookup` / `roda_search`.
 - `record_claim`: only way to emit a claim; `evidence_refs` must resolve to earlier tool-result ids in this run, otherwise marked **ungrounded**.
 - `note_limitation`.
@@ -128,7 +128,7 @@ Fields:
 **Recorded per trial.** Task id, version, hash; config hash (model id as returned, region, params, harness version, tool versions, system-prompt hash, seed); every model call (messages, tokens in/out/cache, latency, stop reason, cost from a dated price table); every tool call (args, result digest or blob ref, bytes, pixels, latency, error type); errors, retries, budget events; claims with evidence refs; Understanding Statement; final output; software provenance (git SHA, lock hash, container digest); data pointers (STAC item id, asset href, ETag/version, bbox, date, license); scorer, estimator and key versions at score time.
 
 **Schema.**
-- OpenTelemetry GenAI-style spans (`invoke_agent` root, `chat` and `execute_tool` children). Semconv is "Development" status (unverified in this pass): **pin the version in every manifest** and add a CI test that scores a frozen sample trace after any semconv bump. All Treehouse fields live under `treehouse.*`.
+- OpenTelemetry GenAI-style spans (`invoke_agent` root, `chat` and `execute_tool` children). Semconv is "Development" status (verified, pass 2). The GenAI conventions moved to the `open-telemetry/semantic-conventions-genai` repository (v1.42.0, June 2026, per a secondary source). Span names carry suffixes (`invoke_agent {agent}`, `chat {model}`, `execute_tool {tool}`), so match on `gen_ai.operation.name`. **Pin that repo's version in every manifest** and add a CI test that scores a frozen sample trace after any semconv bump. All Treehouse fields live under `treehouse.*`.
 - Canonical record: append-only JSONL, each line with `prev_hash`; Parquet copy for SQL.
 - **Every concurrent trial writes its own chained JSONL file.** The run manifest chains the file heads, so parallel trials cannot fork a single chain.
 - Exporters: JSONL always on; OTLP to CloudWatch second; a mismatch in span count or token totals is a provenance warning.
@@ -140,7 +140,7 @@ Fields:
 **Immutability and versioning.**
 - Runs are write-once. Manifest written last, chained to the previous manifest hash. `treehouse verify` checks the chain anywhere with no AWS.
 - Evaluations, verifier outputs, human labels and trust estimates are **separate append-only records** keyed by (run hash, scorer version, key version, verifier config, estimator version, seed). Re-scoring appends.
-- **Guaranteed AWS floor (Must-0):** Bedrock Converse for both roles plus an S3 **versioned** bucket holding sealed runs, with version history shown in the demo. **Object Lock (governance mode, short retention)** is the next step (Must-1): it can be enabled on an existing versioned bucket (since Nov 2023), cannot be disabled once on, and Object Lock buckets cannot be server-access-log destinations (unverified in this pass). If Object Lock is denied, use versioning plus the local hash chain and say so in the manifest. The denied-delete demo happens only if Object Lock is live.
+- **Guaranteed AWS floor (Must-0):** Bedrock Converse for both roles plus an S3 **versioned** bucket holding sealed runs, with version history shown in the demo. **Object Lock (governance mode, short retention)** is the next step (Must-1): it can be enabled on an existing versioned bucket (since Nov 2023), cannot be disabled once on, and Object Lock buckets cannot be server-access-log destinations (verified, pass 2). Enabling it does not lock objects written earlier, so the demo object is written after enablement, in a dedicated demo bucket (the setting is permanent). If Object Lock is denied, use versioning plus the local hash chain and say so in the manifest. The denied-delete demo happens only if Object Lock is live.
 - Provider-side witness: **Bedrock model-invocation logging** to a normal (non-Object-Lock) bucket, configured for **text and metadata only, image delivery disabled**, so large payloads and CC-BY-NC pixels are not copied. Token and call counts reconcile against the trace. Should, if allowed; the bucket policy is tested in the probe.
 
 **Licenses and pixels.** SPDX per blob and key row; a **license floor** (most restrictive source) is printed on every report (a static per-source string if automation costs time). Vantor is CC-BY-NC-4.0: derived datasets carry a non-commercial flag; **no Vantor pixels in the repo, committed traces or demo recording**; commit scene ids, bboxes, byte ranges and pixel hashes only; crops live in a private cache; NC notice on any Vantor-derived view. LGND is CC BY 4.0. OSM is ODbL; keep OSM-derived keys in a separate directory. USPVDB and NAIP redistribution terms UNVERIFIED. Code is Apache-2.0.
@@ -173,7 +173,7 @@ Each claim ends with a **check ledger**, one result per layer, never overwritten
    - **Test-retest:** about 5 blind re-labels after a gap; report percent agreement and kappa with n=5 flagged as anecdotal.
    - **Scheduling:** labelling is a fixed 60-90 minute block before sleep (A12), because it gates the flagship GOLD-ANCHORED claim.
 
-**DECISION: the verifier uses a different model family by default.** Enforced at config validation; `allow_same_family: true` stamps the manifest "self-verified" and removes independence credit. Statistical reasoning: self-preference and correlated errors are documented (nine judges from seven families behave like about 2.2 independent votes (unverified)) but magnitude is disputed. Under PPI with a random gold subsample, validity does not depend on verifier independence, only interval width does. So the family rule is an efficiency and bias-reduction device, and a hard tier cap only where **no gold subsample exists** (then capped at CALIBRATED-TRANSFER, "self-checked"). Measure, do not assume: on keyed items report phi on error indicators and effective independent votes per family pair.
+**DECISION: the verifier uses a different model family by default.** Enforced at config validation; `allow_same_family: true` stamps the manifest "self-verified" and removes independence credit. Statistical reasoning: self-preference and correlated errors are documented (nine judges from seven families behave like about 2.2 independent votes: Kish n_eff 2.18 on MNLI, range 1.9-2.5; arXiv 2605.29800, verified pass 2; measured on text inference, not imagery) but magnitude is disputed. Under PPI with a random gold subsample, validity does not depend on verifier independence, only interval width does. So the family rule is an efficiency and bias-reduction device, and a hard tier cap only where **no gold subsample exists** (then capped at CALIBRATED-TRANSFER, "self-checked"). Measure, do not assume: on keyed items report phi on error indicators and effective independent votes per family pair.
 
 ---
 
@@ -219,7 +219,7 @@ Each claim ends with a **check ledger**, one result per layer, never overwritten
 
 **Model prior (small, pre-registered).** At most 4 label-free features (grounding rate, evidence breadth, cross-trial vote fraction, scene cloud %/GSD) plus verifier verdict where present. Pooled Bayesian logistic with weakly informative priors; region variance fixed by a prior that inflates predictive intervals for a new region. No random effects under 6 regimes. Unit of inference is the region or scene cluster.
 
-**Distribution shift, two axes.** (1) Landscape: Clay-embedding distance of the target AOI to each keyed region (classifier two-sample AUC or energy distance) as a **number and percentile of keyed-to-keyed distances** plus nearest keyed region by name; a textual INSIDE/EDGE/OUTSIDE label only beside the number with the ruler stated. Necessary, not sufficient. (2) Acquisition regime: GSD, scene cloud %, sensor, off-nadir and sun angle (UNVERIFIED for Vantor), pre/post date gap, object size; these enter the model directly and are tested by feature ablation, not assumed. Build effort beyond the number and percentile is Should.
+**Distribution shift, two axes.** (1) Landscape: Clay-embedding distance of the target AOI to each keyed region (classifier two-sample AUC or energy distance) as a **number and percentile of keyed-to-keyed distances** plus nearest keyed region by name; a textual INSIDE/EDGE/OUTSIDE label only beside the number with the ruler stated. Necessary, not sufficient. (2) Acquisition regime: GSD, scene cloud %, sensor, off-nadir and sun angle (present in every Vantor STAC item as `view:off_nadir`, `view:sun_elevation`, `view:sun_azimuth`, checked 2026-11-04), pre/post date gap, object size; these enter the model directly and are tested by feature ablation, not assumed. Build effort beyond the number and percentile is Should.
 
 **Combination.** No fusion. The passport lists each estimate with its chip. **Non-overlapping intervals trigger "estimators disagree: treat as unverified"**, capping confidence at LOW. Outside applicability with no verifier budget: ABSTAIN.
 
@@ -229,7 +229,7 @@ Each claim ends with a **check ledger**, one result per layer, never overwritten
 1. **MVP (Must): planted-error and placebo.** Corrupt a keyed output by known amounts; the estimate must move the right way. Shuffled labels must give baseline-equivalent wide intervals. Verifier sensitivity/specificity per run from controls. `estimator_version`, features and training hashes frozen in every estimate. Beat-baseline panel reads "not computable: k keyed regime(s)" and the passport defaults to the wide B2 interval for MODEL-ESTIMATED numbers.
 2. **LORO table (Should, only if a second keyed regime exists**, for example a second USPVDB state with a different sensor/GSD, or the OSM-keyed bridge inventory step). Folds grouped by genuine regime (sensor, GSD, class, country), never by tile; spatial splits; distinct-regime count beside every coverage figure; under about 6 it is "pilot". Pre-registered success: coverage in range AND better log/interval score than B2 in a majority of folds; otherwise "no better than baseline (n regimes)". Spaced Virginia tiles count as one regime. With fewer than 3 regimes print only "n regimes = k, no validation possible". No Must hours are spent on LORO.
 
-**The flagship reference (Nepal damage step).** No keyed source carries a damage state (xBD is a different object class and non-commercial). The claim rests on GOLD-ANCHORED evidence: about 20-25 random blind human labels plus same-batch placebo and test-retest controls. The card says "no keyed calibration for this family; nothing is borrowed from solar", and the width reflects `n`.
+**The flagship reference (Nepal damage step).** No keyed source carries a damage state (xBD is a different object class and CC BY-NC-SA 4.0). The claim rests on GOLD-ANCHORED evidence: about 20-25 random blind human labels plus same-batch placebo and test-retest controls. The card says "no keyed calibration for this family; nothing is borrowed from solar", and the width reflects `n`.
 
 ---
 
@@ -257,7 +257,7 @@ One Python service layer; CLI, API, MCP and UI are thin wrappers, so there is on
 - **Report (Must):** one self-contained HTML plus JSON bundle per run, with task card, trace hashes, scores, versions, license floor and "what would change this interval". Recomputable offline. The plain summary for a non-technical ADB officer covers what the agent did, found, what was checked and by whom, how far to trust it and why, what it could not see, cost and time. Served by local file or presigned URL by default.
 - **MCP server: a thin read-only wrapper over the JSON bundle**, first item of Must-1 (about 1 h, cut first if H20 slips). Tools: `list_runs`, `get_scorecard`, `get_trust_passport`, `explain_trust(item)`, `get_plain_summary`, `get_claim`, `compare_configs`, `get_trace_span`; resource `treehouse://runs/{id}/report`. Write tools are off by default and need an explicit budget argument. stdio locally; streamable HTTP if hosted. Consumers receive the chip with the number.
 - **API (Should):** FastAPI locally; Lambda Function URL only with `AWS_IAM` auth, or kept local. Every response carries `type`, `tier`, estimator version, `manifest_ref`.
-- **UI (Should, built last):** static; run page with passport and plain summary in the first viewport; five-panel scorecard with chips; claim map and table (worker vs verifier vs key); trace timeline; trust card; compare view. Table alternative for every map; contrast, keyboard, 44 px targets. Hosted login is cut. **S3 static hosting likely collides with account Block Public Access**: use CloudFront with OAC or presigned URLs, or default to local files plus the self-contained HTML.
+- **UI (Should, built last):** static; run page with passport and plain summary in the first viewport; five-panel scorecard with chips; claim map and table (worker vs verifier vs key); trace timeline; trust card; compare view. Table alternative for every map; contrast, keyboard, 44 px targets. Hosted login is cut. **Public S3 static hosting is blocked by default** (since April 2023 every new bucket has Block Public Access on and ACLs off): use CloudFront with OAC or presigned URLs, or default to local files plus the self-contained HTML.
 
 ---
 
@@ -302,7 +302,7 @@ Record the result in `aws-capabilities.json`. **If (b):** docker-dependent items
 - **Where it sits.** Downstream of the Certified Dataset, outside scoring, one-way dependency. The core never calls it.
 - **Gate.** The card's pre-registered thresholds decide act / verify first / hold. Items without a sufficient tier go to human verification. "Do not rely" blocks action unless overridden with a logged reason.
 - **MVP stub (Could): inspection-priority list for the bridge task.** Visible formula (damage probability x uncertainty x consequence proxy), every input shown, each row carrying tier, interval, evidence reference, estimator version; low-trust rows "needs field check". CSV/GeoJSON plus a one-page memo; a person approves; no real-world action and no structural-failure claims. ADB can replace it.
-- **Hindcasting (stretch).** MVP builds only `as_of` gateway enforcement and the frozen claim table, enabling delayed keys. A real hindcast needs a past event with later-public truth (UNVERIFIED; the Nepal event has none yet; xBD is non-commercial). It is the only route to L4. MVP substitutes: placebo and planted-error tests.
+- **Hindcasting (stretch).** MVP builds only `as_of` gateway enforcement and the frozen claim table, enabling delayed keys. A real hindcast needs a past event with later-public truth (UNVERIFIED; the Nepal event has none yet; xBD is CC BY-NC-SA 4.0). It is the only route to L4. MVP substitutes: placebo and planted-error tests.
 - **Simulation (Stretch/Future).** Ship a **Simulation Card spec** only: editable inputs, user-selected place and click, "scenario, not prediction", human-verified, consuming only claims above the gate and stamped with the dataset's tier.
 
 ---
@@ -347,8 +347,8 @@ About 34 h remain including sleep: plan for about 18-20 productive hours, fewer 
 **STRETCH / FUTURE (FUTURE-WORK.md).** Hindcast run; simulation (card spec only); Dawid-Skene; weighted conformal; S3 Vectors; EventBridge; A2I; Fargate + Cognito; multi-user auth.
 
 **Demo tasks.**
-1. **Virginia solar farms, keyed** (USPVDB key, NAIP imagery; license, completeness, date alignment and requester-pays status UNVERIFIED in hour 0; if any fails, use a smaller AOI or the OSM masked-block key). Shows a KEYED grade, verifier sensitivity/specificity and the with/without-Clay ablation.
-2. **Nepal Bhote Koshi / Trishuli bridges (flagship).** Inventory step partly keyed against OSM; damage step unkeyed, on the clearest of the 28 post-event scenes. The **cloud trap**, where `cannot_assess` is a gradable good answer, is the lead demo moment. Passport moves from MODEL-ESTIMATED to GOLD-ANCHORED when the labels are applied. Clay honesty note; "nothing borrowed from solar".
+1. **Virginia solar farms, keyed** (USPVDB key, NAIP imagery. Verified pass 2: USPVDB is public domain, V4.0 April 2026; NAIP on AWS is public domain but **Requester Pays in us-west-2**, so window reads need AWS credentials and `RequestPayer=requester`, cost egress outside us-west-2, and cover about 2010-2023 while USPVDB is from 2026: the key/imagery date gap must be checked. Completeness is still UNVERIFIED. If any of this fails, use a smaller AOI or the OSM masked-block key. The overnight build uses a synthetic keyed task so the offline demo does not depend on NAIP). Shows a KEYED grade, verifier sensitivity/specificity and the with/without-Clay ablation.
+2. **Nepal Bhote Koshi / Trishuli bridges (flagship).** Inventory step partly keyed against OSM; damage step unkeyed, on the clearest of the 29 post-event scenes. The **cloud trap**, where `cannot_assess` is a gradable good answer, is the lead demo moment. Passport moves from MODEL-ESTIMATED to GOLD-ANCHORED when the labels are applied. Clay honesty note; "nothing borrowed from solar".
 3. **Region swap:** the same card on a small India AOI passes `validate` and, if time allows, runs.
 4. **Planted-trace replay** as the safety net.
 
@@ -373,6 +373,66 @@ About 34 h remain including sleep: plan for about 18-20 productive hours, fewer 
 10. No available model may see a footbridge at 0.5 m; then that is the finding.
 
 **Pushback, one line each.** Do not blend process into the trust interval unless predictive validity supports it. Do not present agreement-on-the-line or Dawid-Skene as the trust method. Do not present Clay as bridge-finding. Ship the baselines, shift numbers, PPI and the abstain rule; let regime validation decide what else is displayed.
+
+---
+
+## A13. Unkeyed methods compared (Suhas's top priority)
+
+Added after council 1 (post-merge addendum by the overnight agent, then put through a doubter and a judge pass). It brings together, in one place, the method choices that A5 and A7 make piece by piece. **Unkeyed is the normal case.** Keyed tasks exist to calibrate and to test these methods. Each method below is validated by running it on a keyed task **as if the key were hidden**, then comparing what it says to the hidden key. The column "Validated on keyed data by" says how.
+
+Costs are planning estimates: **$** = model calls on a sample, **$$** = model calls on every item or several runs, **H** = human minutes, **0** = free (computed from stored records).
+
+### 1. Scores for unkeyed output (what number the report shows)
+
+| # | Method | What it catches | What it misses | Cost | Validated on keyed data by | Tier | MVP? |
+|---|---|---|---|---|---|---|---|
+| U1 | **PPI over a blind sampled verifier + random human gold** (A7 core) | Systematic verifier bias (the rectifier corrects it); total error rate on the whole claim table, including abstentions | Errors that both humans and verifier make from the same pixels; anything outside the sampling frame | $ + H (about 20–25 labels) | Coverage of the PPI interval vs hidden key over seeded resamples of a keyed task; planted-error monotonicity | GOLD-ANCHORED | **Must** |
+| U2 | **Verifier-only, error rates transferred (Rogan-Gladen)** | Existence errors when no human time is available | Damage state (never transferred); regime shift beyond the observed between-regime spread | $ | Leave-one-regime-out once at least 2 keyed regimes exist; before that, controls in the same batch only | CALIBRATED-TRANSFER | Must (existence only) |
+| U3 | **Process-signal model** (grounding rate, evidence breadth, cross-trial vote, cloud/GSD → P(correct)) | Runs that skipped evidence, fabricated citations or looped | Confident, well-evidenced wrong answers; any signal that does not predict accuracy | 0 | Predictive-validity strip (Panel 1b): correlation with keyed accuracy, partial on model; "style, not signal" if none | MODEL-ESTIMATED | Must (wide prior); 1b is Should |
+| U4 | **Baselines B0/B1/B2** (pooled beta-binomial; self-stated confidence; intercept-only) | Nothing new. They set the bar the engine must beat | — | 0 | Same LORO table as the engine; B0 is Suhas's "simple probability model" | MODEL-ESTIMATED | **Must** |
+| U5 | **Self-consistency across K trials** (vote fraction per item, claim-set stability) | Unstable, guess-like claims; model nondeterminism | Stable but systematically wrong claims, where all trials share the bias | $$ (K runs) | Correlate vote fraction with keyed correctness; feed U3 as one feature | feeds U3 | Must (as a feature, K=3) |
+| U6 | **Cross-model agreement / agreement-on-the-line** | Configuration-level accuracy shifts without labels | Item-level errors; works only if the fitted line holds | $$ | Needs at least about 8 (config, task) points with a passing pre-stated fit, else "not on the line here" | diagnostic | Could |
+| U7 | **Dawid-Skene latent-class over worker runs + verifier + rules** | Per-source reliability with no key | Correlated sources (same pixels, related models) inflate accuracy | 0 after sources exist | Recover known source accuracies on keyed tasks; needs at least 3 conditionally independent sources, including a non-LLM one | diagnostic | Stretch |
+| U8 | **Confidence calibration** (reliability of the agent's own confidence) | Over- or under-confident agents | Needs verdicts; meaningless with no gold | 0 | Expected calibration error on keyed and gold items | Panel 3 | Must (where verdicts exist) |
+| U9 | **Abstention quality** (`cannot_assess` where the data cannot show the object) | Agents that guess under cloud, outside the footprint or below resolution | Wrongful abstention when the item is visible (needs gold) | 0 | Keyed: abstention on items with no covering footprint is correct by construction; gold labels for the rest | Panel 1 / 2 | **Must** |
+| U10 | **Coverage and evidence-quality scores** (share of the AOI and frame actually inspected at sufficient GSD, bytes read) | Lazy or partial searches; claims based on embeddings alone | Correctness of what was inspected | 0 | Correlate with keyed recall (U3 strip) | Panel 1 / 5 | **Must** |
+
+### 2. Testing and verification methods for unkeyed datasets (how claims are checked)
+
+| # | Method | What it catches | What it misses | Cost | Validated on keyed data by | MVP? |
+|---|---|---|---|---|---|---|
+| V1 | **Deterministic rules** (schema, inside AOI and cited footprint, evidence-in-trace bbox containment, post-event footprint for status claims, date logic, forbidden calls) | Fabricated or impossible claims; key leakage attempts | Plausible wrong claims | 0 | Planted-violation traces: detection rate must be 100 % | **Must** |
+| V2 | **Blind sampled verifier agent** (different family, own windows, cannot tell claims from controls) | Wrong existence/status on sampled items; misses in unreported places | Errors it shares with the worker (same pixels); anything not sampled | $ | Sensitivity and specificity on keyed controls in the same batch; same- vs cross-family error correlation (phi) | **Must** (DD1) |
+| V3 | **Stratified design-based sampling** (inclusion probabilities stored; claimed items plus an unreported-places frame) | Makes V2 and V4 estimates unbiased for the whole table and gives an omission estimate | Strata that the frame does not define | 0 (it decides where $ and H go) | Seeded-population simulation: Horvitz-Thompson estimate is unbiased and the interval covers at its nominal rate | **Must** |
+| V4 | **Human spot check + PPI** (random gold, blind protocol) | Verifier bias; gives the only claim whose validity does not depend on the verifier | Human error (builder-labelled; test-retest reported) | H | Gold vs key disagreement logged on keyed items as reference error | **Must** |
+| V5 | **Placebo and test-retest controls** (pre/pre pairs: no change expected; post/post re-reads) | Verifier false alarms on "damage"; verifier instability | True-change sensitivity (needs real damaged examples) | $ | Placebo false-alarm rate must match the specificity seen on keyed negatives | **Must** (test-retest at least) |
+| V6 | **Planted canaries / synthetic decoys** (in key copies we host; synthetic planted items in synthetic tasks) | Key leakage; verifier that just agrees | Real-world leakage via model memory | 0 | A decoy appearing in claims marks the run INVALID_FOR_ACCURACY; detection rate measured on planted runs | Should (leak), Must (synthetic planted traces) |
+| V7 | **Metamorphic / perturbation tests** (shift the AOI by a known offset → claims shift by it; rotate or crop windows → same verdict; rephrase the prompt → same claim set; drop a scene → those items become `cannot_assess`) | Brittle agents and verifiers whose output depends on irrelevant changes | Consistent but wrong behaviour | $$ (re-runs) | On keyed tasks the metamorphic relation must hold where the key says it should; violations correlate with keyed error | Should (verifier crop/offset invariance is built into V2); full suite Stretch (sensitivity analysis) |
+| V8 | **Cross-source triangulation** (OSM where it is not the key, Overture, other imagery dates) | Single-source artefacts | Shared upstream errors; sources that are also the key (forbidden) | $ | Agreement rate vs key on keyed tasks | Could |
+| V9 | **Capture-recapture (Chapman-corrected Lincoln-Petersen)** over two independent runs or sources | An upper bound on how many items all sources missed (recall) | Dependence between sources biases it (usually underestimates misses) | 0 after two sources | Compare the estimated total with the keyed total | Could |
+| V10 | **Temporal hindcast** (freeze claims with `as_of`; grade later when truth arrives) | Real outcome accuracy, the only route to the L4 rung | Needs an event with later public truth; slow | 0 now, H later | It is itself a key that arrives later | Stretch (hooks are Must: `as_of`, frozen claim table) |
+| V11 | **Human adjudication of disagreements** | Explains and fixes errors | Biased if used as gold (selected on disagreement) | H | Never used as PPI gold unless inclusion-probability weighted | Must (queue), labelling optional |
+
+### 3. MVP combination and how the report shows it
+
+- **MVP set:** V1 + V2 + V3 + V4 + V5 (test-retest at least) + U1 + U2 (existence only) + U3 (wide) + U4 + U5 (K=3) + U8 + U9 + U10. Hindcast hooks (V10) only.
+- **How every number is labelled:** each number is a `TypedNumber` with `tier` ∈ {KEYED, GOLD-ANCHORED, CALIBRATED-TRANSFER, MODEL-ESTIMATED, ABSTAINED}. In the report:
+  - KEYED numbers are **evaluated**.
+  - All other tiers are **estimated**, and each shows `n`, its interval and its method.
+  - ABSTAINED shows a reason and no number.
+- **Disagreement is a signal:** if two estimators' intervals do not overlap, the passport reads "estimators disagree: treat as unverified".
+- **What the MVP can and cannot claim** (restating the headline up front): U1 is valid without assuming the verifier is right. Everything else is a labelled estimate. Cross-regime validation (LORO) is "not computable" until a second keyed regime exists.
+
+### 4. How each method is tested in code (offline)
+
+Every method above has a seeded, offline simulation test with known ground truth (IMPLEMENTATION-DESIGN.md §test strategy):
+- Interval coverage over many synthetic populations.
+- Planted-error monotonicity.
+- A shuffled-label null.
+- A placebo false-alarm rate.
+- Rule-violation detection.
+- Horvitz-Thompson unbiasedness.
+- Rogan-Gladen recovery and abstain trigger.
 
 ---
 
@@ -444,7 +504,7 @@ Statistics, trust and uncertainty:
 - https://arxiv.org/abs/1904.06019 (weighted conformal under covariate shift)
 - https://arxiv.org/abs/2005.07939 (Area of Applicability)
 - https://cran.r-project.org/web/packages/CAST/vignettes/cast04-AOA-tutorial.html
-- https://arxiv.org/pdf/2303.07334 (spatial structure inflates random CV) (unverified)
+- https://arxiv.org/abs/2303.07334 (Mahoney et al., spatial cross-validation of spatially structured data)
 - https://rdrr.io/cran/epiR/man/epi.prev.html (Rogan-Gladen)
 - https://projecteuclid.org/euclid.ss/1009213286 (Wilson intervals)
 - https://aclanthology.org/2026.cas-1.11/ (Dawid-Skene over-estimates LLM accuracy) (unverified)
@@ -458,9 +518,9 @@ Map accuracy and reference error:
 LLM judging and verifier independence:
 - https://arxiv.org/abs/2404.13076
 - https://arena.ai/blog/llm-judge-self-preference/ (unverified)
-- https://icml.cc/virtual/2026/poster/61230 (unverified)
-- https://arxiv.org/abs/2506.07962 (unverified)
-- https://arxiv.org/pdf/2605.29800 (unverified)
+- https://neurips.cc/virtual/2026/161256 (replaces an ICML poster link that matched no known paper)
+- https://arxiv.org/abs/2506.07962 (Kim et al., "Correlated Errors in Large Language Models", ICML 2025)
+- https://arxiv.org/abs/2605.29800 (Kohli, "Nine Judges, Two Effective Votes", 2026)
 - https://arxiv.org/abs/2410.10934
 - https://arxiv.org/abs/2305.04388
 
@@ -469,11 +529,12 @@ Agent evaluation methodology:
 - https://arxiv.org/pdf/2510.04265 (unverified)
 - https://arxiv.org/abs/2406.12045 (tau-bench)
 - https://proceedings.iclr.cc/paper_files/paper/2025/hash/1b126cc38b8638e07bef37e7b2bb72bf-Abstract-Conference.html
-- https://arxiv.org/abs/2510.11977 (unverified)
+- https://arxiv.org/abs/2510.11977 (Holistic Agent Leaderboard, HAL)
 - https://inspect.aisi.org.uk/
 
 Tracing:
-- https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-agent-spans (page now says GenAI conventions moved to the OpenTelemetry GenAI semantic conventions repository; see fact-check notes)
+- https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-agent-spans (status Development; conventions moved to https://github.com/open-telemetry/semantic-conventions-genai)
+- https://www.dash0.com/knowledge/opentelemetry-genai-semantic-conventions-explained (secondary source for the move)
 
 AWS:
 - https://aws.amazon.com/about-aws/whats-new/2023/11/amazon-s3-enabling-object-lock-buckets/
@@ -490,12 +551,18 @@ AWS:
 - https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/agents-tools-runtime.html
 - https://aws.amazon.com/blogs/aws/amazon-bedrock-agentcore-adds-quality-evaluations-and-policy-controls-for-deploying-trusted-ai-agents/
 - https://aws.amazon.com/bedrock/pricing/
+- https://aws.amazon.com/about-aws/whats-new/2023/04/amazon-s3-security-best-practices-buckets-default/
+- https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-server-access-logging.html
+- https://docs.aws.amazon.com/lambda/latest/dg/urls-auth.html
+- https://registry.opendata.aws/naip/
+- https://www.usgs.gov/data/united-states-large-scale-solar-photovoltaic-database-ver-40-april-2026
 - https://aws.amazon.com/about-aws/whats-new/2024/08/amazon-bedrock-fms-batch-inference-50-price/
 - https://docs.aws.amazon.com/step-functions/latest/dg/state-map-distributed.html
 - https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-s3-vectors-generally-available/
 
 Strands:
 - https://strandsagents.com/docs/user-guide/sdk/quickstart/overview/
+- https://strandsagents.com/docs/user-guide/observability-evaluation/traces/
 - https://strandsagents.com/docs/user-guide/concepts/model-providers/
 - https://strandsagents.com/docs/user-guide/evals-sdk/evaluators/trajectory_evaluator/
 - https://strandsagents.com/docs/user-guide/evals-sdk/how-to/agentcore_evaluation_dashboard/
@@ -505,7 +572,7 @@ Data and licensing:
 - https://arxiv.org/pdf/1911.09296 (xBD)
 
 Local:
-- council-brief.md (Vantor CC-BY-NC-4.0, 33 scenes with 28 post-event, scene-level cloud only; LGND 1.28 km, 256-d, Jan 2017 to Apr 2026, CC BY 4.0)
+- council-brief.md (Vantor CC-BY-NC-4.0, 33 scenes: 4 pre-event, 29 post-event by the STAC `phase` field, checked 2026-11-04, scene-level cloud only; LGND 1.28 km, 256-d, Jan 2017 to Apr 2026, CC BY 4.0)
 - review1-judge.md, review1-verifier.md, clay-vision-doc.txt, SCOPE.md@a23dec5
 
 Caveat: no external papers were re-fetched in this revision. Citations are as given in the five proposals. Only the Object Lock and AgentCore Evaluations facts were freshly checked online earlier. Items marked UNVERIFIED remain unconfirmed.
@@ -532,3 +599,13 @@ Scope and limits of this check: the fact-checker hit a tool spend limit partway 
 **Not checked (tool limit); marked "(unverified)" in Sources where cited**
 - arXiv 2505.18659, 2303.07334, 2510.04265, 2506.07962, 2510.11977, 2605.29800; aclanthology 2026.cas-1.11; arena.ai blog; icml.cc poster 61230. Titles and claims attached to them in the design could not be matched.
 - Not re-verified this pass (stated from the earlier check or general knowledge, and still carrying the design's own caveat): Object Lock enablement on existing buckets since Nov 2023; S3 Block Public Access defaults; Lambda Function URL `AWS_IAM` auth; Bedrock batch about 50% price (https://aws.amazon.com/about-aws/whats-new/2024/08/amazon-bedrock-fms-batch-inference-50-price/); S3 Vectors GA Dec 2025; Strands OTel support and provider matrix; Bedrock invocation-logging image-delivery option; USPVDB/NAIP terms and requester-pays status; Vantor off-nadir/sun-angle metadata; per-model training cutoffs; Wilson-interval citation (Brown, Cai, DasGupta 2001) and Dawid-Skene 1979 (JRSS C 28:20-28) bibliographic details; Olofsson et al. and Foody references; PPI (2301.09633), PPI++ (2311.01453), Agreement-on-the-Line (2206.13089), weighted conformal (1904.06019), AOA (2005.07939), tau-bench (2406.12045), xBD (1911.09296) arXiv ids.
+
+### Fact-check pass 2 (2026-11-04, overnight agent)
+
+A second fact-checker covered the items the first pass could not reach, using web-search snippets because arxiv.org is blocked from the build container. Results: 22 verified, 12 match the known record but could not be fetched, 3 corrected, 6 unverifiable. The full table is kept in the council-1 log. Edits made in place:
+- **Corrected:** the OTel GenAI conventions moved to their own repository, and span names carry suffixes (A4). Public S3 hosting is blocked by default since April 2023, not "likely" (A9). xBD is CC BY-NC-SA 4.0 (A7, A11).
+- **Now verified, marks removed:** semconv "Development" status; Object Lock buckets cannot be server-access-log targets; Object Lock can be enabled on existing buckets (it does not lock earlier objects); nine judges are about 2.2 effective votes (arXiv 2605.29800, text tasks only); arXiv 2506.07962, 2510.11977 and 2303.07334 titles; USPVDB is public domain (V4.0, April 2026); NAIP is Requester Pays in us-west-2 (about 2010-2023); Bedrock batch is 50 % for select models; invocation logging has per-modality flags; Lambda URLs support `AWS_IAM`; S3 Vectors GA on 2 Dec 2025; Strands has native OTel and a custom-provider base class.
+- **Checked directly against the Vantor bucket (2026-11-04):** 33 scenes, **4 pre-event and 29 post-event** by the STAC `phase` field. Earlier docs said 28 post-event; the 2026-02-05 scene is pre-event. Every item carries `view:off_nadir`, `view:sun_elevation` and `view:sun_azimuth`, so the acquisition-regime covariates in A7 are available.
+- **Still unverifiable:** arXiv 2505.18659 and 2510.04265, aclanthology 2026.cas-1.11, the arena.ai blog, and per-model Bedrock batch image support. Nothing in the design depends on them.
+- **Decision weakened:** the Virginia keyed demo cannot read NAIP anonymously, so it depends on where the code runs (A10). The overnight build therefore uses a synthetic keyed task for the offline demo. The Virginia task becomes a live Kiro run.
+
