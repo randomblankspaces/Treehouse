@@ -62,17 +62,15 @@ For each method, give what it catches, what it misses, its cost, and how the met
 - Network: Vantor bucket HTTPS **works**; data.source.coop and overpass-api.de are **blocked**; arxiv.org is blocked for fetch.
 - Vantor Nepal event: 33 scenes, **4 pre + 29 post** (STAC `phase`). Items carry `eo:cloud_cover`, `pan_gsd`, `view:off_nadir`, `view:sun_*`. There is no cloud mask.
 
-## Current state (update this as you go) — checkpoint 1, ~00:45 EST Wed Nov 4
-- [x] Step 1: SYSTEM-DESIGN.md (an earlier session's council, unanimous in round 2) is on main (`22f0400`). Branch `docs/system-design-factcheck` has: fact-check pass 2; scene count corrected to 4 pre + 29 post; §A13 unkeyed-methods comparison; council-1 log addendum. A doubter raised 36 doubts (`wip/doubt-sd.md`). A **judge agent** is applying the valid ones on that branch. When its commit lands, merge the branch to main.
-- [ ] Step 2: implementation council. Rounds (a) and (b) are done (`wip/council2/`). A neutral moderator is merging into `c-design-r1.md`. Next: all 5 seats vote with blocking objections; revise until unanimous; fact-check library/API claims; write `docs/design/IMPLEMENTATION-DESIGN.md` and `docs/design/council-2-log.md` (from `log-draft.md`).
-  - Consensus after round (b):
-    - The demo skeleton comes before the trust maths, with a 04:30 checkpoint. The plain tool loop is Must-0 and is the demo engine.
-    - A MEASURED tier for exact trace-derived numbers.
-    - One synthetic world: RS's `synth-crossings` structure plus ADV's planted policies, rendered as numpy arrays, with a synthetic flag on every number.
-    - moto for S3 and Stubber for Bedrock. No CDK tonight.
-    - The Bedrock adapter, probe script and model registry are merged before 08:00 for Kiro.
-    - Strands runs via our ModelProvider with `SequentialToolExecutor` (Wednesday).
-    - STAT's PPI variance fix, with the gold-only interval printed beside it.
-- [ ] Step 3: spec sheet.
-- [~] Step 4: build. **P0 scaffold** is on branch `pkg/p0-scaffold`: uv project, `canon.py`, typer CLI, offline test guard (blocks non-loopback sockets, clears `AWS_*`), CI workflow; 6 tests pass. It is not yet reviewed or merged.
+## Current state (update this as you go): checkpoint 2, ~02:00 EST Wed Nov 4
+- [x] **Step 1** is on main: SYSTEM-DESIGN.md with fact-check pass 2, §A13, and the judged doubt fixes.
+- [x] **Step 2** is on main: `docs/design/IMPLEMENTATION-DESIGN.md`, adopted unanimously at vote round 3, with fact-check corrections F1–F11 that override the body. The log is `docs/design/council-2-log.md`, and the round texts are in `wip/council2/`. **Build from IMPLEMENTATION-DESIGN §7 (package plan) and §6 (tests).**
+- [~] **Step 3** (spec sheet): an agent is writing it on branch `docs/spec-sheet`. Next it needs a doubter, a judge, then a merge.
+- [~] **Step 4** (build). Branches stack in this order: `pkg/p0b-guard` → `pkg/p1-schemas` → `pkg/p2-trace-store` → `pkg/p3-providers-loop`.
+  - Status: all green (P3: 182 tests). P0 is merged to main; P0b–P3 are **not merged yet**.
+  - Review: the P0b+P1 doubter found 40 doubts (`wip/reviews/doubt-p0b-p1.md`). A judge is applying the valid fixes on `pkg/p1-fixes`.
+  - **Merge order:** P0b → P1 → p1-fixes → P2 → P3, each merged after its review passes.
+  - Next packages: P4 (gateway + tools), P5 (demo skeleton, checkpoint C1 at H4.5), P6 (Bedrock adapter + probe, **must be merged by 08:00**), P7, P8.
+- [x] **Kiro prompts K0–K9** and the labelling block H are now in `TODO.md`.
 - [ ] Morning report (`docs/OVERNIGHT-REPORT.md`).
+- **Note:** the GitHub repo was renamed to `randomblankspaces/Treehouse`. The old URL redirects and pushes still work. Re-pointing the remote was blocked by the session's permission classifier, so it was left as is.
