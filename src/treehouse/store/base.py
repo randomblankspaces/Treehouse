@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, NamedTuple, Protocol
 
-EVAL_KINDS = frozenset({"rules", "key", "leak", "sample", "gold_draw", "verifier", "gold", "score", "trust", "summary"})
+EVAL_KINDS = frozenset({"rules", "key", "leak", "sample", "gold_draw", "verifier", "gold", "score", "trust", "summary", "agentcore"})
 
 
 class AlreadyExists(FileExistsError):
