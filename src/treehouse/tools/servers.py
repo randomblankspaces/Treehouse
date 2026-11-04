@@ -1,4 +1,5 @@
-"""Builds the five in-process MCP servers (stac, imagery, clay, claims, decoy) for a task card."""
+"""Builds the in-process MCP servers for a task card: stac, imagery, clay, claims, decoy, plus ``retrieval``
+when the card lists any retrieval tool (appended last, so existing cards are unchanged)."""
 
 from __future__ import annotations
 
@@ -15,6 +16,8 @@ from treehouse.tools.claims import ClaimLedger, make_claims_server
 from treehouse.tools.clay import ClayIndex, load_embeddings, make_clay_server
 from treehouse.tools.decoy import make_decoy_server
 from treehouse.tools.imagery import NoImagery, make_imagery_server
+from treehouse.tools.retrieval import TOOL_NAMES as RETRIEVAL_TOOLS
+from treehouse.tools.retrieval import make_retrieval_server, retrieval_for_card
 from treehouse.tools.sources.recorded import RecordedImagerySource
 from treehouse.tools.sources.synthetic import SyntheticImagerySource
 from treehouse.tools.stac import StacCatalog, load_items, make_stac_server
@@ -56,5 +59,8 @@ def build_servers(card: TaskCard, *, ledger: ClaimLedger, pixels: PixelCache, as
     path = root / emb.fixture_path if emb and emb.fixture_path else None
     clay = ClayIndex(load_embeddings(path), source_id=emb.source_id) if path and path.is_file() else NoClay()
 
-    return {"stac": make_stac_server(cat), "imagery": make_imagery_server(imagery), "clay": make_clay_server(clay),
-            "claims": make_claims_server(ledger), "decoy": make_decoy_server()}
+    servers = {"stac": make_stac_server(cat), "imagery": make_imagery_server(imagery), "clay": make_clay_server(clay),
+               "claims": make_claims_server(ledger), "decoy": make_decoy_server()}
+    if set(card.tools_allowed) & set(RETRIEVAL_TOOLS):
+        servers["retrieval"] = make_retrieval_server(retrieval_for_card(card))
+    return servers
