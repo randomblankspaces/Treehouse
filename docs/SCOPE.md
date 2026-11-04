@@ -1,6 +1,6 @@
 # Team Scope — Clay agent-eval sandbox
 
-> **For agents — what this file is:** The team's own scope: the problem, constraints, and solution requirements in the team's words, plus a decisions log from the scope interview (D1–D21). It is the **source of team intent**. Files 01–06 turn it into features, criteria, tests and risks, merged with Clay's vision doc. Every S-requirement below maps to items in 01/02/04/05. If you find a requirement with no matching item, or this file disagrees with a numbered file, raise it with the team and don't silently pick one. Build-time design questions are **parked** in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) until right before building (D17). Text marked *(interpretation)* is the assistant's reading and hasn't been confirmed by the team. Terms are defined in the [Glossary](#glossary) at the end.
+> **For agents — what this file is:** The team's own scope: the problem, constraints, and solution requirements in the team's words, plus a decisions log from the scope interview (D1–D21). It is the **source of team intent**. Files 01–06 turn it into features, criteria, tests and risks, merged with Clay's vision doc. Every S-requirement below maps to items in 01/02/04/05. If you find a requirement with no matching item, or this file disagrees with a numbered file, raise it with the team and don't silently pick one. The build-time design questions in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) are now **decided** (D25). Text marked *(interpretation)* is the assistant's reading and hasn't been confirmed by the team. Terms are defined in the [Glossary](#glossary) at the end.
 
 ## Problem
 
@@ -81,11 +81,23 @@ The team's answers are recorded close to their own words. Anything the assistant
 |---|---|
 | D18 | The team **can build outside the official build hours** |
 | D19 | **We generate the synthetic tasks** ourselves. *What each task contains: (recommended) OQ1* |
-| D20 | Team repo: [github.com/VishalPatil18/team-43-renaissance-philanthropy-clay](https://github.com/VishalPatil18/team-43-renaissance-philanthropy-clay) (public). These md files live in `docs/` |
+| D20 | Team repo: [github.com/VishalPatil18/team-43-renaissance-philanthropy-clay](https://github.com/VishalPatil18/team-43-renaissance-philanthropy-clay) (public). These md files live in `docs/`. *(Work now happens on a fork: D27)* |
 | D21 | Post-build features we couldn't implement go in [FUTURE-WORK.md](FUTURE-WORK.md), kept current and shipped in the repo |
 | D22 | Text from the AWS event guide may be kept in the md files (the PDFs themselves stay out) |
 
 **Open from round 3:** the team said "we have it working". What exactly works is still to be confirmed (OQ14).
+
+### Round 4
+
+| # | Decision |
+|---|---|
+| D23 | **Partners (e.g. ADB) use the product through a UI.** The UI is essential, and it's built **last**, after the backend works |
+| D24 | **Solo build.** Suhas builds alone. `docs/` (this file plus the MVP files) is the only spec. The SRS and per-member plans were removed from the fork. `dev-docs/` is background only |
+| D25 | **All defaults in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) are accepted as decisions.** For OQ12, output is scored by deterministic checks against an answer key, with no LLM judge. OQ13 (team roles) doesn't apply to a solo build. OQ14 is still open |
+| D26 | **Workflow:** code is written and tested locally, then pushed to a branch on the fork. Kiro (a web IDE inside the AWS Workshop Studio account) pulls the branch, runs only the steps that need AWS (Bedrock calls, deploys, live runs), and reports back |
+| D27 | **Work happens on the fork** [randomblankspaces/team-43-renaissance-philanthropy-clay](https://github.com/randomblankspaces/team-43-renaissance-philanthropy-clay). Each milestone goes on its own branch with a PR into the fork's `main`. The team repo (`VishalPatil18/…`) is `upstream` |
+
+**Pending from round 4:** whether the API and UI get a hosted AWS deployment with login for partners (to discuss next).
 
 ## Works under
 

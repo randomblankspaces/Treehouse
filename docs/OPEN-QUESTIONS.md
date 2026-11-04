@@ -1,8 +1,8 @@
-# Open Build Questions
+# Build Design Decisions (formerly Open Build Questions)
 
-> **For agents — what this file is:** Design questions parked until **right before building** (SCOPE D17). **None of these are decided.** Each one has a *recommended default*, which is a proposal and not a decision. Before building, go through the list with the team and move each answer into the SCOPE.md decisions log. Do not build on a default without that sign-off.
+> **For agents — what this file is:** Design questions for the build. **Status: decided (SCOPE D25).** Every *recommended default* below is now the decision, with one change: **OQ12's output metric is deterministic, with no LLM judge.** OQ13 doesn't apply (solo build), and OQ14 is still open. Build on these. Change one only by logging a new decision in SCOPE.md.
 
-| # | Question | Recommended default |
+| # | Question | Decision (accepted default, D25) |
 |---|---|---|
 | OQ1 | **What a synthetic task contains and what "good workflow" is measured against.** We get no ADB inputs (D13), and an ADB rubric is unconfirmed. | Each synthetic task ships an **expected-workflow spec** listing required and forbidden tools, ordering rules (e.g. "search before fetch"), a step limit, and a "done" condition. A deterministic evaluator checks the trace against it. An optional LLM evaluator rates planning and recovery against a written process rubric, and doubles as the second swappable evaluator (D2) |
 | OQ2 | **Which statistics** (D1) | For each configuration: N trials per task (set per eval, default 5). Success rate with a 95% Wilson confidence interval. Mean and spread of steps, latency, cost, errors, and the output metric, with bootstrap 95% CIs. A vs B: permutation test with p-value and effect size. numpy/scipy only. The report states plainly when CIs are wide because N is small |
