@@ -24,7 +24,7 @@ READ FIRST (in this order), then follow them as your contract:
   probe-report.json         — what this account allows (Bedrock vision OK; AgentCore allowed; Bedrock batch DENIED; CDK not bootstrapped)
 
 WHAT YOU ARE BUILDING (one paragraph)
-  An ADB analyst asks "where are all the warehouses in this city?" (T1 retrieval). A Strands agent on
+  An ADB analyst asks "where are all the <assets> in this area?" (T1 retrieval, any Table 8 class). A Strands agent on
   Bedrock answers it by choosing foundation-model resources (AEF 10 m, LGND Clay precomputed, optionally
   Clay computed on 160 m chips, a Bedrock vision model on GSI aerial chips), a cell size, a retrieval
   method, a classifier (linear probe / linear SVM / Strands vision sub-agent) and a threshold, then plots
@@ -32,6 +32,9 @@ WHAT YOU ARE BUILDING (one paragraph)
   thinking: (a) reasoning validity, (b) confidence calibration, (c) predicted accuracy from reasoning —
   three separate scores — plus output accuracy under the report's protocol and cost/time/data. Scenarios:
   Nagoya (keyed, PLATEAU) → Gifu (transfer) → a Bangladesh city (unkeyed, OSM precision only).
+  Warehouses are ONLY the first example: the system must work for any report Table 8 asset class via
+  config/asset-classes.yaml and a task card, and the MVP must run a second class (recommended: ground solar
+  keyed with Global Renewables Watch in an ADB country).
 
 HOW TO WORK
   1. Do .kiro/specs/treehouse-mvp/tasks.md in order. One task = one branch kiro/<n>-<slug> = one PR into

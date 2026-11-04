@@ -5,6 +5,8 @@ Source of truth: `docs/MVP-PLAN.md` (decisions DM1–DM10) and `docs/REPORT-TABL
 ## R1 Retrieval task (T1) and scenarios
 1.1 WHEN an analyst submits a task card with a natural-language target, an AOI and a Table-8 class definition, THE SYSTEM SHALL run an agent that produces predicted asset sites for that AOI.
 1.2 THE SYSTEM SHALL ship task cards for: Nagoya warehouses (keyed, PLATEAU, warehouse use ≥ 1,600 m²), Gifu warehouses (T5 transfer, no new labels), and a Bangladesh city's warehouses (unkeyed, OSM pool only).
+1.4 THE SYSTEM SHALL be class-agnostic: an asset-class registry (`config/asset-classes.yaml`) SHALL define every Table 8 class (positive/negative definition, minimum/typical size, suitable resolutions, reference sources and licences), and a new class SHALL need only a registry entry and a task card.
+1.5 THE SYSTEM SHALL run T1 for at least one second class with a usable reference (recommended: ground-mounted solar, Global Renewables Watch, in an ADB country).
 1.3 THE SYSTEM SHALL keep grading references out of the agent's reach (forbidden sources, separate key storage) and SHALL serve few-shot examples only from the training split.
 
 ## R2 Agent and resources
