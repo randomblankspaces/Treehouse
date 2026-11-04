@@ -10,7 +10,9 @@
 ## 1. The goal in one paragraph
 
 An ADB analyst asks a geospatial question in plain language — for the MVP, **T1 retrieval: "where are all
-the warehouses in this city?"** An AI agent (Strands on Amazon Bedrock) answers it by **using foundation
+the <assets> in this area?"** for **any asset class in report Table 8** (warehouses, oil/fuel tanks,
+bridges, substations / transmission lines, ground-mounted solar, wind turbines). Warehouses are only the
+first worked example; nothing in the system is warehouse-specific. An AI agent (Strands on Amazon Bedrock) answers it by **using foundation
 models as resources** (AEF, Clay, a Bedrock vision model) to build a georeferenced asset database, and
 plots its predicted sites as **red markers** on a map. **Treehouse judges the agent's thinking**: every
 decision it made (which model and imagery, what cell/chip size, which retrieval method, which classifier,
@@ -22,8 +24,8 @@ money. Clay is not the judge and not the agent; it is one tool the agent may cho
 
 | # | Decision |
 |---|---|
-| DM1 | **T1 retrieval is the MVP core.** T5 transfer (Nagoya → Gifu, same country) is in the MVP. T2–T4 are aims after T1 works. |
-| DM2 | **Keyed scenario: warehouses in Nagoya** — PLATEAU is the report's only *complete* warehouse reference (warehouse use, ≥ 1,600 m²). **Transfer: Gifu**, no new labels. **Unkeyed scenario: a Bangladesh city** (e.g. Chattogram or Dhaka; confirm OSM `building=warehouse` coverage) — sparse OSM ⇒ precision within the OSM pool and honest limits only, never recall. |
+| DM1 | **T1 retrieval is the MVP core, for any Table 8 asset class.** The class is data, not code: an **asset-class registry** (`config/asset-classes.yaml`) holds each class's positive/negative definition, typical/minimum size, suitable resolutions and reference sources, and the task card names the class and AOI. T5 transfer is in the MVP. T2–T4 are aims after T1 works. |
+| DM2 | **MVP proves generality with at least two classes.** (1) **Warehouses**: Nagoya keyed (PLATEAU, the report's only *complete* warehouse reference, warehouse use ≥ 1,600 m²) → Gifu transfer, no new labels → a Bangladesh city unkeyed (sparse OSM ⇒ precision within the OSM pool only, never recall). (2) **A second class with a usable reference in an ADB country** — recommended: **ground-mounted solar farms** (Global Renewables Watch, MIT, global; keyed in an ADB country such as India or Bangladesh); alternatives: oil/fuel tanks (hand-labelled blocks), bridges (OSM / DPWH Metro Manila, licence unresolved), substations (OSM `power=substation`, incomplete). Any other Table 8 class runs from a new task card with no code change. |
 | DM3 | **Foundation-model resources the agent can choose:** AEF precomputed 10 m annual embeddings; LGND Clay precomputed (1.28 km / 2.56 km cells — kept so a good agent can reject it for warehouses and say why); Clay v1.5 computed on 160 m Sentinel-2 chips (Should; GPU cost); a Bedrock vision model (Claude Sonnet 5.5 or Amazon Nova Pro, both probe-verified for images) on GSI 0.5 m aerial chips in Japan (with attribution) for zero-shot checks. **Maxar/Vantor imagery is excluded** (CC BY-NC; report Table 17). |
 | DM4 | **Three separate scores, never blended:** (a) **reasoning validity**, (b) **confidence calibration**, (c) **predicted accuracy from reasoning** (for unkeyed runs). Output accuracy under the report's protocol is a fourth, separate panel; cost/time/data a fifth. |
 | DM5 | **Classifier is switchable:** a linear probe (logistic regression) or linear SVM on embeddings (report Table 9), **or a Strands sub-agent classifier** using a Bedrock vision model on image chips. The main agent chooses and must justify; the choice is scored. |
@@ -75,7 +77,7 @@ money. Clay is not the judge and not the agent; it is one tool the agent may cho
 
 | Rule | Passes when |
 |---|---|
-| RV1 scale fit | Chosen cell/chip size is plausible for the target's size (report anchor: warehouses ≥ 1,600 m² ≈ 40 m side → 160 m cells work; 1.28 km cells do not) **or** the agent states the limitation and its consequence |
+| RV1 scale fit | Chosen cell/chip size is plausible for the target class's size from the asset-class registry (report anchor: warehouses ≥ 1,600 m² ≈ 40 m side → 160 m cells work; 1.28 km cells do not; tanks and substations need finer imagery than 10 m) **or** the agent states the limitation and its consequence |
 | RV2 imagery licence | Every imagery source used is reusable for ADB per Table 17 (Maxar/Vantor fails) |
 | RV3 resolution fit | 10 m sources are not claimed to resolve objects smaller than a few pixels without a stated limitation |
 | RV4 held-out isolation | No grading reference reached the agent; few-shot examples come from the training split only |
@@ -122,6 +124,7 @@ Data: Sentinel-2 COGs (Earth Search / `sentinel-cogs`, us-west-2, open), LGND em
 
 - [ ] A live Strands-on-Bedrock agent completes T1 for Nagoya warehouses with ≥ 2 embedding sources available, records a decision before every action, and emits red predicted sites.
 - [ ] The same agent configuration runs the Gifu transfer and the Bangladesh unkeyed task.
+- [ ] The same code runs T1 for a **second Table 8 class** (recommended: ground-mounted solar, keyed with Global Renewables Watch in an ADB country) from a new task card and registry entry only — no class-specific code.
 - [ ] Output panel reports report-Table-11 metrics for Nagoya and Gifu (with the transfer gap) and precision-within-pool for Bangladesh, with units and reference completeness declared.
 - [ ] Reasoning-validity panel: RV1–RV10 per decision + reviewer-model scores + AgentCore Evaluations results, each separate; a planted bad agent (e.g. chooses 1.28 km cells for warehouses without justification; uses Maxar imagery) fails the right rules.
 - [ ] Calibration panel on keyed runs (Brier, reliability bins with n).
@@ -132,6 +135,13 @@ Data: Sentinel-2 COGs (Earth Search / `sentinel-cogs`, us-west-2, open), LGND em
 - [ ] A recorded replay of the live runs is committed so the demo works offline; README quickstart runs on a fresh machine.
 - [ ] `uv run pytest` green; spend under the guard; every live claim in README/demo backed by a committed artifact.
 
-## 9. Out of scope for the MVP
+## 9. After the MVP (Suhas's order, 2026-11-04)
+
+1. MVP (Kiro, this plan) → 2. UI refinement → 3. model testing and refinement through Bedrock → 4. repo
+polish → 5. **specialization** (go deep on one ADB use case from Table 5 and the best-supported class) →
+6. pitch → 7. system-design refinement → 8. improve the evaluation where evidence supports it, otherwise
+keep it as is.
+
+## 10. Out of scope for the MVP
 
 T2 segmentation, T3 register update, T4 change detection (aims), active-learning label curves to 1,000 labels, YOLO baseline, FarSLIP (no AWS-hosted checkpoint confirmed), simulation, captions, purchasing imagery.
