@@ -1,0 +1,11 @@
+{
+  "run_id": "exp-nagoya-sonnet-1",
+  "text": "Here is what the agent did. It was asked to find every warehouse in the area of interest. a warehouse is a warehouse or large logistics/storage building (roughly 1,600 m2 of floor area or more). do not count factories, markets, aircraft hangars or other large roofs that are not warehouses. return each warehouse as a point inside the building, with the resources and image windows you used and your confidence. state the resolution and cell size you chose and why, the area you searched, any area you could not review, and a count with a range. To see the area it chose build_index. 160 m cells (base grid) with 10m AEF embeddings are best match for ~40-100 m buildings. It marked 10 sites present. These are the agent's own reports, not confirmed ground truth. Average stated confidence on present sites was about 30 percent. No present site rested on a passed independent check, so that confidence is not yet earned. It could not check: Rationale and confidence are agent self-reports; hidden reasoning quality is not assessed; Tool counts measure activity, not reasoning quality or real-world accuracy; No independent semantic reasoning rubric or measured human baseline is available.",
+  "sha256": "6a9e54dbd19440b44f4f8249b9b6b06ecfdf0278ed091d4b305e2b224c59c3e7",
+  "voice": "Joanna",
+  "engine": "neural",
+  "chunks": 1,
+  "sample_rate": "24000",
+  "created": "2026-11-05T12:04:59.683273+00:00",
+  "bytes": 461276
+}

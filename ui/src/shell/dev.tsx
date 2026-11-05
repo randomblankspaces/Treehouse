@@ -4,7 +4,8 @@ import { client } from './client.ts';
 import { FOCUS_LABEL, focusOf, isKey, terminal, type Json, type RunSnapshot, type RunSummary, type TraceStep } from './contract.ts';
 import { KIND_WORD, PHASES, asOf, bboxOf, gist, phaseState, sentence, sinceStart, title } from './describe.ts';
 import { pick, pickMarker, renderMap, TILE_CREDIT } from './mapart.ts';
-import { useNarration, usePrefs, useSnapshot } from './hooks.ts';
+import { useNarration, usePrefs, useRunNarration, useSnapshot } from './hooks.ts';
+import { isColorSafe, type Prefs } from './prefs.ts';
 import { EvaluationPanels, PredictionEvidence, money, tokenTotal } from './report.tsx';
 import { Settings } from './settings.tsx';
 import { DecisionTree, PlainRunSummary } from './tree.tsx';
@@ -48,6 +49,7 @@ function DevApp() {
   const settings = useRef<HTMLDialogElement>(null);
   const {snap, error: snapError} = useSnapshot(runId, tick);
   const lines = useNarration(snap, prefs.voice);
+  const runNarr = useRunNarration(snap, prefs.voice);
   const error = listError ?? snapError;
   const live = snap ? !terminal(snap.status) : false;
 
@@ -79,7 +81,7 @@ function DevApp() {
   };
   const switchRun = (id: string) => { setRunId(id); setFollow(true); setStepId(null); };
 
-  return <div className="shell dev" data-theme={prefs.theme} data-text={prefs.text} data-cb={prefs.colorSafe ? 'on' : 'off'} data-motion={reduce ? 'reduce' : 'full'}>
+  return <div className="shell dev" data-theme={prefs.theme} data-text={prefs.text} data-cb={isColorSafe(prefs) ? 'on' : 'off'} data-palette={prefs.palette} data-motion={reduce ? 'reduce' : 'full'}>
     <a className="skip" href="#trace">Skip to trace</a>
     <header className="bar">
       <a className="brand" href={runId ? `/?run=${encodeURIComponent(runId)}` : "/"}><Logo /><span>treehouse</span><b>dev</b></a>
@@ -150,6 +152,7 @@ function DevApp() {
         <h2>Narrator</h2>
         <p aria-live="polite">{lines[0]?.text ?? 'Waiting for the first key decision…'}</p>
         {lines.length > 1 && <details><summary>Earlier lines</summary><ol>{lines.slice(1).map((l, i) => <li key={i}>{l.text}</li>)}</ol></details>}
+        {runNarr && <p className="narr-summary"><span className="voice-label">{runNarr.source === 'polly' ? 'Voice: Amazon Polly' : 'Voice: browser speech'}</span> {runNarr.text}</p>}
       </section>}
       <DecisionTree snap={snap} selectedClaim={selectedClaim} onSelectClaim={setSelectedClaim} />
       <main className="work">
@@ -180,7 +183,7 @@ function DevApp() {
           </ol>
         </section>
         <div className="side">
-          <DevMap snap={snap} step={follow ? null : selected} night={prefs.theme !== 'light'} reduce={reduce} colorSafe={prefs.colorSafe} selectedClaim={selectedClaim} onSelectClaim={setSelectedClaim} />
+          <DevMap snap={snap} step={follow ? null : selected} night={prefs.theme !== 'light'} reduce={reduce} palette={prefs.palette} selectedClaim={selectedClaim} onSelectClaim={setSelectedClaim} />
           <section className="inspector" aria-labelledby="insp-h">
             {selected ? <Inspector step={selected} byId={byId} steps={steps} choose={choose} /> : <p className="empty" id="insp-h">No step selected.</p>}
           </section>
@@ -193,7 +196,7 @@ function DevApp() {
 }
 
 /** The map beside the trace: the run as it stood at the selected step (or live), drawn technically. */
-function DevMap({snap, step, night, reduce, colorSafe, selectedClaim, onSelectClaim}: {snap: RunSnapshot; step: TraceStep | null; night: boolean; reduce: boolean; colorSafe: boolean; selectedClaim: string | null; onSelectClaim: (id: string | null) => void}) {
+function DevMap({snap, step, night, reduce, palette, selectedClaim, onSelectClaim}: {snap: RunSnapshot; step: TraceStep | null; night: boolean; reduce: boolean; palette: Prefs['palette']; selectedClaim: string | null; onSelectClaim: (id: string | null) => void}) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [scrub, setScrub] = useState<number | null>(null);
   const selectedPrediction = selectedClaim;
@@ -210,13 +213,13 @@ function DevMap({snap, step, night, reduce, colorSafe, selectedClaim, onSelectCl
         const dpr = devicePixelRatio || 1, W = c.clientWidth, H = c.clientHeight;
         if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); }
         const ctx = c.getContext('2d')!; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        renderMap(ctx, W, H, {mode: night ? 'night' : 'day', t: now, animate: !reduce, colorSafe, bbox, steps: view.steps, elapsed: t, markers: view.markers, born: [], illustrative: snap.mode === 'mock', technical: snap.mode === 'mock', focus: step?.tool?.name ?? null});
+        renderMap(ctx, W, H, {mode: night ? 'night' : 'day', t: now, animate: !reduce, colorSafe: palette !== 'default', palette, bbox, steps: view.steps, elapsed: t, markers: view.markers, born: [], illustrative: snap.mode === 'mock', technical: snap.mode === 'mock', focus: step?.tool?.name ?? null});
       }
       raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
-  }, [view, t, bbox, night, reduce, colorSafe, step]);
+  }, [view, t, bbox, night, reduce, palette, step]);
   const n = (st: string) => view.markers.filter(m => m.status === st).length;
   const running = view.steps.filter(x => x.status === 'running' && x.kind === 'execute_tool').map(x => x.tool?.name);
   return <section className="mapbox" aria-labelledby="map-h">
