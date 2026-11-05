@@ -5,12 +5,22 @@ import type { MapMarker, TraceStep } from './contract.ts';
 
 export const COLS = 62, ROWS = 48;   // ≈ 160 m cells over the Nagoya Port AOI
 export const TILE_CREDIT = 'Aerial imagery: GSI Japan (地理院タイル)';
-export type MapState = {mode: Mode; t: number; animate: boolean; colorSafe: boolean; bbox: [number, number, number, number] | null;
+export type Palette = 'default' | 'okabe-ito' | 'blue-yellow' | 'monochrome';
+export type MapState = {mode: Mode; t: number; animate: boolean; colorSafe: boolean; palette?: Palette; bbox: [number, number, number, number] | null;
   steps: TraceStep[]; elapsed: number; markers: MapMarker[]; born: number[];
   illustrative?: boolean;
   technical?: boolean;   // dev view: cell grid, indices, corner coordinates
   focus?: string | null;   // a tool name: its layer stays bright, the rest dims
 };
+/** Status fills per palette. Status is also drawn by shape, so colour is reinforcement, never the only signal.
+ *  present = filled circle, cannot_assess = hollow diamond, absent = ×. */
+const STATUS_COLORS: Record<Palette, {present: string; absent: string; cannot: string}> = {
+  default: {present: '#ff4d5e', absent: '#8d86a0', cannot: '#ffd166'},
+  'okabe-ito': {present: '#d55e00', absent: '#56b4e9', cannot: '#f0e442'},   // vermillion / sky-blue / yellow
+  'blue-yellow': {present: '#1f78ff', absent: '#9aa0ad', cannot: '#ffb000'},  // blue / grey / amber
+  monochrome: {present: '#111111', absent: '#9aa0ad', cannot: '#555555'},
+};
+const paletteOf = (st: MapState): Palette => st.palette ?? (st.colorSafe ? 'okabe-ito' : 'default');
 const LAYER: Record<string, 'index' | 'candidates' | 'chips' | 'labels'> = {list_embedding_sources: 'index', build_index: 'index', get_examples: 'candidates', retrieve: 'candidates', classify: 'candidates', imagery_window: 'chips', stac_search: 'chips', strands_label: 'labels', record_claim: 'labels', aggregate: 'labels', note_limitation: 'labels'};
 /** Screen placement of the task area; shared by the renderer and hover picking. */
 export function layout(W: number, H: number, bbox: [number, number, number, number] | null) {
@@ -149,22 +159,29 @@ export function renderMap(ctx: CanvasRenderingContext2D, W: number, H: number, s
   }
   // 4. labels from the Strands sub-agent: pins drop in with a ripple
   dim('labels');
-  const red = st.colorSafe ? '#d55e00' : '#ff4d5e', Rp = Math.max(6, Math.min(10, cw * 0.55));
+  const colors = STATUS_COLORS[paletteOf(st)], Rp = Math.max(6, Math.min(10, cw * 0.55));
+  const halo = night ? '#ffffff' : '#1a1523';   // outline so shapes read on any basemap
   st.markers.forEach((m, i) => {
     const p = at(m.lon, m.lat), age = st.t - (st.born[i] ?? 0);
     const pop = !st.animate || age > 420 ? 1 : age < 260 ? ease(age / 260) * 1.2 : 1.2 - 0.2 * ((age - 260) / 160);
     if (st.animate && age < 900) { ctx.strokeStyle = `rgba(255,255,255,${0.7 * (1 - age / 900)})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y, 4 + age / 900 * 22, 0, 6.29); ctx.stroke(); }
     const r = Rp * pop;
     ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
-    if (m.status === 'present') {
-      ctx.fillStyle = red; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.arc(p.x, p.y - r * 1.5, r, Math.PI * 0.78, Math.PI * 2.22); ctx.closePath(); ctx.fill();
-      ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(p.x, p.y - r * 1.5, r * 0.38, 0, 6.29); ctx.fill();
-    } else if (m.status === 'absent') {
-      ctx.fillStyle = night ? '#8d86a0' : '#6b6478'; ctx.beginPath(); ctx.arc(p.x, p.y, r * 0.75, 0, 6.29); ctx.fill(); ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
-      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; const d = r * 0.35; ctx.beginPath(); ctx.moveTo(p.x - d, p.y - d); ctx.lineTo(p.x + d, p.y + d); ctx.moveTo(p.x + d, p.y - d); ctx.lineTo(p.x - d, p.y + d); ctx.stroke();
+    if (m.status === 'present' || m.status === 'intact') {
+      // Filled circle with a thin halo ring.
+      ctx.fillStyle = colors.present; ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, 6.29); ctx.fill();
+      ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; ctx.strokeStyle = halo; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, 6.29); ctx.stroke();
+    } else if (m.status === 'absent' || m.status === 'destroyed') {
+      // × cross.
+      ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; const d = r * 0.9;
+      ctx.strokeStyle = halo; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(p.x - d, p.y - d); ctx.lineTo(p.x + d, p.y + d); ctx.moveTo(p.x + d, p.y - d); ctx.lineTo(p.x - d, p.y + d); ctx.stroke();
+      ctx.strokeStyle = colors.absent; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(p.x - d, p.y - d); ctx.lineTo(p.x + d, p.y + d); ctx.moveTo(p.x + d, p.y - d); ctx.lineTo(p.x - d, p.y + d); ctx.stroke();
     } else {
-      ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; ctx.strokeStyle = '#ffd166'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(p.x, p.y, r * 0.8, 0, 6.29); ctx.stroke();
-      ctx.fillStyle = '#ffd166'; ctx.font = `700 ${Math.round(r * 1.1)}px system-ui, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('?', p.x, p.y + 0.5); ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
+      // Hollow diamond (cannot_assess / damaged).
+      ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; const d = r * 1.1;
+      ctx.beginPath(); ctx.moveTo(p.x, p.y - d); ctx.lineTo(p.x + d, p.y); ctx.lineTo(p.x, p.y + d); ctx.lineTo(p.x - d, p.y); ctx.closePath();
+      ctx.strokeStyle = halo; ctx.lineWidth = 3.5; ctx.stroke();
+      ctx.strokeStyle = colors.cannot; ctx.lineWidth = 2; ctx.stroke();
     }
     ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
   });

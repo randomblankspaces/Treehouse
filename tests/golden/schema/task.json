@@ -181,7 +181,8 @@
             "static_catalog",
             "s3_listing",
             "synthetic",
-            "recorded"
+            "recorded",
+            "real"
           ],
           "title": "Access",
           "type": "string"
@@ -739,6 +740,41 @@
       "title": "Thresholds",
       "type": "object"
     },
+    "UserExample": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "lat": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Lat",
+          "type": "number"
+        },
+        "lon": {
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Lon",
+          "type": "number"
+        }
+      },
+      "required": [
+        "lon",
+        "lat"
+      ],
+      "title": "UserExample",
+      "type": "object"
+    },
     "Windows": {
       "additionalProperties": false,
       "properties": {
@@ -844,6 +880,12 @@
       "title": "Known Limits",
       "type": "array"
     },
+    "minutes_per_cell": {
+      "default": 2.0,
+      "exclusiveMinimum": 0,
+      "title": "Minutes Per Cell",
+      "type": "number"
+    },
     "must_notice": {
       "default": [],
       "items": {
@@ -944,6 +986,14 @@
         "type": "string"
       },
       "title": "Tools Allowed",
+      "type": "array"
+    },
+    "user_examples": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/UserExample"
+      },
+      "title": "User Examples",
       "type": "array"
     },
     "version": {

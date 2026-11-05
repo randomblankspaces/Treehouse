@@ -1,0 +1,80 @@
+# Designed real-data experiment; no GRW fetch, LGND read or wind detection has run for this card.
+# Noshiro coastal AOI (~10 x 10 km). The grader reference is pending and never exposed to the worker.
+schema_version: treehouse.task/1
+id: t1-japan-wind-zero-shot
+version: 1.0.0
+title: Wind turbines near Noshiro, Japan, without labelled examples
+family: wind-retrieval
+synthetic: false
+goal: >-
+  Find ground wind turbines in the coastal area of interest. Do not count distribution poles or
+  communication masts. No labelled examples are supplied. Choose a principled discovery strategy;
+  embedding clumps can screen wind farms but do not confirm individual turbines. Inspect candidate
+  locations with permitted imagery before using them as positive seeds. Return predicted turbine
+  points with evidence and confidence. State the resolution and cell size chosen and why, searched
+  and unreviewed areas, limitations, and a count range.
+aoi:
+  type: Polygon
+  coordinates: [[[139.98, 40.16], [140.10, 40.16], [140.10, 40.25], [139.98, 40.25], [139.98, 40.16]]]
+time_window: [2024-01-01, 2024-12-31]
+as_of: 2024-12-31T23:59:00Z
+data_allowlist:
+  - source_id: lgnd-clay-embeddings
+    kind: embeddings
+    access: real
+    license: CC-BY-4.0
+    status: unpinned
+  - source_id: gsi-seamless-aerial-japan
+    kind: imagery
+    access: s3_listing
+    license: LicenseRef-gsi-japan-attribution
+    status: unpinned
+tools_allowed:
+  - record_decision
+  - list_embedding_sources
+  - build_index
+  - get_examples
+  - survey_clusters
+  - retrieve
+  - classify
+  - imagery_window
+  - aggregate
+  - record_claim
+  - note_limitation
+  - submit_understanding
+needs_vision: true
+classes:
+  wind_turbine:
+    min_size_m: 50
+    max_effective_gsd_for_existence_m: 10
+    max_effective_gsd_for_status_m: 10
+    match_tolerance_m: 80
+    key_geometry: point
+windows: {max_side_m: 5000, max_out_px: 512, max_bytes_per_run: 500000000}
+steps:
+  - step_id: inventory
+    question_id: exists
+    statuses_allowed: [present, absent, cannot_assess]
+    keying:
+      mode: partly_keyed
+      key_source: Global Renewables Watch v1.0 wind
+      key_path: keys/grw/japan-noshiro-wind.geojson
+      license: MIT
+      reference_quality: incomplete
+      completeness_caveat: Model-derived detections, not a complete turbine census; no unsupported recall claims.
+      match_rule: {tolerance_m: {wind_turbine: 80}, one_to_one: true}
+      status: pending_fetch
+forbidden_sources:
+  - {kind: path, pattern: keys/}
+  - {kind: dataset_id, pattern: grw-v1-wind-noshiro-heldout}
+  - {kind: tool, pattern: key_lookup}
+  - {kind: host, pattern: "*.maxar.com"}
+  - {kind: dataset_id, pattern: maxar}
+  - {kind: dataset_id, pattern: vantor}
+known_limits:
+  - LGND 1280 m cells screen wind-farm clumps; they cannot locate an individual turbine.
+  - A spatially compact embedding cluster is not a confirmed asset class.
+  - GRW is an incomplete model-derived reference; the key has not been fetched for this card.
+sampling_plan: {strata_keys: [conf_tercile], n_total: 40, seed: 20261104}
+thresholds: {rely_lo: 0.8}
+budget: {enabled: true, usd: 15, tool_calls: 200, bytes: 500000000, wall_s: 1800, tokens: 3000000}

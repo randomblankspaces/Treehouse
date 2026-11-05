@@ -1,0 +1,11 @@
+{
+  "run_id": "exp-nagoya-nova-1",
+  "text": "Here is what the agent did. It was asked to find every warehouse in the area of interest. a warehouse is a warehouse or large logistics/storage building (roughly 1,600 m2 of floor area or more). do not count factories, markets, aircraft hangars or other large roofs that are not warehouses. return each warehouse as a point inside the building, with the resources and image windows you used and your confidence. state the resolution and cell size you chose and why, the area you searched, any area you could not review, and a count with a range. To see the area it chose build_index. To create an index for identifying warehouses, I need to build an index using the 'aef-10m-annual' source with a cell size of 160 meters. It marked 10 sites present. These are the agent's own reports, not confirmed ground truth. Average stated confidence on present sites was about 89 percent. No present site rested on a passed independent check, so that confidence is not yet earned. It could not check: Rationale and confidence are agent self-reports; hidden reasoning quality is not assessed; Tool counts measure activity, not reasoning quality or real-world accuracy; No independent semantic reasoning rubric or measured human baseline is available.",
+  "sha256": "81d5ac7860bc8ab80127f25e8b2782455b8018e1e99e26c06db6dc819bd2bc33",
+  "voice": "Joanna",
+  "engine": "neural",
+  "chunks": 1,
+  "sample_rate": "24000",
+  "created": "2026-11-05T12:05:29.814570+00:00",
+  "bytes": 471212
+}

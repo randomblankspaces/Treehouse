@@ -6,6 +6,19 @@ defaults:
   worker: claude-sonnet-5-5
   verifier: nova-pro
 models:
+  - key: claude-haiku-5-5
+    family: anthropic-claude
+    model_id: anthropic.claude-haiku-5-5
+    inference_profile: us.anthropic.claude-haiku-5-5
+    alt_profiles: []
+    region: us-east-1
+    vision: true
+    tool_use: true
+    image_delivery: user_turn
+    max_image_px: 1568
+    price_ref: claude-haiku-5-5
+    quota_note: "Converse OK per lead probe 2026-11-05; image delivery and quotas not independently measured here"
+    verified: true
   - key: claude-sonnet-5-5
     family: anthropic-claude
     model_id: anthropic.claude-sonnet-5-5

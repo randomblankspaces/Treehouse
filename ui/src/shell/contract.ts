@@ -23,6 +23,21 @@ export type RunContext = {
   items: {label: string; tokens: number | null; detail: string}[];   // what filled the context window
 };
 export type Decision = {rationale: string; alternatives: {option: string; reason: string}[]; confidence: number};
+/** RV verdict for one decision, folded for the tree chip. */
+export type DecisionVerdict = 'sound' | 'invalid' | 'not_evaluated';
+export type RvResult = {rule_id: string; verdict: 'pass' | 'fail' | 'not_applicable'; reason: string};
+/** A node in the agent's decision tree, linked to its parent by parent_id (root = parent_id null). */
+export type DecisionNode = {
+  decision_id: string; parent_id: string | null; parent_source: 'recorded' | 'derived'; is_root: boolean;
+  trial_id: string; tool: string | null; action_id: string | null;
+  rationale: string; alternatives: {option: string; reason: string}[]; confidence: number | null;
+  sequence: number | null; status: string; verdict: DecisionVerdict; rv: RvResult[]; claim_ids: string[];
+};
+/** How a claim's confidence was formed (F3): stated, and which checks raised or lowered it. */
+export type ConfidenceProvenance = {
+  stated: number | null; label: 'earned' | 'unearned' | 'unestablished';
+  cited_evidence: boolean; raised: string[]; lowered: string[];
+};
 export type TraceStep = {
   span_id: string; trial_id?: string; decision_id?: string; parent_span_id: string | null; kind: StepKind; name: string;
   start_ms: number; end_ms: number | null; status: StepStatus;
@@ -36,7 +51,8 @@ export type RunSummary = {run_id: string; title: string; status: RunStatus; synt
 /** Recorded agent predictions; presence never establishes independent ground truth. */
 export type MapMarker = {lon: number; lat: number; label: string; confidence: number | null;
   status: 'present' | 'absent' | 'cannot_assess' | 'intact' | 'damaged' | 'destroyed'; at_ms: number | null;
-  claim_id: string; trial_id: string; evidence_refs: {result_id: string; role: string}[]; decision_id: string | null};
+  claim_id: string; trial_id: string; evidence_refs: {result_id: string; role: string}[]; decision_id: string | null;
+  confidence_provenance?: ConfidenceProvenance | null};
 export type NumericScore = {metric: string; value: number | null; unit: 'percent' | 'raw'; numerator: number | null; denominator: number | null; basis: string; status: 'available' | 'unavailable' | 'method_test_only'; reason: string | null; trial_id?: string};
 export type EvaluationSection = {scores?: NumericScore[]; status: 'available' | 'unavailable' | 'method_test_only'; value: Json; reason: string | null};
 export const EVALUATIONS = ['reasoning_rules', 'reviewer', 'agentcore', 'output', 'calibration', 'predicted_accuracy'] as const;
@@ -49,6 +65,7 @@ export type RunSnapshot = RunSummary & {
   started_at: string | null; elapsed_ms: number | null; cost_usd: number | null;
   cost_basis?: string; timing_basis?: string;
   input: RunInput; context: RunContext; steps: TraceStep[]; markers: MapMarker[];
+  decisions?: DecisionNode[];
 };
 /** A task the backend can start: a pinned preset with a place and a default prompt. */
 export type Place = {place_id: string; title: string; goal: string; aoi_bbox: [number, number, number, number] | null; editable_goal: boolean};

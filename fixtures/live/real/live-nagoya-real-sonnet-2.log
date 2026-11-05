@@ -1,0 +1,4 @@
+[11/05/26 07:21:35] INFO     Creating Strands MetricsClient                       metrics.py:632
+[11/05/26 07:21:36] INFO     Found credentials from IAM Role:                credentials.py:1182
+                             WSParticipantRole                                                  
+{"manifest_ref":"sha256:86ab462aaa6a2c25dedd0f213c6346b77dc0279055a2045455a7b33450dac0eb","trials":[{"claims":1,"detail":null,"stop":"completed","trial_id":"t-0"}]}

@@ -18,6 +18,8 @@ cell_size_default_m: 160
 
 classes:
   warehouse:
+    osm:
+      tags: [{building: warehouse}]
     label: Warehouses
     positive: "Warehouses and large logistics/storage buildings (Nagoya: PLATEAU warehouse use, >= 1,600 m2)"
     negative: [factories, markets, aircraft hangars, other large roofs]
@@ -31,6 +33,10 @@ classes:
       - {id: osm, name: OpenStreetMap building=warehouse, completeness: incomplete, license: ODbL-1.0}
 
   oil_fuel_tank:
+    osm:
+      tags:
+        - man_made: storage_tank
+          content: [oil, fuel, diesel, gasoline, petrol, petroleum, crude_oil, heavy_fuel_oil, kerosene]
     label: Oil / fuel tanks
     positive: Above-ground oil/fuel tanks, fixed and floating roof
     negative: [water tanks, chemical tanks, LNG/LPG spheres, demolished bases]
@@ -43,6 +49,8 @@ classes:
       - {id: hand-labels, name: Hand labels, completeness: incomplete, license: LicenseRef-synthetic}
 
   bridge:
+    osm:
+      tags: [{bridge: ["yes", viaduct, movable, cantilever, trestle, covered]}]
     label: Bridges
     positive: Road, rail, pedestrian bridges and flyovers >= 10 m
     negative: [culverts, spans shorter than 10 m]
@@ -55,6 +63,8 @@ classes:
       - {id: osm, name: OpenStreetMap bridges, completeness: incomplete, license: ODbL-1.0}
 
   substation:
+    osm:
+      tags: [{power: substation}]
     label: Substations / switchyards (energy infrastructure)
     positive: Fenced substations and switchyards
     negative: [distribution poles, small transformers, rooftop solar, greenhouses]
@@ -67,6 +77,11 @@ classes:
       - {id: osm-power, name: OpenStreetMap power=substation, completeness: incomplete, license: ODbL-1.0}
 
   ground_solar:
+    osm:
+      # Explicit ground location excludes rooftop arrays; this conservative pool is incomplete.
+      tags:
+        - {power: plant, "plant:source": solar, location: ground}
+        - {power: generator, "generator:source": solar, location: ground}
     label: Ground-mounted solar
     positive: Utility-scale ground-mounted solar arrays (fenced PV fields)
     negative: [rooftop solar, greenhouses, distribution poles, small transformers]
@@ -80,6 +95,8 @@ classes:
       - {id: uspvdb, name: USGS USPVDB (US only), completeness: complete, license: LicenseRef-public-domain}
 
   wind_turbine:
+    osm:
+      tags: [{power: generator, "generator:source": wind}]
     label: Wind turbines
     positive: Ground wind turbines (towers and rotors)
     negative: [distribution poles, communication masts]

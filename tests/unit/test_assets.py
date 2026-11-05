@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
+import yaml
 
 from treehouse.assets import AssetClasses, UnknownAssetClass
 
 TABLE8 = {"warehouse", "oil_fuel_tank", "bridge", "substation", "ground_solar", "wind_turbine"}
+REGISTRY_PATH = Path(__file__).parents[2] / "config/asset-classes.yaml"
 
 
 @pytest.fixture(scope="module")
@@ -17,6 +21,21 @@ def reg() -> AssetClasses:
 def test_registry_loads_and_covers_table8(reg):
     assert TABLE8.issubset(set(reg.classes))
     assert reg.cell_size_default_m == 160
+
+
+def test_registry_preserves_osm_selectors(reg):
+    configured = yaml.safe_load(REGISTRY_PATH.read_text())
+    for name, asset in reg.classes.items():
+        assert asset.osm.tags == configured["classes"][name]["osm"]["tags"]
+
+
+def test_registry_accepts_classes_without_osm(tmp_path):
+    configured = yaml.safe_load(REGISTRY_PATH.read_text())
+    for asset in configured["classes"].values():
+        del asset["osm"]
+    path = tmp_path / "without-osm.yaml"
+    path.write_text(yaml.safe_dump(configured))
+    assert all(asset.osm is None for asset in AssetClasses.load(path).classes.values())
 
 
 def test_every_class_has_positive_negative_sizes_and_reference(reg):

@@ -24,6 +24,8 @@ unit_source: "Claude rows quoted by the Pricing API per 1M tokens, divided by 10
 synthetic: false
 estimated: false
 models:
+  # Haiku price not verified: Sonnet's geographic-profile rates are the lead-approved ceiling.
+  claude-haiku-5-5@us: {input: 0.0022, output: 0.011, cache_read: 0.00011, cache_write: 0.00275, price_basis: ceiling}
   claude-sonnet-5-5@us: {input: 0.0022, output: 0.011, cache_read: 0.00011, cache_write: 0.00275}
   claude-sonnet-5-5@global: {input: 0.002, output: 0.01, cache_read: 0.0001, cache_write: 0.0025}
   nova-pro@us: {input: 0.0008, output: 0.0032, cache_read: 0.0002, cache_write: null}

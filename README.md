@@ -2,9 +2,9 @@
 
 Treehouse evaluates how a geospatial agent investigates a target area and whether its resulting database is accurate. It records the agent’s strategy, foundation-model/tool choices, decision explanations, alternatives, evidence, revisions and reported confidence, then checks the sealed output independently. Warehouses, solar facilities and bridges are task examples; the sandbox is configured by object class and geographic zone.
 
-**Start here:** [product outline](docs/OUTLINE.md), [current plan](docs/PLAN.md), [implementation status](docs/PRODUCT-STATUS.md), and [documentation index](docs/README.md). Earlier decisions remain in [docs/SCOPE.md](docs/SCOPE.md); the current plan records the user’s November 4 clarification.
+**Start here:** [architecture and AWS integration](docs/ARCHITECTURE.md) (presentation reference: what ran live, what is designed), [MVP plan](docs/MVP-PLAN.md), [ADB/LGND report digest](docs/REPORT-TABLES.md), [defence book](docs/design/DEFENSE-BOOK.md), [Kiro AWS log](docs/KIRO-STATUS.md).
 
-**Current integration:** [MVP integration and readiness](docs/MVP-INTEGRATION-STATUS.md) records the active UI/backend repairs and remaining live-data gates. Reports must show percentage scores with their metric/population, separate money/time, and a readable summary grounded in recorded decisions. The [LGND/ADB context](docs/LGND-REPORT-CONTEXT.md) explains the supplied benchmark. Strands is part of the workflow being evaluated. Earlier live evidence below uses synthetic inputs and is not operational accuracy validation.
+**Live on AWS (2026-11-05):** Strands agents on Amazon Bedrock (Sonnet 5.5, Nova Pro; Haiku 5.5 and adaptive thinking verified), AgentCore Evaluations with Treehouse Lambda evaluators, S3 Object Lock COMPLIANCE run store (admin delete denied), KMS-isolated answer keys, CDK infrastructure, and the agent reading **real LGND Clay v1.5 embeddings** from AWS Open Data.
 
 ## Warehouse MVP: what ran live (2026-11-05)
 

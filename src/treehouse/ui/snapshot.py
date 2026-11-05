@@ -10,6 +10,7 @@ from treehouse.investigation.evaluation import POSITIVE, Reference
 from treehouse.investigation.reasoning_rules import evaluate as reasoning_rules
 from treehouse.investigation.reporting import protocol_panels
 from treehouse.paths import repo_root
+from treehouse.ui.decision_tree import decision_tree
 from treehouse.ui.projection import metadata, parameters
 from treehouse.ui.scored import named_scores, thinking_summary
 
@@ -28,7 +29,7 @@ def available(value, *, method=False):
 
 def pending_snapshot(summary):
     return {**summary, "status": summary["status"], "started_at": None, "elapsed_ms": None,
-            "cost_usd": None, "steps": [], "markers": [],
+            "cost_usd": None, "steps": [], "markers": [], "decisions": [],
             "provenance": {"embeddings": "unknown", "reference": "unknown", "vision": "unknown",
                            "limitations": ["Run is not sealed; recorded trace and evaluation are unavailable."]},
             "evaluation": {name: unavailable("Run is not sealed yet.") for name in SECTIONS},
@@ -167,14 +168,18 @@ def snapshot(store, run, *, reference=None):
         if span.error:
             row["error"] = {"type": span.error.type, "message": "Recorded span failed; raw error text is withheld."}
         steps.append(row)
+    claim_decision_ids = {}
     for trial in run.trials:
         for claim in trial.claims:
             linked = decisions.get((trial.trial_id, claim.span_id))
+            decision_id = linked["decision_id"] if linked else None
+            if decision_id is not None:
+                claim_decision_ids[(trial.trial_id, claim.claim_id)] = decision_id
             markers.append({"lon": claim.geometry.coordinates[0], "lat": claim.geometry.coordinates[1],
                             "label": claim.cls, "confidence": claim.confidence, "status": claim.status,
                             "at_ms": next(((s.end_ns - t0) / 1e6 for s in trial.spans if s.span_id == claim.span_id), None), "claim_id": claim.claim_id, "trial_id": claim.trial_id,
                             "evidence_refs": [r.model_dump(mode="json") for r in claim.evidence_refs],
-                            "decision_id": linked["decision_id"] if linked else None})
+                            "decision_id": decision_id})
     evaluation = {name: unavailable(f"No recorded {name} result bound to this run.") for name in SECTIONS}
     rules = {}
     for trial in run.trials:
@@ -183,6 +188,10 @@ def snapshot(store, run, *, reference=None):
             # Verified by load_sealed before this projection; never infer legacy decisions.
             rules[trial.trial_id] = reasoning_rules(json.loads(path.read_text()), run.card,
                 asset_class=next(iter(run.card.classes)), claims=[c.model_dump(mode="json") for c in trial.claims])
+    # The readable decision tree and per-claim confidence provenance, from recorded decisions + RV verdicts.
+    tree, provenance = decision_tree(inv["decisions"], run.trials, rules_by_trial=rules, claim_decision_ids=claim_decision_ids)
+    for marker in markers:
+        marker["confidence_provenance"] = provenance.get((marker["trial_id"], marker["claim_id"]))
     if rules:
         evaluation["reasoning_rules"] = available(rules)
     else:
@@ -234,4 +243,5 @@ def snapshot(store, run, *, reference=None):
             "context": {"model_id": cfg.worker.model_key, "provider": cfg.worker.provider, "harness": cfg.harness,
                         "system_prompt": None, "items": [{"label": "Execution", "tokens": None,
                         "detail": f"{run.manifest.mode}; configured model {cfg.worker.model_key}; harness {cfg.harness}"}]},
-            "steps": sorted(steps, key=lambda s: s["start_ms"]), "markers": markers}
+            "steps": sorted(steps, key=lambda s: s["start_ms"]), "markers": markers,
+            "decisions": tree}

@@ -67,6 +67,7 @@ def run_command(
 
     card = load_card(task)
     cfg = RunConfig.model_validate_json(config.read_bytes())
+    servers = servers if servers is not None else cfg.servers
     st = LocalStore(store)
     worker = _factory(provider)(card=card, config=cfg)
     vision = _factory(classifier)(card=card, config=cfg) if classifier else None
