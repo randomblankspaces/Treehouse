@@ -58,8 +58,40 @@ def _optional_records(store, run, kind, directory):
     return records
 
 
-def snapshot(store, run, *, reference=None):
+def investigation_report(store, run, *, reference=None):
+    """Apply current-reference scope policy without changing the historical evaluator."""
     inv = evaluate_investigation(store, run.run_id, reference=reference)
+    if reference is None:
+        return inv
+    basis = {"kind": "explicit_current_server_reference", "content_ref": sha256_json(reference)}
+    for panel in ("output", "confidence"):
+        inv[panel]["comparison_basis"] = basis
+    limitations = inv["process"]["limitations"]
+    limitations.append("Output and calibration are explicit current server-reference comparisons, not historical measurements bound to the run seal.")
+    current_reference = Reference.model_validate(reference)
+    unknown_scope = current_reference.coverage is None or any(
+        not point_in_polygons(*claim.geometry.coordinates, run.card.aoi.polygons())
+        or not point_in_polygons(*claim.geometry.coordinates, current_reference.coverage.polygons())
+        for trial in run.trials for claim in trial.claims if claim.status in POSITIVE)
+    if unknown_scope:
+        reason = "Comparison scope is unknown: positive predictions are outside the task AOI or supplied reference coverage, or reference coverage is absent. Their correctness is not scored."
+        limitations.append("Positive predictions outside task AOI or current reference coverage have unknown correctness; output and calibration are withheld for this comparison.")
+        for panel in ("output", "confidence"):
+            inv[panel]["no_grade_reason"] = reason
+            for number in inv[panel]["numbers"].values():
+                number.update(value=None, tier="ABSTAINED", n=None, interval=None,
+                              reasons=[reason], reason=reason)
+        inv["output"]["unmatched_to_adjudicate"] = None
+    else:
+        brier = inv["confidence"]["numbers"]["brier"]
+        if brier["value"] is not None:
+            # Suppress binary floating-point noise in the public comparison.
+            brier["value"] = round(brier["value"], 15)
+    return inv
+
+
+def snapshot(store, run, *, reference=None):
+    inv = investigation_report(store, run, reference=reference)
     decisions = {(d["trial_id"], d["action"]["span_id"]): d for d in inv["decisions"] if d.get("action")}
     spans = [(trial.trial_id, span) for trial in run.trials for span in trial.spans]
     t0 = min((span.start_ns for _, span in spans), default=None)
@@ -158,20 +190,7 @@ def snapshot(store, run, *, reference=None):
         if ledgers:
             evaluation["reasoning_rules"] = available(ledgers[-1].record)
     if reference is not None:
-        inv["output"]["comparison_basis"] = {"kind": "explicit_current_server_reference", "content_ref": sha256_json(reference)}
-        inv["confidence"]["comparison_basis"] = inv["output"]["comparison_basis"]
-        limitations.append("Output and calibration are explicit current server-reference comparisons, not historical measurements bound to the run seal.")
-        current_reference = Reference.model_validate(reference)
-        unknown_scope = current_reference.coverage is None or any(
-            not point_in_polygons(*claim.geometry.coordinates, run.card.aoi.polygons())
-            or not point_in_polygons(*claim.geometry.coordinates, current_reference.coverage.polygons())
-            for trial in run.trials for claim in trial.claims if claim.status in POSITIVE)
-        if unknown_scope:
-            limitations.append("Positive predictions outside task AOI or current reference coverage have unknown correctness; output and calibration are withheld for this comparison.")
         for name, panel in (("output", "output"), ("calibration", "confidence")):
-            if unknown_scope:
-                evaluation[name] = unavailable("Comparison scope is unknown: positive predictions are outside the task AOI or supplied reference coverage, or reference coverage is absent. Their correctness is not scored.")
-                continue
             values = inv[panel].get("numbers", {})
             if any(n.get("value") is not None for n in values.values()):
                 evaluation[name] = available(inv[panel], method=method)

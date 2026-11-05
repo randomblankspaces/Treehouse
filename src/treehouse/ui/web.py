@@ -573,10 +573,9 @@ def create_app(
     @app.get("/api/runs/{rid}/investigation")
     def investigation(rid: str):
         def collect():
-            from treehouse.investigation import evaluate_investigation
+            from treehouse.ui.snapshot import investigation_report
 
-            inspect_tree(root)
-            result = evaluate_investigation(controller.store, rid, reference=server_reference)
+            result = investigation_report(controller.store, controller.sealed(rid), reference=server_reference)
             return public_value(result)
 
         return read(rid, collect)
