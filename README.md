@@ -4,7 +4,7 @@ Treehouse evaluates how a geospatial agent investigates a target area and whethe
 
 **Start here:** [architecture and AWS integration](docs/ARCHITECTURE.md) (presentation reference: what ran live, what is designed), [MVP plan](docs/MVP-PLAN.md), [ADB/LGND report digest](docs/REPORT-TABLES.md), [defence book](docs/design/DEFENSE-BOOK.md), [Kiro AWS log](docs/KIRO-STATUS.md).
 
-**Live on AWS (2026-11-05):** Strands agents on Amazon Bedrock (Sonnet 5.5, Nova Pro; Haiku 5.5 and adaptive thinking verified), AgentCore Evaluations with Treehouse Lambda evaluators, S3 Object Lock COMPLIANCE run store (admin delete denied), KMS-isolated answer keys, CDK infrastructure, and the agent reading **real LGND Clay v1.5 embeddings** from AWS Open Data.
+**Live on AWS (2026-11-05):** Strands agents on Amazon Bedrock (Sonnet 5.5, Nova Pro, Haiku 5.5; Sonnet adaptive thinking), AgentCore Evaluations with Treehouse Lambda evaluators, S3 Object Lock COMPLIANCE run store (admin delete denied), KMS-isolated answer keys, CDK infrastructure, an **Amazon Polly** neural narrator for the web report, and the agent reading **real LGND Clay v1.5 embeddings** from AWS Open Data. The web UI presents a **decision tree** thinking view with colour-vision-safe themes.
 
 ## Warehouse MVP: what ran live (2026-11-05)
 
@@ -25,9 +25,16 @@ the pipeline working, not real-world accuracy.
 | AgentCore Evaluations: 4 built-ins + 2 Treehouse Lambda evaluators | `fixtures/live/agentcore/` |
 | CDK deploy (Compliance Object Lock run store, KMS key bucket, Lambda evaluators, AgentCore evaluators) | `infra/cdk-outputs.json`, `aws-foundation.json` |
 | Run sealed to S3 with COMPLIANCE retention; a delete of that version **denied** | `fixtures/live/receipts/` |
-| Bedrock spend ledger ($10.97 at the end of the matrix) | `.spend/spend.jsonl` |
+| Bedrock spend ledger ($11.49 after the WP-004 merge) | `.spend/spend.jsonl` |
+| Thinking view: a **decision tree** (nodes linked by `parent_id`, branch-taken vs greyed alternatives, RV verdict chips, per-claim earned-confidence panel) in both the dev and story UIs, each ending with a plain-language run summary | `ui/src/shell/tree.tsx`, `src/treehouse/ui/decision_tree.py` |
+| Accessibility: **Amazon Polly** neural narrator (sha-matched MP3 or browser-speech fallback), colour-vision-safe palettes (Okabe–Ito, blue–yellow, monochrome) and status by marker shape | `ui/public/narration/`, `scripts/narrate_polly.py`, `ui/src/shell/mapart.ts` |
+| Real-data live run on `t1-nagoya-warehouses-real.yaml` (real LGND Clay v1.5, Sonnet adaptive thinking + Haiku) | `fixtures/live/real/` — see "Real-data live runs" below |
 
-The earlier task10 UI omission is superseded by the current integration work. Recorded vision-subagent attempts in the later matrix errored; no successful live geospatial vision result is established. The predicted-accuracy panel has insufficient validation (2 configs). Historical experiment tables have not been recomputed under the corrected held-out population rules.
+The decision-tree thinking view, the Amazon Polly narrator and colour-vision-safe themes landed in the final push (they supersede the earlier task10 UI omission). WP-004 (model thinking capture + deliberation score) is merged. Recorded vision-subagent attempts in the earlier matrix errored; no successful live geospatial vision result is established. The predicted-accuracy panel has insufficient validation (2 configs). Historical experiment tables have not been recomputed under the corrected held-out population rules.
+
+### Real-data live runs (2026-11-05)
+
+A reduced live matrix was run on `tasks/t1-nagoya-warehouses-real.yaml` against **real LGND Clay v1.5 embeddings** (source.coop on S3, CC BY 4.0). Run ids, spend, decision counts and deliberation numbers are recorded in [docs/KIRO-STATUS.md](docs/KIRO-STATUS.md); evidence is committed under `fixtures/live/real/`. Any run not completed before the credit/time stop is listed in [docs/FUTURE-WORK](docs/FUTURE-FEATURES.md).
 
 ### Quickstart: replay a live run offline (fresh machine, no AWS)
 
