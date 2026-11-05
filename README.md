@@ -5,6 +5,9 @@ Treehouse evaluates how a geospatial agent investigates a target area and whethe
 There is no hosted UI. Judges run the offline replay locally using the Quickstart below. The AWS judge
 path (AgentCore Runtime, Gateway and Bedrock Knowledge Base in `scripts/judge_deploy.py`) is designed and
 tested offline, but has not been deployed; see [the judge deployment guide](docs/JUDGE-DEPLOY.md).
+**Run the demo:** `scripts/demo.sh`, offline, with no AWS needed ([walk-through](docs/DEMO.md)).
+
+**Pitch:** open `/pitch` on the served app for the scrolling presentation (problem → working backwards → AWS architecture → demo → numbers → impact → future); see [docs/PITCH.md](docs/PITCH.md).
 
 **Start here:** [architecture and AWS integration](docs/ARCHITECTURE.md) (presentation reference: what ran live, what is designed), [MVP plan](docs/MVP-PLAN.md), [ADB/LGND report digest](docs/REPORT-TABLES.md), [defence book](docs/design/DEFENSE-BOOK.md), [Kiro AWS log](docs/KIRO-STATUS.md).
 

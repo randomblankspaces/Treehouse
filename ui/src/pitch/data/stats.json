@@ -1,0 +1,292 @@
+{
+ "ledger": {
+  "basis": "measured",
+  "source": ".spend/spend.jsonl (Bedrock spend ledger, not the AWS bill)",
+  "calls": 307,
+  "usd": 10.973610800000001,
+  "input_tokens": 5062765,
+  "output_tokens": 142808,
+  "first": "2026-11-04",
+  "last": "2026-11-05",
+  "by_model": {
+   "claude-sonnet-5-5": {
+    "calls": 241,
+    "usd": 9.8899512,
+    "input_tokens": 3940657,
+    "output_tokens": 108539,
+    "usd_per_call": 0.041037141908713694
+   },
+   "nova-pro": {
+    "calls": 66,
+    "usd": 1.0836596,
+    "input_tokens": 1122108,
+    "output_tokens": 34269,
+    "usd_per_call": 0.01641908484848485
+   }
+  }
+ },
+ "matrix": {
+  "basis": "synthetic",
+  "source": "fixtures/live/experiments/metrics.json",
+  "note": "Embeddings and references are committed synthetic fixtures (see docs/KIRO-STATUS.md); metrics measure the pipeline, not real-world accuracy.",
+  "n_runs": 12,
+  "usd_per_run": {
+   "mean": 0.46716465,
+   "min": 0.017448,
+   "max": 0.9895204
+  },
+  "wall_seconds": {
+   "mean": 77.95216752258334,
+   "min": 18.278941041,
+   "max": 210.397640343
+  },
+  "configs": {
+   "t1-bangladesh-warehouses|claude-sonnet-5-5|strands": {
+    "card": "t1-bangladesh-warehouses",
+    "model": "claude-sonnet-5-5",
+    "harness": "strands",
+    "cost.usd": {
+     "mean": 0.3159236666666667,
+     "interval_95": [
+      0.271293,
+      0.3625666
+     ],
+     "n": 3
+    },
+    "cost.wall_seconds": {
+     "mean": 44.623138493666666,
+     "interval_95": [
+      39.814205752,
+      47.774089463
+     ],
+     "n": 3
+    },
+    "cost.tool_calls": {
+     "mean": 21.666666666666668,
+     "interval_95": [
+      21.0,
+      23.0
+     ],
+     "n": 3
+    },
+    "cost.model_calls": {
+     "mean": 13.0,
+     "interval_95": [
+      11.0,
+      15.0
+     ],
+     "n": 3
+    },
+    "output.recall": {
+     "mean": null,
+     "interval_95": null,
+     "n": 0
+    },
+    "output.precision": {
+     "mean": null,
+     "interval_95": null,
+     "n": 0
+    },
+    "output.count_ratio": {
+     "mean": null,
+     "interval_95": null,
+     "n": 0
+    }
+   },
+   "t1-nagoya-warehouses|claude-sonnet-5-5|strands": {
+    "card": "t1-nagoya-warehouses",
+    "model": "claude-sonnet-5-5",
+    "harness": "strands",
+    "cost.usd": {
+     "mean": 0.7877327333333333,
+     "interval_95": [
+      0.6738996,
+      0.9895204
+     ],
+     "n": 3
+    },
+    "cost.wall_seconds": {
+     "mean": 88.42891635566667,
+     "interval_95": [
+      69.81968392,
+      117.43292320899998
+     ],
+     "n": 3
+    },
+    "cost.tool_calls": {
+     "mean": 37.0,
+     "interval_95": [
+      25.0,
+      59.0
+     ],
+     "n": 3
+    },
+    "cost.model_calls": {
+     "mean": 20.333333333333332,
+     "interval_95": [
+      19.0,
+      22.0
+     ],
+     "n": 3
+    },
+    "output.recall": {
+     "mean": 0.03333333333333333,
+     "interval_95": [
+      0.0,
+      0.10000000000000002
+     ],
+     "n": 3
+    },
+    "output.precision": {
+     "mean": 0.3,
+     "interval_95": null,
+     "n": 1
+    },
+    "output.count_ratio": {
+     "mean": 0.1111111111111111,
+     "interval_95": [
+      0.0,
+      0.3333333333333333
+     ],
+     "n": 3
+    }
+   },
+   "t1-nagoya-warehouses|nova-pro|strands": {
+    "card": "t1-nagoya-warehouses",
+    "model": "nova-pro",
+    "harness": "strands",
+    "cost.usd": {
+     "mean": 0.31598,
+     "interval_95": [
+      0.017448,
+      0.709956
+     ],
+     "n": 3
+    },
+    "cost.wall_seconds": {
+     "mean": 121.00651390933335,
+     "interval_95": [
+      18.278941041,
+      210.397640343
+     ],
+     "n": 3
+    },
+    "cost.tool_calls": {
+     "mean": 50.0,
+     "interval_95": [
+      3.0,
+      90.0
+     ],
+     "n": 3
+    },
+    "cost.model_calls": {
+     "mean": 20.666666666666668,
+     "interval_95": [
+      4.0,
+      37.0
+     ],
+     "n": 3
+    },
+    "output.recall": {
+     "mean": 0.03333333333333333,
+     "interval_95": [
+      0.0,
+      0.10000000000000002
+     ],
+     "n": 3
+    },
+    "output.precision": {
+     "mean": 0.3,
+     "interval_95": null,
+     "n": 1
+    },
+    "output.count_ratio": {
+     "mean": 0.1111111111111111,
+     "interval_95": [
+      0.0,
+      0.3333333333333333
+     ],
+     "n": 3
+    }
+   },
+   "t5-gifu-warehouses|claude-sonnet-5-5|strands": {
+    "card": "t5-gifu-warehouses",
+    "model": "claude-sonnet-5-5",
+    "harness": "strands",
+    "cost.usd": {
+     "mean": 0.4490222,
+     "interval_95": [
+      0.4190362,
+      0.4921708
+     ],
+     "n": 3
+    },
+    "cost.wall_seconds": {
+     "mean": 57.75010133166666,
+     "interval_95": [
+      54.771407401,
+      60.262930915999995
+     ],
+     "n": 3
+    },
+    "cost.tool_calls": {
+     "mean": 24.666666666666668,
+     "interval_95": [
+      24.0,
+      25.0
+     ],
+     "n": 3
+    },
+    "cost.model_calls": {
+     "mean": 18.0,
+     "interval_95": [
+      17.0,
+      20.0
+     ],
+     "n": 3
+    },
+    "output.recall": {
+     "mean": 0.0,
+     "interval_95": [
+      0.0,
+      0.0
+     ],
+     "n": 3
+    },
+    "output.precision": {
+     "mean": null,
+     "interval_95": null,
+     "n": 0
+    },
+    "output.count_ratio": {
+     "mean": 0.0,
+     "interval_95": [
+      0.0,
+      0.0
+     ],
+     "n": 3
+    }
+   }
+  },
+  "baseline": {
+   "label": "offline, synthetic fixture embeddings, not a live agent run",
+   "linear_probe_recall": 0.6444444444444444,
+   "linear_svm_recall": 0.6555555555555556,
+   "linear_probe_precision": 0.1322929906262608
+  }
+ },
+ "projection": {
+  "basis": "projection",
+  "scope": {
+   "places": 7,
+   "asset_classes": 5,
+   "models": 3,
+   "seeds": 5
+  },
+  "runs": 525,
+  "bedrock_usd": 245.26144125000002,
+  "sequential_hours": 11.368024430376735,
+  "imagery_budget_usd": 5000,
+  "source": "measured mean cost and wall time per live run \u00d7 ADB benchmark scope (inception report)"
+ }
+}
