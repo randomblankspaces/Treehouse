@@ -4,6 +4,8 @@ Treehouse evaluates how a geospatial agent investigates a target area and whethe
 
 **Run the demo:** `scripts/demo.sh`, offline, with no AWS needed ([walk-through](docs/DEMO.md)).
 
+**Pitch:** open `/pitch` on the served app for the scrolling presentation (problem → working backwards → AWS architecture → demo → numbers → impact → future); see [docs/PITCH.md](docs/PITCH.md).
+
 **Start here:** [architecture and AWS integration](docs/ARCHITECTURE.md) (presentation reference: what ran live, what is designed), [MVP plan](docs/MVP-PLAN.md), [ADB/LGND report digest](docs/REPORT-TABLES.md), [defence book](docs/design/DEFENSE-BOOK.md), [Kiro AWS log](docs/KIRO-STATUS.md).
 
 **Live on AWS (2026-11-05):** Strands agents on Amazon Bedrock (Sonnet 5.5, Nova Pro, Haiku 5.5; Sonnet adaptive thinking), AgentCore Evaluations with Treehouse Lambda evaluators, S3 Object Lock COMPLIANCE run store (admin delete denied), KMS-isolated answer keys, CDK infrastructure, an **Amazon Polly** neural narrator for the web report, and the agent reading **real LGND Clay v1.5 embeddings** from AWS Open Data. The web UI presents a **decision tree** thinking view with colour-vision-safe themes.
