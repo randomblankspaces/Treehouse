@@ -34,7 +34,14 @@ The decision-tree thinking view, the Amazon Polly narrator and colour-vision-saf
 
 ### Real-data live runs (2026-11-05)
 
-A reduced live matrix was run on `tasks/t1-nagoya-warehouses-real.yaml` against **real LGND Clay v1.5 embeddings** (source.coop on S3, CC BY 4.0). Run ids, spend, decision counts and deliberation numbers are recorded in [docs/KIRO-STATUS.md](docs/KIRO-STATUS.md); evidence is committed under `fixtures/live/real/`. Any run not completed before the credit/time stop is listed in [docs/FUTURE-WORK](docs/FUTURE-FEATURES.md).
+A reduced live matrix was run on `tasks/t1-nagoya-warehouses-real.yaml` against **real LGND Clay v1.5 embeddings** (source.coop on S3, CC BY 4.0):
+
+| run id | worker | thinking | decisions | claims | Bedrock $ |
+|---|---|---|---|---|---|
+| `nagoya-real-sonnet-thinking-1` | Claude Sonnet 5.5 | adaptive ON | 11 | 1 × cannot_assess @ 0.9 | ~$0.52 |
+| `nagoya-real-haiku-1` | Claude Haiku 5.5 | off | 12 | 1 × cannot_assess @ 0.9 | ~$0.74 |
+
+Both agents read the real coarse Clay index (1.28–2.56 km cells, far larger than the 160 m scoring unit), had no usable fine imagery, and **declined to assert warehouses** — recording a single `cannot_assess` each rather than guessing. That is the honest behaviour for real coarse embeddings, not a measured accuracy number. Full numbers, deliberation metrics and manifests are in [docs/KIRO-STATUS.md](docs/KIRO-STATUS.md); sealed evidence (verified) is under `fixtures/live/real/`. AgentCore Evaluations on these runs and a wider matrix are listed in [docs/FUTURE-FEATURES.md](docs/FUTURE-FEATURES.md).
 
 ### Quickstart: replay a live run offline (fresh machine, no AWS)
 

@@ -1,0 +1,11 @@
+Live run: nagoya-real-haiku-1
+Date: 2026-11-05 UTC
+Card: tasks/t1-nagoya-warehouses-real.yaml (real LGND Clay v1.5 embeddings, source.coop S3, CC BY 4.0)
+Worker: us.anthropic.claude-haiku-5-5 (Strands harness)
+Provider: treehouse.providers.factories:bedrock_recording
+Servers: treehouse.providers.factories:vision_servers (TREEHOUSE_VISION_MODE=record)
+Outcome: stop=completed; 1 trial; 1 claim (cannot_assess @ 0.9); 12 decisions, 10 bound to actions.
+Manifest: sha256:46fb6ac47f9ad49db2423871ad339c32c7579ea27e0b65f5041f14fd8a5f84d8
+Verify: ok.
+Deliberation (deliberation/1): alternatives_per_decision 18/12; alternatives_tried 0/18; key_choices_compared 0/5;
+revisions_after_evidence 0/12; claims_independently_checked 0/1.
