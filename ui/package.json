@@ -10,9 +10,12 @@
     "test": "npm run test:e2e",
     "test:e2e": "node tests/product-browser.cjs",
     "test:start": "node tests/product-start-browser.cjs",
-    "test:investigation": "node tests/investigation-browser.cjs"
+    "test:investigation": "node tests/investigation-browser.cjs",
+    "test:shell": "node --test tests/shell-contract.test.mjs",
+    "test:flow": "node tests/shell-flow.cjs"
   },
   "dependencies": {
+    "@fontsource/pixelify-sans": "5.3.0",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },

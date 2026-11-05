@@ -10,7 +10,7 @@ const assert = require('node:assert/strict');
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || undefined });
   try {
     const page = await browser.newPage({ reducedMotion: 'reduce' });
-    await page.goto(base, { waitUntil: 'networkidle' });
+    await page.goto(`${base}/runs`, { waitUntil: 'networkidle' });   // '/' is now the storybook
     await page.getByText(runId, { exact: false }).first().click();
     const pane = page.getByRole('button', { name: /investigation/i }).or(page.getByRole('tab', { name: /investigation/i })).first();
     await pane.click();
