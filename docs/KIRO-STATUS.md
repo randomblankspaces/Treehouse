@@ -325,8 +325,18 @@ Two runs completed and sealed (`uv run treehouse verify` ok), evidence under `fi
 
 | run id | worker | thinking | decisions (bound) | claims | Bedrock $ (ledger delta) |
 |---|---|---|---|---|---|
-| `nagoya-real-sonnet-thinking-1` | claude-sonnet-5-5 | adaptive ON | 11 (11) | 1 × cannot_assess @ 0.9 | ~$0.52 |
+| `nagoya-real-sonnet-thinking-1` | claude-sonnet-5-5 | adaptive (bare) | 11 (11) | 1 × cannot_assess @ 0.9 | ~$0.52 |
 | `nagoya-real-haiku-1` | claude-haiku-5-5 | off | 12 (10) | 1 × cannot_assess @ 0.9 | ~$0.74 |
+| `nagoya-real-sonnet-thinking-2` | claude-sonnet-5-5 | adaptive + display:summarized | 9 (9) | 1 × cannot_assess @ 0.9 | ~$0.33 |
+
+**Thinking-text finding + fix (sonnet-thinking-2).** On `-1`, thinking was ON (signed reasoning blocks present)
+but every `reasoningText.text` was empty and **no decision carried a `thinking_ref`** — newer Claude models omit
+thinking text unless asked to summarize it. A one-field fix in `config/models.yaml`
+(`request_fields: {thinking: {type: adaptive, display: summarized}}`) was validated with a single Bedrock Converse
+probe: bare `adaptive` → `reasoningText.text` length 0; `+ display: summarized` → ~190 chars. After the fix,
+`nagoya-real-sonnet-thinking-2` attaches a `thinking_ref` to **5 of 9 decisions** (up from 0/11). Residual gap:
+the thinking blocks persisted through the Strands recording path keep only the block signature (block text empty),
+so the summarized text does not yet reach the decision — carried forward in FUTURE-FEATURES.md.
 
 Ledger: $11.49 → $12.75 across both runs (well under the $15 push cap). Both agents read the **real LGND Clay
 v1.5** index (source.coop S3) and, finding only 1.28–2.56 km cells far coarser than the 160 m unit and no usable
@@ -343,7 +353,7 @@ Deliberation (`deliberation/1`, per trial):
 | revisions_after_evidence | 0/11 | 0/12 |
 | claims_independently_checked | 0/1 | 0/1 |
 
-Manifests: sonnet `sha256:68effcde…`, haiku `sha256:46fb6ac4…`. Evidence scanned for AWS account ids / AKIA /
+Manifests: sonnet-1 `sha256:68effcde…`, haiku `sha256:46fb6ac4…`, sonnet-2 `sha256:590a6771…`. Evidence scanned for AWS account ids / AKIA /
 base64 before commit (the only 12-digit sequences are digit substrings inside sha256 hashes, not account ids).
 
 AgentCore Evaluations on the Sonnet run and a wider model/area matrix were out of scope for this reduced pass;

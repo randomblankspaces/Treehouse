@@ -1,0 +1,196 @@
+aoi:
+  coordinates:
+  - - - 136.82
+      - 35.05
+    - - 136.92
+      - 35.05
+    - - 136.92
+      - 35.12
+    - - 136.82
+      - 35.12
+    - - 136.82
+      - 35.05
+  type: Polygon
+as_of: '2024-12-31T23:59:00Z'
+budget:
+  bytes: 500000000
+  enabled: true
+  tokens: 3000000
+  tool_calls: 200
+  usd: 15.0
+  wall_s: 1800.0
+classes:
+  warehouse:
+    key_geometry: point
+    match_tolerance_m: 80.0
+    max_effective_gsd_for_existence_m: 10.0
+    max_effective_gsd_for_status_m: 10.0
+    min_size_m: 40.0
+data_allowlist:
+- access: s3_listing
+  etags: {}
+  fixture_path: null
+  item_ids: []
+  kind: embeddings
+  license: CC-BY-4.0
+  source_id: aef-10m-annual
+  status: unpinned
+- access: real
+  etags: {}
+  fixture_path: null
+  item_ids: []
+  kind: embeddings
+  license: CC-BY-4.0
+  source_id: lgnd-clay-embeddings
+  status: unpinned
+- access: s3_listing
+  etags: {}
+  fixture_path: null
+  item_ids: []
+  kind: imagery
+  license: LicenseRef-copernicus-sentinel
+  source_id: sentinel-2-l2a-cogs
+  status: unpinned
+- access: s3_listing
+  etags: {}
+  fixture_path: null
+  item_ids: []
+  kind: imagery
+  license: LicenseRef-gsi-japan-attribution
+  source_id: gsi-seamless-aerial-japan
+  status: unpinned
+event: null
+family: warehouse-retrieval
+forbidden_sources:
+- kind: path
+  pattern: keys/
+- kind: dataset_id
+  pattern: plateau-nagoya-warehouses
+- kind: tool
+  pattern: key_lookup
+- kind: host
+  pattern: securewatch.maxar.com
+- kind: host
+  pattern: '*.maxar.com'
+- kind: dataset_id
+  pattern: maxar
+- kind: dataset_id
+  pattern: vantor
+goal: Find every warehouse in the area of interest. A warehouse is a warehouse or
+  large logistics/storage building (roughly 1,600 m2 of floor area or more). Do NOT
+  count factories, markets, aircraft hangars or other large roofs that are not warehouses.
+  Return each warehouse as a point inside the building, with the resources and image
+  windows you used and your confidence. State the resolution and cell size you chose
+  and why, the area you searched, any area you could not review, and a count with
+  a range.
+gold_plan: null
+id: t1-nagoya-warehouses-real
+known_limits:
+- Sentinel-2 / AEF are 10 m; warehouses are visible but small warehouses and look-alikes
+  are the failure mode.
+- The precomputed LGND Clay index uses 1.28 / 2.56 km cells, far coarser than the
+  160 m unit of evaluation.
+- Factories and markets are not warehouses (Table 8 negatives).
+minutes_per_cell: 2.0
+must_notice:
+- id: resolution
+  kind: mentions_any
+  terms:
+  - 10 m
+  - resolution
+  - gsd
+  - cell size
+  - 160 m
+  tool: null
+  weight: 1.0
+- id: cell-merge
+  kind: mentions_any
+  terms:
+  - merge
+  - aggregate
+  - site
+  - cell
+  tool: null
+  weight: 1.0
+- id: count-range
+  kind: mentions_any
+  terms:
+  - range
+  - count
+  - approximately
+  - about
+  tool: null
+  weight: 1.0
+- id: uses-imagery
+  kind: plans_tool
+  terms: []
+  tool: imagery_window
+  weight: 1.0
+needs_vision: true
+sampling_plan:
+  census_if_N_le: 60
+  controls:
+    keyed_neg: 0
+    keyed_pos: 0
+    placebo_pairs: 0
+    retest_pairs: 0
+  min_N_h: 4
+  n_total: 40
+  seed: 20261104
+  strata_keys:
+  - conf_tercile
+  unreported_frame: null
+schema_version: treehouse.task/1
+smoke_aoi:
+- 136.82
+- 35.05
+- 136.87
+- 35.085
+steps:
+- keying:
+    completeness_caveat: Sparse OSM candidate pool, not a complete inventory. Precision
+      within the pool only; never recall.
+    key_coverage_mask: null
+    key_path: keys/osm/nagoya-warehouses-real.geojson
+    key_source: OpenStreetMap candidate pool (incomplete; never report recall)
+    license: ODbL-1.0
+    match_rule:
+      one_to_one: true
+      tolerance_m:
+        warehouse: 80.0
+    mode: keyed
+    reference_quality: incomplete
+    status: pending_fetch
+    version_hash: null
+  question_id: exists
+  statuses_allowed:
+  - present
+  - absent
+  - cannot_assess
+  step_id: inventory
+synthetic: false
+synthetic_notice: null
+thresholds:
+  rely_lo: 0.8
+time_window:
+- '2024-01-01'
+- '2024-12-31'
+title: Warehouses in a Nagoya port/logistics district (T1 retrieval, real Clay embeddings
+  + GSI vision)
+tools_allowed:
+- record_decision
+- list_embedding_sources
+- build_index
+- get_examples
+- retrieve
+- classify
+- imagery_window
+- aggregate
+- record_claim
+- note_limitation
+- submit_understanding
+version: 1.0.0
+windows:
+  max_bytes_per_run: 500000000
+  max_out_px: 512
+  max_side_m: 5000.0
