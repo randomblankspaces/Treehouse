@@ -1,6 +1,6 @@
 # TODO
 
-> Kept current by the overnight agent. See [HANDOFF.md](HANDOFF.md) for the job and the current state.
+> Kept current by the overnight agent. See [OVERNIGHT-HANDOFF.md](OVERNIGHT-HANDOFF.md) for the job and the current state.
 
 ## Overnight (agent)
 - [x] Implementation council → `docs/design/IMPLEMENTATION-DESIGN.md` and `docs/design/council-2-log.md` (unanimous at round 3)
@@ -275,14 +275,14 @@ See docs/PLAN.md and docs/KIRO-HANDOFF.md for the current sequence and actual co
 ## Latest context — LGND/ADB report and confirmed minimal sandbox
 
 This supersedes the old overnight execution queue as the next action. See
-[docs/LGND-REPORT-CONTEXT.md](docs/LGND-REPORT-CONTEXT.md) for the source hash, table/page map,
+[docs/LGND-REPORT-CONTEXT.md](../LGND-REPORT-CONTEXT.md) for the source hash, table/page map,
 analyst tasks, asset definitions, workflow alternatives, benchmark protocol, imagery constraints,
 worked results and differences from the implemented sandbox.
 
 - [x] Extract all 30 pages locally; visually inspect the key tables; preserve a source-grounded repo brief.
 - [x] Update active outline, status, constraints, future-work and handoff pointers for another agent.
 - [x] Suhas confirmed the agent-evaluation sandbox; natural-language/AOI, embeddings, classifier and red markers describe a representative workflow, with Strands as one component.
-- [x] Prepare scoped [Kiro continuation prompts](docs/KIRO-NEXT-PROMPTS.md), with existing paths and evidence limits.
+- [x] Prepare scoped [Kiro continuation prompts](../KIRO-NEXT-PROMPTS.md), with existing paths and evidence limits.
 - [ ] Kiro: pin a suitable bounded first task/AOI, eligible data and actual model versions; freeze independent acceptance before feature code.
 
 The report's Section 5.8 is the working agent-evaluation framing. Tables 2–3 are background, Table 17

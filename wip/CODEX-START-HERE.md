@@ -2,8 +2,8 @@
 
 Claude ran the overnight job until it stopped. This folder holds **work in progress** that was not finished enough for `docs/` or `src/`. Read in this order:
 
-1. [`../HANDOFF.md`](../HANDOFF.md): the job exactly as Suhas gave it (hard rules, steps 1–5, Clay's values paraphrased), environment facts, and the current-state checklist.
-2. [`../TODO.md`](../TODO.md): open items and the **Kiro prompts** for AWS-only steps.
+1. [`../docs/archive/OVERNIGHT-HANDOFF.md`](../docs/archive/OVERNIGHT-HANDOFF.md): the job exactly as Suhas gave it (hard rules, steps 1–5, Clay's values paraphrased), environment facts, and the current-state checklist.
+2. [`../docs/archive/OVERNIGHT-TODO.md`](../docs/archive/OVERNIGHT-TODO.md): open items and the **Kiro prompts** for AWS-only steps.
 3. `docs/design/SYSTEM-DESIGN.md` on `main`: the adopted system design. Branch `docs/system-design-factcheck` holds the fact-check pass 2 and A13 edits, plus a judge pass applying valid doubts. Merge it if it is not on `main` yet.
 4. This folder:
    - `council-context.md`: shared brief given to all council agents. Its Clay values are paraphrased; never commit Clay's vision doc verbatim.
