@@ -1,9 +1,14 @@
 /** Scripted mock run: Nagoya Port warehouses (tasks/t1-nagoya-warehouses.yaml), replayed in real time.
  *  Numbers are illustrative, not measured; the UI labels this client MOCK. */
-import { FOCUS_LABEL, focusOf, isKey, type Json, type Narrator, type RunSnapshot, type RunSummary, type TraceStep, type TreehouseClient } from './contract.ts';
+import { FOCUS_LABEL, focusOf, isKey, type Agent, type Json, type MapMarker, type Narrator, type Place, type RunSnapshot, type RunSummary, type TraceStep, type TreehouseClient } from './contract.ts';
 
-const MODEL = 'anthropic.claude-sonnet (mock)';
-const PRICE_IN = 3 / 1e6, PRICE_OUT = 15 / 1e6;   // shortcut: flat illustrative $/token, replace with backend cost
+// shortcut: illustrative $/token per agent, replace with backend-measured cost
+const AGENTS: (Agent & {price: [number, number]})[] = [
+  {agent_id: 'strands-sonnet', label: 'Strands · Claude Sonnet', model_id: 'anthropic.claude-sonnet (mock)', provider: 'Amazon Bedrock (mock)', harness: 'strands-agents worker (mock)', note: 'Default. Strong reasoning, mid cost.', price: [3 / 1e6, 15 / 1e6]},
+  {agent_id: 'strands-nova', label: 'Strands · Amazon Nova Pro', model_id: 'amazon.nova-pro (mock)', provider: 'Amazon Bedrock (mock)', harness: 'strands-agents worker (mock)', note: 'AWS-native and cheaper.', price: [0.8 / 1e6, 3.2 / 1e6]},
+  {agent_id: 'plain-haiku', label: 'Plain loop · Claude Haiku', model_id: 'anthropic.claude-haiku (mock)', provider: 'Amazon Bedrock (mock)', harness: 'plain tool loop (mock)', note: 'Fastest, cheapest baseline.', price: [1 / 1e6, 5 / 1e6]},
+];
+let liveAgent = AGENTS[0];
 type Beat = {at: number; dur: number; kind: TraceStep['kind']; name: string; parent?: string; id: string;
   think?: string; tin?: number; tout?: number; stop?: string;
   tool?: string; args?: Record<string, Json>; result?: string; bytes?: number;
@@ -60,8 +65,26 @@ const BEATS: Beat[] = [
     think: 'Done: method, resolution choice (AEF @160 m, then 0.5 m aerial), searched area, unreviewed area and a ranged count are all stated.'},
 ];
 const TOTAL_MS = 62_500;
+const GOAL = 'Find every warehouse in the area of interest (≥ ~1,600 m² floor area). Do not count factories, markets, hangars or other large roofs. Return each as a point with the resources and image windows used, your confidence, the resolution you chose and why, the area searched, any area not reviewed, and a count with a range.';
+let goalOverride: string | null = null;
 
-function steps(elapsed: number, ids: Map<string, string>): TraceStep[] {
+const LABELLER = BEATS.find(b => b.tool === 'strands_label')!;
+// 48 chips the Strands labeller looked at; revealed as that step progresses. Kept in the northern,
+// landward third of the AOI so they sit on land in the map art.
+const MARKERS: MapMarker[] = (() => {
+  let seed = 7; const r = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32;
+  const out = Array.from({length: 48}, (_, i): MapMarker => {
+    const status = i < 31 ? 'confirmed' : i < 42 ? 'rejected' : 'unsure';
+    return {lon: AOI[0] + (0.05 + 0.9 * r()) * (AOI[2] - AOI[0]), lat: AOI[3] - (0.06 + 0.28 * r()) * (AOI[3] - AOI[1]),
+      status, label: status === 'confirmed' ? 'warehouse' : status === 'rejected' ? 'factory' : 'unsure',
+      confidence: status === 'unsure' ? 0.3 + 0.2 * r() : 0.65 + 0.3 * r(), at_ms: 0};
+  });
+  for (let i = out.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [out[i], out[j]] = [out[j], out[i]]; }
+  return out.map((m, i) => ({...m, at_ms: Math.round((LABELLER.at + (i + 1) / out.length * LABELLER.dur) * 1000)}));
+})();
+
+function steps(elapsed: number, ids: Map<string, string>, agent = AGENTS[0]): TraceStep[] {
+  const [PRICE_IN, PRICE_OUT] = agent.price, MODEL = agent.model_id;
   const out: TraceStep[] = [];
   for (const b of BEATS) {
     const start = b.at * 1000, end = start + b.dur * 1000;
@@ -93,14 +116,15 @@ function snapshotOf(runId: string): RunSnapshot {
   if (!run) throw new Error('Run not found');
   if (run.live && !startedAt.has(runId)) startedAt.set(runId, Date.now());
   const elapsed = run.live ? Math.min(Date.now() - startedAt.get(runId)!, TOTAL_MS) : TOTAL_MS;
-  const list = steps(elapsed, spanIds(runId));
+  const agent = run.live ? liveAgent : AGENTS[0];
+  const list = steps(elapsed, spanIds(runId), agent);
   const status = elapsed >= TOTAL_MS ? 'complete' : 'running';
   return {
     run_id: run.run_id, title: run.title, status, synthetic: true,
     started_at: new Date(run.live ? startedAt.get(runId)! : Date.now() - 3_600_000).toISOString(),
     elapsed_ms: elapsed, cost_usd: list.reduce((sum, s) => sum + (s.model?.cost_usd ?? 0), 0),
     input: {task_id: 't1-nagoya-warehouses', title: 'Warehouses in a Nagoya port/logistics district',
-      goal: 'Find every warehouse in the area of interest (≥ ~1,600 m² floor area). Do not count factories, markets, hangars or other large roofs. Return each as a point with the resources and image windows used, your confidence, the resolution you chose and why, the area searched, any area not reviewed, and a count with a range.',
+      goal: run.live ? goalOverride ?? GOAL : GOAL,
       aoi_bbox: AOI, time_window: ['2024-01-01', '2024-12-31'],
       tools_allowed: ['record_decision', 'list_embedding_sources', 'build_index', 'get_examples', 'retrieve', 'classify', 'strands_label', 'imagery_window', 'aggregate', 'record_claim', 'note_limitation', 'submit_understanding'],
       data_allowlist: [
@@ -108,7 +132,7 @@ function snapshotOf(runId: string): RunSnapshot {
         {source_id: 'lgnd-clay-embeddings', kind: 'embeddings', license: 'CC-BY-4.0'},
         {source_id: 'sentinel-2-l2a-cogs', kind: 'imagery', license: 'Copernicus Sentinel'},
         {source_id: 'gsi-seamless-aerial-japan', kind: 'imagery', license: 'GSI Japan (attribution)'}]},
-    context: {model_id: MODEL, provider: 'Amazon Bedrock (mock)', harness: 'strands-agents worker (mock)',
+    context: {model_id: agent.model_id, provider: agent.provider, harness: agent.harness,
       system_prompt: 'You are a geospatial analyst. Use only the tools and data sources provided. Record a decision (why, alternatives, confidence) before each action. Never claim coverage you did not inspect.',
       items: [
         {label: 'System prompt', tokens: 410, detail: 'Role, rules, decision-recording requirement'},
@@ -116,6 +140,7 @@ function snapshotOf(runId: string): RunSnapshot {
         {label: 'Tool schemas', tokens: 1350, detail: '12 tools incl. the Strands labelling sub-agent'},
         {label: 'Tool results', tokens: null, detail: 'Grows each turn; see per-call input tokens'}]},
     steps: list,
+    markers: MARKERS.filter(m => m.at_ms! <= elapsed),
   };
 }
 
@@ -128,6 +153,14 @@ export const mockClient: TreehouseClient & {replay(runId: string): void} = {
     });
   },
   async snapshot(runId) { return snapshotOf(runId); },
+  async places(): Promise<Place[]> {
+    return [{place_id: 't1-nagoya-warehouses', title: 'Nagoya Port, Japan — warehouses', goal: GOAL, aoi_bbox: AOI, editable_goal: true}];
+  },
+  async agents() { return AGENTS.map(({price: _, ...a}) => a); },
+  async startRun(req) {
+    goalOverride = req.goal.trim() || null; liveAgent = AGENTS.find(a => a.agent_id === req.agent_id) ?? AGENTS[0];
+    startedAt.set(RUNS[0].run_id, Date.now()); return RUNS[0].run_id;
+  },
   replay(runId) { startedAt.set(runId, Date.now()); },
 };
 

@@ -31,7 +31,8 @@ Nagoya Port warehouses (T1 retrieval, keyed), the worked example of the LGND/ADB
 data allowlist. It is labelled MOCK in the UI at all times.
 
 ## Seams (typed, swappable)
-- `TreehouseClient` — `listRuns()`, `snapshot(runId)`. Live runs are polled (~1 s) until
+- `TreehouseClient` — `listRuns()`, `snapshot(runId)`, `places()`, `agents()`, `startRun({place_id, goal, agent_id})`.
+  The agent (model + harness) is chosen in the book; it is what Treehouse evaluates. The run timer counts from when the task was sent. Live runs are polled (~1 s) until
   `status` is terminal. `http.ts` adapts today's endpoints (`/api/runs`, `/bundle`, `/investigation`);
   `mock.ts` replays a scripted Nagoya run in real time.
   - Backend ask: serve a partial snapshot while a run is in flight (today `/bundle` is 409 until sealed),
@@ -68,3 +69,12 @@ npm --prefix ui ci
 npm --prefix ui run dev        # open http://127.0.0.1:5173/dev (mock data)
 VITE_TREEHOUSE_API=http npm --prefix ui run dev   # against `treehouse ui serve` on :8765
 ```
+Checks: `npm --prefix ui run test:shell` (contract and mock logic) and, with the dev server running,
+`TREEHOUSE_UI_URL=http://127.0.0.1:5173 PW_CHANNEL=chrome npm --prefix ui run test:flow` (the whole storybook
+and dev view at real speed in Chrome; screenshots in `ui/test-results/shell`). `/` is the storybook, `/dev`
+the dev view; the earlier observatory screens remain at `/runs`, `/new` and `/settings`.
+
+Built so far: storybook (code-drawn jacaranda treehouse with night/day lighting, one continuous zoom into the
+book, book input with agent choice, the boy getting up for the binoculars, binocular iris onto GSI aerial
+imagery with the agent's work overlaid, pixel-framed panel, summary, export) and the dev view (trace,
+plain-language step detail, and a technical map that replays the run at any selected step).

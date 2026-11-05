@@ -33,15 +33,25 @@ export type TraceStep = {
   attributes: Record<string, Json>;
 };
 export type RunSummary = {run_id: string; title: string; status: RunStatus; synthetic: boolean};
+/** Where the agent put things on the map (display only; output is not graded in the shell). */
+export type MapMarker = {lon: number; lat: number; label: string; confidence: number; status: 'confirmed' | 'rejected' | 'unsure'; at_ms: number | null};   // at_ms: when recorded, run clock
 export type RunSnapshot = RunSummary & {
   started_at: string | null; elapsed_ms: number; cost_usd: number;
-  input: RunInput; context: RunContext; steps: TraceStep[];
+  input: RunInput; context: RunContext; steps: TraceStep[]; markers: MapMarker[];
 };
+/** A task the backend can start: a pinned preset with a place and a default prompt. */
+export type Place = {place_id: string; title: string; goal: string; aoi_bbox: [number, number, number, number] | null; editable_goal: boolean};
+export type StartRequest = {place_id: string; goal: string; agent_id: string};
+/** Who does the task: a model behind a harness. The thing Treehouse evaluates. */
+export type Agent = {agent_id: string; label: string; model_id: string; provider: string; harness: string; note: string};
 export interface TreehouseClient {
   readonly label: string;   // shown in the header, e.g. "MOCK" or "local API"
   listRuns(signal?: AbortSignal): Promise<RunSummary[]>;
   /** Poll while status is queued/running; a partial snapshot is expected mid-run. */
   snapshot(runId: string, signal?: AbortSignal): Promise<RunSnapshot>;
+  places(signal?: AbortSignal): Promise<Place[]>;
+  agents(signal?: AbortSignal): Promise<Agent[]>;
+  startRun(req: StartRequest): Promise<string>;   // returns run_id
 }
 export type Narration = {text: string; audio_url: string | null};
 export interface Narrator { line(step: TraceStep, run: RunSnapshot): Promise<Narration | null> }

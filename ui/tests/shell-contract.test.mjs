@@ -42,3 +42,18 @@ test('live mock starts partial; narrator speaks only for key steps and errors', 
   const err = s.steps.find(x => x.status === 'error');
   assert.match((await mockNarrator.line(err, s)).text, /failed/);
 });
+
+test('the chosen agent runs the task and the timer counts from the start', async () => {
+  const { sinceStart } = await import('../src/shell/describe.ts');
+  const agents = await mockClient.agents();
+  assert.ok(agents.length >= 2);
+  const pick = agents[1];
+  const id = await mockClient.startRun({place_id: 't1-nagoya-warehouses', goal: 'Find warehouses', agent_id: pick.agent_id});
+  const s = await mockClient.snapshot(id);
+  assert.equal(s.context.model_id, pick.model_id);
+  assert.equal(s.input.goal, 'Find warehouses');
+  const later = Date.parse(s.started_at) + 30_000;
+  assert.equal(sinceStart(s, later), 30_000, 'live: wall clock since start');
+  const done = await mockClient.snapshot('mock-nagoya-recorded');
+  assert.equal(sinceStart(done, later), done.elapsed_ms, 'finished: frozen at run length');
+});
