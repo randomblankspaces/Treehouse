@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Treehouse Agent-Eval Sandbox</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&display=swap">
+<style>
+/* Visual design borrowed from the Treehouse pitch page; all content is the team-43 Clay sandbox.
+   Layout: one full-screen slide per section, content fades up as it enters; progress bar, brand bar, labelled dots.
+   Dark first (the Treehouse default); T or the host's light setting switches to the light projector theme. */
+:root{
+  --ink:#0d0b12;--panel:#16131d;--raised:#211b2d;--line:#332b42;--text:#f1edf8;--muted:#b9b0c9;
+  --accent:#b59cff;--key:#f6c945;--ok:#6fd39a;--warn:#ffb86b;--err:#ff8a80;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --pixel:"Pixelify Sans",var(--sans);color-scheme:dark;
+}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
+  --ink:#f7f5fb;--panel:#fff;--raised:#efeaf6;--line:#d8d0e4;--text:#17121f;--muted:#544c63;
+  --accent:#5b2ca0;--key:#8a6100;--ok:#16794a;--warn:#9a5400;--err:#b42318;color-scheme:light}}
+:root[data-theme="light"]{
+  --ink:#f7f5fb;--panel:#fff;--raised:#efeaf6;--line:#d8d0e4;--text:#17121f;--muted:#544c63;
+  --accent:#5b2ca0;--key:#8a6100;--ok:#16794a;--warn:#9a5400;--err:#b42318;color-scheme:light}
+html{scroll-behavior:smooth;background:var(--ink)}
+body{margin:0;background:var(--ink);color:var(--text);font:clamp(16px,1.15vw,20px)/1.5 var(--sans)}
+*{box-sizing:border-box}
+:focus-visible{outline:3px solid var(--key);outline-offset:3px}
+a{color:var(--accent)} code{font-family:var(--mono);font-size:.85em} em{font-style:normal;color:var(--key)}
+/* chrome */
+.progress{position:fixed;inset:0 0 auto;height:3px;z-index:30}
+.progress span{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--key));transform-origin:0 50%;transform:scaleX(0)}
+.topbar{position:fixed;inset:3px 0 auto;z-index:20;display:flex;align-items:center;gap:1rem;
+  padding:.6rem max(1.5rem,env(safe-area-inset-right,0px)) .6rem max(1.5rem,env(safe-area-inset-left,0px));background:linear-gradient(var(--ink),transparent)}
+.brand{font:700 1.15rem var(--pixel);color:var(--text);text-decoration:none;display:flex;gap:.4rem;align-items:center}
+.brand-mark{color:var(--key)} .topbar-sub{color:var(--muted);font-size:.85rem}
+.theme-toggle{margin-left:auto}
+button{font:inherit;font-size:.85rem;color:var(--text);background:var(--raised);border:1px solid var(--line);border-radius:999px;padding:.35rem .9rem;cursor:pointer}
+button:hover{border-color:var(--accent)}
+.dots{position:fixed;right:max(1.1rem,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);z-index:20;display:flex;flex-direction:column;gap:.55rem}
+.dots a{display:flex;align-items:center;justify-content:flex-end;gap:.5rem;text-decoration:none;color:var(--muted);font-size:.75rem}
+.dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--muted);order:2;transition:transform .2s,background .2s}
+.dot-label{opacity:0;transition:opacity .2s}
+.dots a:hover .dot-label,.dots a:focus-visible .dot-label{opacity:1;background:var(--panel);padding:.1rem .4rem;border-radius:6px}
+.dots a[aria-current] .dot{background:var(--key);border-color:var(--key);transform:scale(1.3)}
+.keys-hint{position:fixed;right:max(1.5rem,env(safe-area-inset-right,0px));bottom:calc(.8rem + env(safe-area-inset-bottom,0px));margin:0;color:var(--muted);font-size:.75rem;z-index:20}
+.notes{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--panel);border-top:2px solid var(--key);
+  padding:.9rem max(1.5rem,env(safe-area-inset-right,0px)) calc(.9rem + env(safe-area-inset-bottom,0px)) max(1.5rem,env(safe-area-inset-left,0px));max-height:34vh;overflow:auto}
+.notes h4{margin:0 0 .35rem;font:700 .75rem var(--pixel);letter-spacing:.1em;text-transform:uppercase;color:var(--key)}
+.notes p{margin:0;max-width:95ch}
+.say{display:none}
+/* slides */
+.slide{min-height:100vh;padding:5.5rem max(5vw,3.5rem) 3.5rem;display:flex;flex-direction:column;justify-content:center;max-width:1500px;margin:0 auto;position:relative}
+.eyebrow{font:700 .85rem var(--pixel);letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 .6rem}
+h1{font-size:clamp(2.2rem,5vw,4.6rem);line-height:1.05;margin:0 0 1.2rem;letter-spacing:-.02em;text-wrap:balance}
+h2{font-size:clamp(1.7rem,3.3vw,3rem);line-height:1.1;margin:0 0 1.6rem;letter-spacing:-.015em;text-wrap:balance}
+h3{font-size:1.05rem;margin:0 0 .4rem}
+.lede{font-size:clamp(1.15rem,2vw,1.7rem);color:var(--muted);margin:0 0 2rem;max-width:40ch}
+.source{color:var(--muted);font-size:.75rem;margin-top:1.6rem}
+.kicker{font-size:1.15rem;color:var(--muted);margin-top:2rem;max-width:60ch}
+.r{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease;transition-delay:var(--d,0ms)}
+.slide[data-in="1"] .r{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.r{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+.hero blockquote{margin:0;padding:1rem 1.4rem;border-left:4px solid var(--key);background:var(--panel);max-width:46rem;font-size:1.2rem}
+.hero cite{display:block;margin-top:.5rem;color:var(--muted);font-size:.8rem;font-style:normal}
+.scroll-cue{margin-top:3rem;color:var(--muted);font:700 .8rem var(--pixel);letter-spacing:.2em;animation:bob 2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(6px)}} @media (prefers-reduced-motion:reduce){.scroll-cue{animation:none}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.1rem 1.2rem;min-width:0}
+.uses{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+.uses .decision{font-size:1.05rem;margin:.2rem 0 .8rem}.uses .need{color:var(--muted);font-size:.85rem;margin:0}.uses .need span{color:var(--ok);font-weight:650}
+.stats,.impacts{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.4rem}
+.stat{border-top:2px solid var(--accent);padding-top:.7rem}
+.stat b{display:block;font-size:clamp(1.4rem,2.4vw,2.2rem);color:var(--key);line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{color:var(--muted);font-size:.9rem}
+.press{font-size:1.25rem;max-width:56rem;margin:0 0 2rem;padding:1rem 1.3rem;border:1px dashed var(--key);border-radius:12px}
+.press span{display:block;font:700 .75rem var(--pixel);letter-spacing:.1em;text-transform:uppercase;color:var(--key);margin-bottom:.3rem}
+.chain{list-style:none;margin:0;padding:0;display:flex;flex-direction:row-reverse;gap:2.2rem}
+.chain li{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:.9rem 1rem;position:relative;min-width:0}
+.chain li:not(:last-child)::before{content:"←";position:absolute;left:-1.75rem;top:50%;transform:translateY(-50%);color:var(--key);font-size:1.4rem}
+.chain li:first-child{border-color:var(--key)} .chain li:last-child{border-color:var(--accent);background:var(--raised)}
+.step-k{display:block;font:700 .75rem var(--pixel);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:.35rem}
+.step-v{font-size:.95rem}
+.pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem}
+.pillar{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.5rem;min-width:0}
+.pillar-icon{font-size:2rem;color:var(--key);display:block;margin-bottom:.4rem}
+.pillar h3{font-size:1.5rem}.pillar p{color:var(--muted);margin:0}
+.arch-body{display:grid;grid-template-columns:minmax(0,3fr) minmax(15rem,1fr);gap:1.4rem;align-items:start}
+.diagram{margin:0;background:#fff;border:1px solid var(--line);border-radius:14px;padding:.6rem;overflow:auto;max-height:74vh}
+.diagram img{display:block;width:100%;height:auto}
+.legend{list-style:none;margin:0;padding:0;display:grid;gap:.7rem}
+.legend li{display:flex;gap:.7rem;font-size:.9rem}
+.num{flex:none;display:inline-grid;place-items:center;min-width:1.7rem;height:1.7rem;padding:0 .3rem;border-radius:999px;background:#000;color:#fff;font-weight:700;font-size:.8rem;border:1.5px solid #fff}
+.stages{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin:0;padding:0}
+.stages li{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1rem 1.1rem;min-width:0}
+.stages li .num{background:var(--key);color:#17121f;border-color:var(--key);margin-bottom:.6rem}
+.stages li p{margin:.2rem 0 0;color:var(--muted);font-size:.9rem}
+.run-meta{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.2rem}
+.badge{font-size:.78rem;padding:.2rem .7rem;border-radius:999px;border:1px solid var(--line);background:var(--panel)}
+.badge.live{border-color:var(--ok);color:var(--ok)}.badge.warn{border-color:var(--warn);color:var(--warn)}
+.num-grid{display:grid;grid-template-columns:1fr 1.25fr 1fr;gap:1rem}
+.basis{display:inline-block;font-size:.7rem;font-weight:650;letter-spacing:.04em;text-transform:uppercase;padding:.15rem .55rem;border-radius:999px;margin-bottom:.6rem;border:1px solid}
+.basis.measured{color:var(--ok);border-color:var(--ok)}.basis.synthetic{color:var(--warn);border-color:var(--warn)}.basis.projection{color:var(--accent);border-color:var(--accent)}
+.hero-num{display:flex;gap:.8rem;align-items:baseline;margin:.5rem 0}
+.hero-num b{font-size:clamp(1.5rem,2.4vw,2.2rem);color:var(--key);white-space:nowrap;line-height:1.1;font-variant-numeric:tabular-nums}
+.hero-num span{color:var(--muted);font-size:.85rem}
+.fine{color:var(--muted);font-size:.75rem;margin:.6rem 0 0}
+.caught{margin:0;padding-left:1.1rem;display:grid;gap:.4rem;font-size:.9rem}.caught b{color:var(--key)}
+.actions{margin:1.3rem 0 0;padding:1rem 1.2rem 1rem 2.4rem;background:var(--panel);border:1px solid var(--key);border-radius:14px;display:grid;gap:.35rem;font-size:1.02rem}
+.actions b{color:var(--key)}
+.compare{display:grid;grid-template-columns:1fr auto 1fr;gap:1rem;align-items:stretch}
+.compare ul{margin:0;padding-left:1.1rem;display:grid;gap:.35rem}
+.compare .before{border-color:var(--err)}.compare .before h3{color:var(--err)}
+.compare .after{border-color:var(--ok)}.compare .after h3{color:var(--ok)}
+.compare-arrow{align-self:center;font-size:2rem;color:var(--key)}
+.roadmap{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.roadmap ul{margin:.3rem 0 0;padding-left:1.1rem;color:var(--muted);display:grid;gap:.3rem;font-size:.92rem}
+.when{font:700 .75rem var(--pixel);letter-spacing:.1em;text-transform:uppercase;color:var(--key)}
+.deploy{margin-top:1.2rem;padding:1rem 1.2rem;border-left:4px solid var(--accent);background:var(--panel);border-radius:0 12px 12px 0}
+.deploy p{margin:0;color:var(--muted)}
+.closing{margin-top:2rem;font-size:clamp(1.2rem,2vw,1.6rem);font-family:var(--pixel)}
+.stack{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-top:1.4rem}
+.stack .card p{margin:0;color:var(--muted);font-size:.88rem}
+@media (max-width:900px){
+  .num-grid,.uses,.pillars,.roadmap,.stats,.impacts,.arch-body,.stages,.stack{grid-template-columns:1fr}
+  .chain{flex-direction:column-reverse;gap:1.6rem}
+  .chain li:not(:last-child)::before{content:"↑";left:50%;top:-1.5rem;transform:translateX(-50%)}
+  .compare{grid-template-columns:1fr}.compare-arrow{transform:rotate(90deg);justify-self:center}
+  .dots,.keys-hint,.topbar-sub{display:none}
+  .slide{padding:4.5rem max(16px,env(safe-area-inset-right,0px)) 2.5rem max(16px,env(safe-area-inset-left,0px))}
+}
+</style>
+</head>
+<body>
+<div class="progress" aria-hidden="true"><span id="bar"></span></div>
+<header class="topbar">
+  <span class="brand"><span class="brand-mark" aria-hidden="true">⌂</span>treehouse</span>
+  <span class="topbar-sub">Team Treehouse (43) · Clay Agent-Eval Sandbox · Renaissance Philanthropy × Clay</span>
+  <button class="theme-toggle" id="theme" type="button">☀ Light</button>
+  <button id="notes-btn" type="button" aria-pressed="false">Notes (N)</button>
+</header>
+<nav class="dots" id="dots" aria-label="Slides"></nav>
+<p class="keys-hint">↓ ↑ Space · T theme · N notes</p>
+<aside class="notes" id="notes" hidden aria-live="polite"><h4 id="notes-h">Notes</h4><p id="notes-p"></p></aside>
+
+<main>
+<section class="slide hero" id="problem" data-label="Problem">
+  <p class="eyebrow r">Team Treehouse · Clay Agent-Eval Sandbox</p>
+  <h1 class="r" style="--d:80ms">AI agents can now search imagery and maps for you.<br>Nobody can tell <em>if they did it right</em>.</h1>
+  <p class="lede r" style="--d:160ms">One accuracy number hides the wrong area, the invented item and the runaway bill.</p>
+  <blockquote class="r" style="--d:240ms">“Can an off-the-shelf agent harness, given access to geospatial tools through an MCP connector, reproduce the performance our benchmarks report?”
+    <cite>ADB / LGND GeoAI Evals Inception Report, §5.8 (Oct 2026)</cite></blockquote>
+  <div class="scroll-cue r" style="--d:400ms" aria-hidden="true">scroll ↓</div>
+  <p class="say">0:00–0:15. Hi, we're Team Treehouse, and this is our Clay Agent-Eval Sandbox. AI agents can now search satellite imagery and maps for you, but nobody can tell whether they did it right. A single accuracy number hides the wrong area, the invented item and the runaway bill. The inception report's section 5.8 asks exactly this question.</p>
+</section>
+
+<section class="slide" id="context" data-label="Why it is real">
+  <p class="eyebrow r">Why it is real</p>
+  <h2 class="r" style="--d:80ms">Four ADB decisions need asset data they can <em>check, repeat and cost</em>.</h2>
+  <div class="uses">
+    <article class="card r" style="--d:160ms"><h3>Disaster risk finance</h3><p class="decision">How much to fund after an event</p><p class="need"><span>Needs:</span> results checkable against reliable records</p></article>
+    <article class="card r" style="--d:220ms"><h3>Post-disaster needs (PDNA)</h3><p class="decision">How many assets were damaged</p><p class="need"><span>Needs:</span> assets counted one by one, repeatably</p></article>
+    <article class="card r" style="--d:280ms"><h3>Risk Analytics Explorer</h3><p class="decision">Where to invest in resilience</p><p class="need"><span>Needs:</span> clear sources, licences and recency</p></article>
+    <article class="card r" style="--d:340ms"><h3>Project & sector teams</h3><p class="decision">Baseline and monitor funded assets</p><p class="need"><span>Needs:</span> a known cost per dataset</p></article>
+  </div>
+  <div class="stats">
+    <div class="stat r" style="--d:420ms"><b>Wrong place or year</b><span>searches outside the area or period asked about</span></div>
+    <div class="stat r" style="--d:480ms"><b>Invented results</b><span>item IDs no tool ever returned</span></div>
+    <div class="stat r" style="--d:540ms"><b>Loops & runaway cost</b><span>repeated failed calls, no spend limit</span></div>
+  </div>
+  <p class="source r" style="--d:600ms">Source: ADB / LGND GeoAI Evals Inception Report, Table 5 and §4.2 (Oct 2026).</p>
+  <p class="say">0:15–0:45. ADB's teams, risk finance, post-disaster needs, the Risk Analytics Explorer and project teams, all need asset data they can check against records, repeat in every country and put a cost on. Agents fail quietly in exactly those places: wrong area or year, invented results, loops and runaway cost. There was no shared way to test for it.</p>
+</section>
+
+<section class="slide" id="solution" data-label="How we fix it">
+  <p class="eyebrow r">How we fix it</p>
+  <h2 class="r" style="--d:80ms">Grade the <em>whole run</em>, not just the answer.</h2>
+  <div class="pillars">
+    <article class="pillar r" style="--d:160ms"><span class="pillar-icon" aria-hidden="true">◉</span><h3>Record</h3><p>A Bedrock model in a harness calls real MCP tools: AWS Open Data, STAC imagery, OpenStreetMap, Clay embeddings. Every call goes into a JSONL trace with tokens, cost and time.</p></article>
+    <article class="pillar r" style="--d:240ms"><span class="pillar-icon" aria-hidden="true">▣</span><h3>Guard</h3><p>Step, token, dollar and time limits, plus a loop guard, stop runs cleanly. Infra errors are retried as new attempts and never scored. Every launch shows a cost estimate first.</p></article>
+    <article class="pillar r" style="--d:320ms"><span class="pillar-icon" aria-hidden="true">◇</span><h3>Score and compare</h3><p>Workflow (right area, year, tools), output against an answer key, and an LLM judge of the process; configurations compared with confidence intervals.</p></article>
+  </div>
+  <p class="kicker r" style="--d:420ms">Run → record → score → compare. Change one thing (model, harness or instructions) and the report shows what it changed.</p>
+  <p class="say">0:45–1:20. We grade the whole run. Record: a Bedrock model in a harness calls real MCP tools, and every call goes into one trace with tokens, cost and time. Guard: step, dollar, time and loop limits stop runs cleanly, and infrastructure errors are retried, never scored. Score and compare: workflow, output against an answer key, and an LLM judge, with configurations compared using confidence intervals.</p>
+</section>
+
+<section class="slide" id="architecture" data-label="Architecture">
+  <p class="eyebrow r">Architecture</p>
+  <h2 class="r" style="--d:80ms">One CDK stack on AWS, <em>one image</em> for everything.</h2>
+  <div class="arch-body">
+    <figure class="diagram r" style="--d:160ms"><img src="aws-architecture.png" alt="AWS architecture: browser and laptop CLI; CloudFront and a load balancer; web service and worker tasks on ECS Fargate; Amazon Bedrock, S3, ECR, Secrets Manager and CloudWatch; AWS Open Data and public map APIs." loading="lazy"></figure>
+    <ol class="legend r" style="--d:240ms">
+      <li><span class="num">⑮</span><span>Browser → CloudFront (HTTPS) → load balancer that accepts CloudFront only → web service</span></li>
+      <li><span class="num">⑰</span><span>The web UI starts one Fargate worker per run (the CLI does the same, ①)</span></li>
+      <li><span class="num">④</span><span>The worker runs the agent and its MCP tools, and calls Amazon Bedrock</span></li>
+      <li><span class="num">⑤</span><span>Each run's folder (manifest, trace, scores, report) lands in S3; the UI syncs it</span></li>
+      <li><span class="num">⑬</span><span>One Docker image in ECR: CLI, worker and web UI; only workers may call Bedrock</span></li>
+    </ol>
+  </div>
+  <p class="say">1:20–1:55. Everything deploys as one AWS CDK stack. People reach the web UI over HTTPS through CloudFront, and the load balancer accepts CloudFront only. Launching an evaluation starts one Fargate worker per run; the agent and its MCP tools run inside it and call Bedrock. Each run's folder lands in S3 and the web service syncs it. One image in ECR serves all of it, and only workers can call Bedrock.</p>
+</section>
+
+<section class="slide" id="demo" data-label="Demo">
+  <p class="eyebrow r">Demo</p>
+  <h2 class="r" style="--d:80ms">Helipads in New York City: <em>Nova Pro vs Claude Sonnet</em>.</h2>
+  <div class="run-meta r" style="--d:140ms"><span class="badge live">Live on Amazon Bedrock</span><span class="badge">Fargate workers</span><span class="badge warn">Runs take 1–3 min: a pre-run comparison is open in tab 2</span></div>
+  <ol class="stages">
+    <li class="r" style="--d:200ms"><span class="num">1</span><h3>New Run</h3><p>Custom query “Find helipads and heliports in New York City”, three expected heliports.</p></li>
+    <li class="r" style="--d:260ms"><span class="num">2</span><h3>Estimate</h3><p>Cost per model, then confirm and launch.</p></li>
+    <li class="r" style="--d:320ms"><span class="num">3</span><h3>Live progress</h3><p>The runs stream in from Fargate.</p></li>
+    <li class="r" style="--d:380ms"><span class="num">4</span><h3>Compare</h3><p>Heliports found, steps, cost, and the trace.</p></li>
+  </ol>
+  <p class="say">1:55–4:05, switch to the browser. 1) New Run, Custom query: "Find helipads and heliports in New York City", expected answers Downtown Manhattan Heliport, East 34th Street Heliport, West 30th Street Heliport; model Nova Pro, compare with Claude Sonnet. 2) Estimate, confirm, Launch. 3) Show live progress briefly. 4) Switch to tab 2 with the pre-run comparison: which heliports each found, steps, cost, then one run's trace.</p>
+</section>
+
+<section class="slide" id="numbers" data-label="By the numbers">
+  <p class="eyebrow r">By the numbers</p>
+  <h2 class="r" style="--d:80ms">Measured, tested, and <em>honest about the rest</em>.</h2>
+  <div class="num-grid">
+    <article class="card r" style="--d:160ms"><span class="basis measured">Measured</span><h3>Built and tested</h3>
+      <div class="hero-num"><b>1,078</b><span>automated tests</span></div>
+      <div class="hero-num"><b>9</b><span>planted flawed runs the scorers must catch</span></div>
+      <div class="hero-num"><b>5 + Q</b><span>task types, plus your own question</span></div></article>
+    <article class="card r" style="--d:240ms"><span class="basis measured">Measured</span><h3>Real tools, real models</h3>
+      <div class="hero-num"><b>152,516</b><span>Clay v1.5 tiles from LGND, 6 US areas, Jan + Jul 2024</span></div>
+      <div class="hero-num"><b>4</b><span>MCP servers: Open Data, STAC, OpenStreetMap, Clay</span></div>
+      <div class="hero-num"><b>4</b><span>Bedrock models priced and capped; Llama 3.3 70B judges</span></div>
+      <p class="fine">Statistics: Wilson intervals, cluster bootstrap over task instances, paired sign-flip tests, Holm correction.</p></article>
+    <article class="card r" style="--d:320ms"><span class="basis projection">Cost model</span><h3>Safe to run</h3>
+      <div class="hero-num"><b>$0.10</b><span>default cap per run</span></div>
+      <div class="hero-num"><b>$2</b><span>default cap per evaluation</span></div>
+      <ul class="caught"><li>Estimate shown before <b>every</b> launch</li><li>Launch stays locked until confirmed</li></ul></article>
+  </div>
+  <p class="actions r" style="--d:420ms"><b>What the scores catch:</b> wrong order, unknown and forbidden tools, unrecovered failures, loops, budget stops and fabricated output.</p>
+  <p class="say">4:05–4:30. By the numbers: over a thousand automated tests, and nine planted flawed runs the scorers must catch before any score counts. Real tools: 152 thousand Clay tiles, four MCP servers, four Bedrock models with a different-family judge. And it is safe to run: an estimate before every launch, and caps per run and per evaluation.</p>
+</section>
+
+<section class="slide" id="impact" data-label="Impact">
+  <p class="eyebrow r">What changes</p>
+  <h2 class="r" style="--d:80ms">From “did it answer?” to <em>“how did it get there?”</em></h2>
+  <div class="compare">
+    <article class="card before r" style="--d:160ms"><h3>Today</h3><ul><li>An agent returns a list of items.</li><li>No record of where it searched or which tools failed.</li><li>No way to compare two models fairly, or know the cost.</li></ul></article>
+    <span class="compare-arrow r" style="--d:220ms" aria-hidden="true">→</span>
+    <article class="card after r" style="--d:280ms"><h3>With the sandbox</h3><ul><li>Every step is in the trace, with its tokens, cost and time.</li><li>Area, year and tool use are checked automatically.</li><li>Models and harnesses compared on the same tasks, with error bars.</li></ul></article>
+  </div>
+  <div class="impacts">
+    <div class="stat r" style="--d:360ms"><b>Fair comparisons</b><span>same tasks, tools and scoring for every configuration</span></div>
+    <div class="stat r" style="--d:420ms"><b>Trusted scores</b><span>scorers validated on planted flaws first</span></div>
+    <div class="stat r" style="--d:480ms"><b>Known cost</b><span>estimated, capped and recorded per run</span></div>
+  </div>
+  <p class="say">4:30–4:45. Today, an agent returns a list and nothing else. With the sandbox, every step is in the trace, area and tool use are checked automatically, and models are compared fairly with error bars and a known cost.</p>
+</section>
+
+<section class="slide" id="future" data-label="Future">
+  <p class="eyebrow r">After release</p>
+  <h2 class="r" style="--d:80ms">From measuring agents to <em>choosing them</em>.</h2>
+  <ol class="roadmap">
+    <li class="card r" style="--d:160ms"><span class="when">Now</span><h3>Hackathon sandbox</h3><ul><li>T1–T5 + custom queries, Clay embeddings tool</li><li>Strands and Converse harnesses on Bedrock</li><li>CLI, hosted web UI, Fargate workers</li></ul></li>
+    <li class="card r" style="--d:240ms"><span class="when">Next</span><h3>Harness &amp; profiles</h3><ul><li>Same model, different harness: 5 scenarios, ready to run</li><li>Agent profiles as Markdown: loop, guardrails, behaviour</li><li>Table 8 assets: Nagoya warehouses with scored negatives</li></ul></li>
+    <li class="card r" style="--d:320ms"><span class="when">Scale</span><h3>Automatic model choice</h3><ul><li>Performance matrix: accuracy, health, reply time, cost</li><li>Router picks the cheapest model that passes every gate</li><li>§5.7 metrics: count ratio, 160 m cell precision and recall</li></ul></li>
+  </ol>
+  <div class="deploy r" style="--d:420ms"><h3>Tech stack</h3><p>Amazon Bedrock (Nova, Claude, Llama) · Strands Agents · MCP · LGND Clay v1.5 · Python, Pydantic, FastAPI, DuckDB · React 19, TypeScript, Vite · AWS CDK, ECS Fargate, S3, CloudFront, ECR, Secrets Manager.</p></div>
+  <p class="closing r" style="--d:500ms">Every agent step recorded, scored, costed and <strong>comparable</strong>.</p>
+  <p class="say">4:45–5:00. Next, we go from measuring agents to choosing them: the harness track runs today, agent profiles are designed, and automatic model choice comes from the performance matrix. Every agent step recorded, scored, costed and comparable. Thank you, happy to take questions.</p>
+</section>
+</main>
+
+<script>
+(() => {
+  const root = document.documentElement;
+  const slides = [...document.querySelectorAll('.slide')];
+  const dots = document.getElementById('dots'), bar = document.getElementById('bar');
+  const notes = document.getElementById('notes'), notesP = document.getElementById('notes-p'), notesH = document.getElementById('notes-h');
+  const themeBtn = document.getElementById('theme'), notesBtn = document.getElementById('notes-btn');
+  let active = 0;
+  slides.forEach((s, i) => {
+    const a = document.createElement('a'); a.href = '#' + s.id; a.title = s.dataset.label;
+    a.innerHTML = `<span class="dot" aria-hidden="true"></span><span class="dot-label">${i + 1}. ${s.dataset.label}</span>`;
+    a.addEventListener('click', e => { e.preventDefault(); slides[i].scrollIntoView(); });
+    dots.appendChild(a);
+  });
+  const links = [...dots.children];
+  const isLight = () => root.dataset.theme ? root.dataset.theme === 'light' : matchMedia('(prefers-color-scheme: light)').matches;
+  const paintTheme = () => { themeBtn.textContent = isLight() ? '☾ Dark' : '☀ Light'; themeBtn.setAttribute('aria-label', `Switch to ${isLight() ? 'dark' : 'light'} theme`); };
+  const toggleTheme = () => { root.dataset.theme = isLight() ? 'dark' : 'light'; paintTheme(); };
+  themeBtn.addEventListener('click', toggleTheme); paintTheme();
+  const toggleNotes = () => { notes.hidden = !notes.hidden; notesBtn.setAttribute('aria-pressed', String(!notes.hidden)); };
+  notesBtn.addEventListener('click', toggleNotes);
+  const setActive = i => {
+    active = i; links.forEach((l, j) => j === i ? l.setAttribute('aria-current', 'step') : l.removeAttribute('aria-current'));
+    notesH.textContent = `Notes · ${i + 1}/${slides.length} · ${slides[i].dataset.label}`;
+    notesP.textContent = slides[i].querySelector('.say')?.textContent ?? '';
+  };
+  const reveal = s => s.dataset.in = '1';
+  // The first screen is visible at rest; later slides reveal as they enter.
+  slides.forEach(s => { const r = s.getBoundingClientRect(); if (r.top < innerHeight) reveal(s); });
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) reveal(e.target); }), {threshold: 0.2});
+  slides.forEach(s => io.observe(s));
+  const onScroll = () => {
+    const mid = innerHeight * 0.45; let cur = 0;
+    slides.forEach((s, i) => { if (s.getBoundingClientRect().top <= mid) cur = i; });
+    if (cur !== active) setActive(cur);
+    const max = root.scrollHeight - innerHeight; bar.style.transform = `scaleX(${max > 0 ? Math.min(1, scrollY / max) : 0})`;
+  };
+  addEventListener('scroll', onScroll, {passive: true}); addEventListener('resize', onScroll);
+  setActive(0); onScroll();
+  const go = d => slides[Math.max(0, Math.min(slides.length - 1, active + d))].scrollIntoView();
+  addEventListener('keydown', e => {
+    const t = e.target; if (t && ['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName)) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (['ArrowDown', 'PageDown'].includes(e.key) || (e.key === ' ' && !e.shiftKey)) { e.preventDefault(); go(1); }
+    else if (['ArrowUp', 'PageUp'].includes(e.key) || (e.key === ' ' && e.shiftKey)) { e.preventDefault(); go(-1); }
+    else if (e.key === 'Home') { e.preventDefault(); slides[0].scrollIntoView(); }
+    else if (e.key === 'End') { e.preventDefault(); slides[slides.length - 1].scrollIntoView(); }
+    else if (e.key === 't' || e.key === 'T') toggleTheme();
+    else if (e.key === 'n' || e.key === 'N') toggleNotes();
+  });
+})();
+</script>
+</body>
+</html>
