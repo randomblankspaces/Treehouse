@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import UTC, date, datetime
 from typing import Literal
 
-from pydantic import AwareDatetime, Field, field_validator, model_validator
+from pydantic import AwareDatetime, Field, field_validator, model_serializer, model_validator
 
 from treehouse.canon import sha256_json
 from treehouse.schemas.base import Frozen
@@ -155,6 +155,12 @@ class Thresholds(Frozen):
     rely_lo: float
 
 
+class UserExample(Frozen):
+    lon: float = Field(ge=-180, le=180)
+    lat: float = Field(ge=-90, le=90)
+    label: str | None = None
+
+
 class TaskCard(Frozen):
     """A task card.
 
@@ -183,6 +189,7 @@ class TaskCard(Frozen):
     event: Event | None = None
     data_allowlist: list[DataSource]
     tools_allowed: list[str]
+    user_examples: list[UserExample] = []
     needs_vision: bool
     classes: dict[str, ClassSpec]
     windows: Windows
@@ -194,6 +201,14 @@ class TaskCard(Frozen):
     gold_plan: GoldPlan | None = None
     thresholds: Thresholds
     budget: Budget
+
+    @model_serializer(mode="wrap")
+    def _serialize(self, handler):
+        data = handler(self)
+        # Absent examples must preserve existing card hashes and recorded model requests.
+        if not self.user_examples:
+            data.pop("user_examples", None)
+        return data
 
     @field_validator("as_of")
     @classmethod
