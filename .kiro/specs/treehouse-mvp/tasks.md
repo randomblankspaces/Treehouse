@@ -36,7 +36,7 @@ run `uv run treehouse budget status` (stop at exit 2/3). If a task hits a hard A
 - [x] 6. Output grader v2 (report protocol)
   - `checks/protocol_grader.py` (`grade-lgnd-v1`): 160 m grid, any-touch, one count per asset; site recall, recall@k, grid-cell precision, lift, count ratio, AUROC, AP, review effort 50/80/90 %, transfer gap; incomplete reference ⇒ precision-in-pool only. Hand-computed tests on a toy grid. _Req: 4.1–4.3_
 
-- [ ] 7. Reasoning validity (score a)
+- [x] 7. Reasoning validity (score a)
   - `investigation/reasoning_rules.py` RV1–RV10 with planted-bad-agent tests (1.28 km cells for warehouses unjustified ⇒ RV1 fail; Maxar ⇒ RV2 fail; uses held-out labels ⇒ RV4 fail).
   - Reviewer model of a different family (Nova Pro when the worker is Claude) scores each rationale against `investigation/RUBRIC-v1.md` + report §5.8.
   - AgentCore Evaluations on the live run: Builtin.ToolSelectionAccuracy, ToolParameterAccuracy, TrajectoryInOrderMatch, GoalSuccessRate (assertions from the card), plus RV rules deployed as code-based Lambda evaluators via `infra/`. Commit results JSON. _Req: 5.1–5.4, 9.2_

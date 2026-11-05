@@ -81,7 +81,7 @@ def failed(out):
 
 def test_good_agent_passes_every_applicable_rule():
     out = run(good_ledger().snapshot())
-    assert out["rules_version"] == RULES_VERSION == "rv-v1"
+    assert out["rules_version"] == RULES_VERSION == "rv-v2"  # contract v2: see RULES_VERSION comment
     assert failed(out) == set()
     for rule in ("RV1", "RV2", "RV4", "RV5", "RV6", "RV7", "RV8", "RV10"):
         assert out["summary"]["verdict_by_rule"][rule] == "pass", rule
@@ -251,3 +251,14 @@ def test_malformed_ledgers_never_crash(ledger):
 def test_unknown_class_is_not_applicable():
     out = evaluate(good_ledger().snapshot(), NAGOYA, asset_class="volcano", registry=REG)
     assert out["summary"]["verdict_by_rule"]["RV1"] == "not_applicable"
+
+
+def test_rv_v2_live_shapes_default_split_and_free_text_count():
+    """Live runs call get_examples without split (server default train) and note_limitation with text only."""
+    lg = Ledger()
+    lg.step("get_examples", {"n": 16}, "Few-shot examples.")
+    lg.step("note_limitation", {"text": LIMIT}, "Declare limits and the count range.")
+    out = run(lg.snapshot())
+    assert "RV4" not in failed(out)
+    rv7 = [r for r in out["results"] if r["rule_id"] == "RV7" and r["claim_id"] is None and r["decision_id"] is None]
+    assert [r["verdict"] for r in rv7] == ["not_applicable"]

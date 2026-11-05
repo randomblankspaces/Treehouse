@@ -25,6 +25,8 @@ class ReviewAnswer(Frozen):
     limitations: list[str]
 
 
+# Live Nova Pro reviews of a 15-action run needed > 800 output tokens (stop_reason max_tokens).
+REVIEW_MAX_TOKENS = 2000
 def review_investigation(store, run_id, reviewer, *, model_id, params):
     """Read-only model estimate with a distinct model, one fresh request, no tools or reference labels."""
     run, ledgers = _loaded(store, run_id)
@@ -35,7 +37,7 @@ def review_investigation(store, run_id, reviewer, *, model_id, params):
         raise ValueError("process reviewer must be distinct from configured and observed worker models")
     if params.max_tokens <= 0:
         raise ValueError("review requires a positive output-token bound")
-    params = params.model_copy(update={"max_tokens": min(800, params.max_tokens)})
+    params = params.model_copy(update={"max_tokens": min(REVIEW_MAX_TOKENS, params.max_tokens)})
     card = run.card
     public_task = {"goal": card.goal, "aoi": card.aoi.model_dump(mode="json"),
                    "classes": {k: v.model_dump(mode="json") for k, v in card.classes.items()},
