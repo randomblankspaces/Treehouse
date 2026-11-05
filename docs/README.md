@@ -1,5 +1,7 @@
 # Treehouse documentation index
 
+**Current integration:** [MVP readiness and numerical report contract](MVP-INTEGRATION-STATUS.md); [bounded Kiro testing handoff](KIRO-TESTING-HANDOFF.md) after the reviewed merge.
+
 ## Current product context — November 4, 2026
 
 **Build the MVP from [MVP-PLAN.md](MVP-PLAN.md)** (decisions DM1–DM10, panels, acceptance checklist), with the report digest [REPORT-TABLES.md](REPORT-TABLES.md) and the Kiro spec in `.kiro/specs/treehouse-mvp/`. Kiro's single prompt: [KIRO-MVP-PROMPT.md](KIRO-MVP-PROMPT.md). It refines the earlier [KIRO-NEXT-PROMPTS.md](KIRO-NEXT-PROMPTS.md).

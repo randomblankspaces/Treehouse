@@ -21,6 +21,9 @@ jobs:
       - run: uv sync --locked --extra api
       - run: npm run typecheck
         working-directory: ui
+      - name: Independent shell and evaluation contract checks
+        run: node --test tests/shell-contract.test.mjs tests/reconciliation-contract.test.mjs tests/reconciliation-r1-scores.mjs
+        working-directory: ui
       - run: npm run build
         working-directory: ui
       - run: npx --no-install playwright install --with-deps chromium

@@ -1,5 +1,7 @@
 # Treehouse product outline
 
+**Evaluation clarification:** [current report contract](MVP-INTEGRATION-STATUS.md) requires percentage scores with explicit metric/population, separate cost/time and a readable summary of the recorded investigation. Pass/fail checks are supporting evidence; model self-report is not hidden-thought access.
+
 Updated November 4, 2026 from Suhas's clarification. This outline and [PLAN.md](PLAN.md) supersede
 older delivery assumptions where they differ. The historical council designs remain useful context.
 

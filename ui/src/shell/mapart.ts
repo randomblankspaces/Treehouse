@@ -7,6 +7,7 @@ export const COLS = 62, ROWS = 48;   // ≈ 160 m cells over the Nagoya Port AOI
 export const TILE_CREDIT = 'Aerial imagery: GSI Japan (地理院タイル)';
 export type MapState = {mode: Mode; t: number; animate: boolean; colorSafe: boolean; bbox: [number, number, number, number] | null;
   steps: TraceStep[]; elapsed: number; markers: MapMarker[]; born: number[];
+  illustrative?: boolean;
   technical?: boolean;   // dev view: cell grid, indices, corner coordinates
   focus?: string | null;   // a tool name: its layer stays bright, the rest dims
 };
@@ -25,6 +26,13 @@ export function pick(W: number, H: number, bbox: [number, number, number, number
   const L = layout(W, H, bbox), u = (px - L.A.x) / L.A.w, v = (py - L.A.y) / L.A.h;
   if (u < 0 || v < 0 || u > 1 || v > 1) return null;
   return {lon: L.w + u * (L.e - L.w), lat: L.n - v * (L.n - L.s), col: Math.floor(u * COLS), row: Math.floor(v * ROWS)};
+}
+
+/** Pointer convenience; the native prediction selector provides the same operation by keyboard. */
+export function pickMarker(W: number, H: number, bbox: MapState['bbox'], markers: MapMarker[], x: number, y: number) {
+  const {z, k, ox, oy} = layout(W, H, bbox);
+  return markers.map(marker => ({marker, distance: Math.hypot(lonX(marker.lon, z) * k + ox - x, latY(marker.lat, z) * k + oy - y)}))
+    .filter(hit => hit.distance <= 24).sort((a, b) => a.distance - b.distance)[0]?.marker ?? null;
 }
 
 const hash = (n: number) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
@@ -88,7 +96,7 @@ export function renderMap(ctx: CanvasRenderingContext2D, W: number, H: number, s
   ctx.save(); ctx.beginPath(); ctx.rect(A.x, A.y, A.w, A.h); ctx.clip();
   // 1. embeddings: a glowing sweep turns the area into 160 m cells
   dim('index');
-  const pIndex = progress(st.steps, 'build_index', st.elapsed);
+  const pIndex = st.illustrative ? progress(st.steps, 'build_index', st.elapsed) : 0;
   if (pIndex > 0) {
     const edge = A.x + pIndex * A.w;
     for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
@@ -107,7 +115,7 @@ export function renderMap(ctx: CanvasRenderingContext2D, W: number, H: number, s
     }
   }
   // 2. retrieval: candidates glow in rank order
-  const N = progress(st.steps, 'retrieve', st.elapsed) * CANDIDATES.length;
+  const N = st.illustrative ? progress(st.steps, 'retrieve', st.elapsed) * CANDIDATES.length : 0;
   if (N > 0) {
     ctx.shadowColor = 'rgba(255,209,102,0.9)'; ctx.shadowBlur = 6; ctx.strokeStyle = '#ffd166'; ctx.lineWidth = 1.5;
     ctx.globalAlpha = st.focus && LAYER[st.focus] ? (LAYER[st.focus] === 'candidates' ? 1 : 0.2) : st.markers.length ? 0.35 : 0.9;
@@ -117,7 +125,7 @@ export function renderMap(ctx: CanvasRenderingContext2D, W: number, H: number, s
   // 3. imagery: inspected chips get a photo frame
   const imagery = st.steps.filter(x => x.tool?.name === 'imagery_window'), last = imagery[imagery.length - 1];
   dim('chips');
-  if (imagery.some(x => x.status === 'ok')) { ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 1; for (const x of CANDIDATES.slice(0, 48)) { ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(A.x + x.c * cw, A.y + x.r * ch, cw, ch); ctx.strokeRect(A.x + x.c * cw + 0.5, A.y + x.r * ch + 0.5, cw - 1, ch - 1); } }
+  if (st.illustrative && imagery.some(x => x.status === 'ok')) { ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 1; for (const x of CANDIDATES.slice(0, 48)) { ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(A.x + x.c * cw, A.y + x.r * ch, cw, ch); ctx.strokeRect(A.x + x.c * cw + 0.5, A.y + x.r * ch + 0.5, cw - 1, ch - 1); } }
   ctx.globalAlpha = 1;
   if (st.technical) {   // cell grid with indices every 10 cells
     ctx.strokeStyle = 'rgba(255,255,255,0.10)'; ctx.lineWidth = 1; ctx.beginPath();
@@ -129,7 +137,7 @@ export function renderMap(ctx: CanvasRenderingContext2D, W: number, H: number, s
   }
   ctx.restore();
   // ... and a reticle glides across the top candidates; a failed call flashes red
-  if (last && (last.status === 'running' || (last.status === 'error' && st.elapsed - (last.end_ms ?? 0) < 4000))) {
+  if (st.illustrative && last && (last.status === 'running' || (last.status === 'error' && st.elapsed - (last.end_ms ?? 0) < 4000))) {
     const ph = st.animate ? st.t / 420 : 0, i = Math.floor(ph) % 47, f = ease(ph % 1), a = CANDIDATES[i], b = CANDIDATES[i + 1];
     const X = A.x + (a.c + (b.c - a.c) * f + 0.5) * cw, Y = A.y + (a.r + (b.r - a.r) * f + 0.5) * ch, R = Math.max(14, cw * 1.6), L = R * 0.45;
     const bad = last.status === 'error';
@@ -148,10 +156,10 @@ export function renderMap(ctx: CanvasRenderingContext2D, W: number, H: number, s
     if (st.animate && age < 900) { ctx.strokeStyle = `rgba(255,255,255,${0.7 * (1 - age / 900)})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y, 4 + age / 900 * 22, 0, 6.29); ctx.stroke(); }
     const r = Rp * pop;
     ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
-    if (m.status === 'confirmed') {
+    if (m.status === 'present') {
       ctx.fillStyle = red; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.arc(p.x, p.y - r * 1.5, r, Math.PI * 0.78, Math.PI * 2.22); ctx.closePath(); ctx.fill();
       ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(p.x, p.y - r * 1.5, r * 0.38, 0, 6.29); ctx.fill();
-    } else if (m.status === 'rejected') {
+    } else if (m.status === 'absent') {
       ctx.fillStyle = night ? '#8d86a0' : '#6b6478'; ctx.beginPath(); ctx.arc(p.x, p.y, r * 0.75, 0, 6.29); ctx.fill(); ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
       ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; const d = r * 0.35; ctx.beginPath(); ctx.moveTo(p.x - d, p.y - d); ctx.lineTo(p.x + d, p.y + d); ctx.moveTo(p.x + d, p.y - d); ctx.lineTo(p.x - d, p.y + d); ctx.stroke();
     } else {

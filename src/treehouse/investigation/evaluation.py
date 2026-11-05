@@ -283,6 +283,9 @@ def evaluate_investigation(store, run_id, *, reference=None):
         limitations.append("Catalogue match recall covers listed holdout objects only; catalogue incompleteness prevents global accuracy claims.")
     return public_value({"schema_version": "treehouse.investigation-report/1", "run_id": run_id,
             "manifest_ref": run.manifest_ref, "decisions": decisions, "pathways": pathways,
+            "claims": [{"claim_id": c.claim_id, "trial_id": c.trial_id, "cls": c.cls, "status": c.status,
+                        "evidence_refs": [r.model_dump(mode="json") for r in c.evidence_refs]}
+                       for trial in run.trials for c in trial.claims],
             "process": {"numbers": process, "limitations": limitations, "diagnostics": diagnostics,
                         "stops": [{"trial_id": t.trial_id, "reason": t.stop,
                                    "detail": ledgers[t.trial_id].get("stop_detail")} for t in run.trials]},
