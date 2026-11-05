@@ -723,7 +723,9 @@ def create_app(
                 raise PublicDataError()
             public_asset = (
                 path.startswith("assets/") and target.suffix in {".js", ".css", ".svg", ".woff", ".woff2"}
-            ) or ("/" not in path and target.suffix in {".svg", ".ico"})
+            ) or ("/" not in path and target.suffix in {".svg", ".ico"}) or (
+                path.startswith("narration/") and path.count("/") == 1 and target.suffix in {".json", ".mp3"}
+            )
             if path != "index.html" and not public_asset:
                 target = dist / "index.html"
             elif not target.is_file():
