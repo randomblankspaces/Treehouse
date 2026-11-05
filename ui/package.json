@@ -10,7 +10,8 @@
     "test": "npm run test:e2e",
     "test:e2e": "node tests/product-browser.cjs",
     "test:start": "node tests/product-start-browser.cjs",
-    "test:investigation": "node tests/investigation-browser.cjs"
+    "test:investigation": "node tests/investigation-browser.cjs",
+    "test:shell": "node --test tests/shell-contract.test.mjs"
   },
   "dependencies": {
     "react": "19.3.1",
