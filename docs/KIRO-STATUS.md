@@ -263,3 +263,38 @@ They test the pipeline, not real-world accuracy. Intervals are 95 % bootstrap ov
 - **Main finding:** with no visual check, the Sonnet agents mostly declined to claim warehouses, or claimed
   them as `cannot_assess` or at low confidence. RV7 (claims citing no evidence) and RV8 (unreviewed area)
   are the most common rule failures. This is a reasoning-quality signal, not an accuracy result.
+
+---
+
+## Task 11 — Demo, README and evidence
+
+- **Offline replay of live runs:** `tests/journeys/test_live_replay.py` replays 3 live experiment runs (Nagoya,
+  Gifu, Bangladesh) from their cassettes with no network and asserts the claims are identical.
+  `scripts/replay_live.py <run_id>` does the same by hand. The task 4/5 runs (`fixtures/live/runs/`) were
+  recorded before the `classify` schema change in task 5 and no longer replay; they are kept as sealed
+  evidence.
+- **Denied delete (Compliance Object Lock):** `fixtures/live/receipts/denied-delete.json`. As
+  `WSParticipantRole` (account admin), `DeleteObject` on a specific `VersionId` of
+  `runs/t1-nagoya-sonnet-strands-3/SEALED` returned `AccessDenied ... protected by object lock`, both
+  plain and with `BypassGovernanceRetention`. The version is still present, retained until 2026-11-06.
+- README "what ran live" section and quickstart; DEFENSE-BOOK §0 "what actually ran" table.
+- Task 10 (UI) **skipped by user decision**.
+
+## MVP acceptance checklist (MVP-PLAN §8), final
+
+| # | Item | Status |
+|---|---|---|
+| 1 | Live Strands-on-Bedrock Nagoya T1, ≥ 2 sources, decision before every action, red predicted sites | **Ticked**, with caveat: AEF + LGND offered; runs emit `present` warehouse claims (e.g. `exp-nagoya-sonnet-1`, 10 sites) |
+| 2 | Same config runs Gifu and Bangladesh | **Ticked** |
+| 3 | Output panel: Table 11 for Nagoya/Gifu with transfer gap; precision-in-pool for Bangladesh | **Ticked** (metrics on synthetic references) |
+| 4 | Reasoning panel: RV1–RV10 + reviewer + AgentCore, separate; planted bad agent fails | **Ticked** |
+| 5 | Calibration on keyed runs (Brier, bins with n) | **Ticked** (very small n) |
+| 6 | Predicted accuracy on Bangladesh, MODEL-ESTIMATED, validation + baseline | **Partial**: produced and labelled, validation "insufficient" (2 configs) |
+| 7 | One model comparison and one classifier comparison with N and intervals | **Partial**: model comparison live; classifier comparison offline only |
+| 8 | Runs sealed in Compliance S3, denied delete, CDK outputs committed | **Ticked** |
+| 9 | UI with red sites, decision tree, panels, raw-statistics export | **Not done** (task 10 skipped); raw statistics export via metrics JSON |
+| 10 | Recorded replay of live runs offline; README quickstart on a fresh machine | **Ticked** (fresh-machine quickstart not tested on a separate machine) |
+| 11 | pytest green; spend under guard; every live claim backed by an artifact | **Ticked** (ledger $10.97 of the $350 alarm) |
+
+**Totals:** 8 ticked, 2 partial, 1 not done.
+**Biggest caveat:** every accuracy number is computed on synthetic fixture embeddings and references.
