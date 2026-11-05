@@ -41,7 +41,7 @@ run `uv run treehouse budget status` (stop at exit 2/3). If a task hits a hard A
   - Reviewer model of a different family (Nova Pro when the worker is Claude) scores each rationale against `investigation/RUBRIC-v1.md` + report §5.8.
   - AgentCore Evaluations on the live run: Builtin.ToolSelectionAccuracy, ToolParameterAccuracy, TrajectoryInOrderMatch, GoalSuccessRate (assertions from the card), plus RV rules deployed as code-based Lambda evaluators via `infra/`. Commit results JSON. _Req: 5.1–5.4, 9.2_
 
-- [ ] 8. Confidence calibration (score b) and predicted accuracy (score c)
+- [x] 8. Confidence calibration (score b) and predicted accuracy (score c)
   - `score/calibration.py`: Brier, reliability bins with n, ECE on keyed runs.
   - `score/predicted_accuracy.py`: fit reasoning features → site recall / cell precision on keyed runs; leave-one-config-out + Gifu validation; mean baseline; apply to Bangladesh labelled MODEL-ESTIMATED. _Req: 6.1, 7.1, 7.2_
 
