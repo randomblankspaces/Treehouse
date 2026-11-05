@@ -112,9 +112,13 @@ def test_uncertain_thinking_at_high_confidence_is_flagged():
 
 
 def test_report_surfaces_deliberation_and_features_on_a_sealed_run(context):
+    import json
+
     from test_investigation_acceptance import ScriptProvider, claim
     store, card, config, run, assess, _ = context
     run(store, card, config, ScriptProvider(claim("c", .002, .002)), run_id="deliberation")
+    ledger = json.loads((store.run_dir("deliberation") / "trials/t-0.investigation.json").read_bytes())
+    assert all("thinking_ref" not in d for d in ledger["decisions"])
     report = assess(store, "deliberation")
     result = report["process"]["deliberation"]["t-0"]
     assert result["metrics"]["alternatives_per_decision"]["numerator"] == 1
@@ -195,6 +199,51 @@ def test_decisions_link_only_thinking_from_the_emitting_turn(context):
         assert "A second thinking block." in report["decisions"][0]["thinking_text"]
 
 
+def test_multiple_decisions_link_to_their_shared_emitting_turn(context):
+    import json
+
+    import pytest
+    from test_investigation_acceptance import claim
+
+    from treehouse.schemas.model_io import Message, ModelResponse, Reasoning, Text, ToolUse, Usage
+
+    store, card, config, run, assess, _ = context
+    first, second = claim("first", .002, .002), claim("second", .003, .003)
+
+    class BatchedThinkingProvider:
+        provider_name = "synthetic-batched-thinking"
+
+        async def complete(self, req, *, role, trial_index, turn):
+            if turn == 0:
+                content = [Reasoning(text=f"Compare both locations in trial {trial_index}.")]
+                content.extend(ToolUse(name=name, id=call_id, input=args)
+                               for name, call_id, args in [first[0], second[0], first[1], second[1]])
+            else:
+                content = [Text(text="Finished")]
+            return ModelResponse(message=Message(role="assistant", content=content),
+                                 stop_reason="tool_use" if turn == 0 else "end_turn",
+                                 usage=Usage(input_tokens=1, output_tokens=1), latency_ms=1,
+                                 response_model_id="synthetic")
+
+    for harness in ("plain_loop", "strands"):
+        if harness == "strands":
+            pytest.importorskip("strands")
+        run_id = "batched-" + harness
+        run(store, card, config.model_copy(update={"harness": harness, "trials": 2}),
+            BatchedThinkingProvider(), run_id=run_id)
+        report = assess(store, run_id)
+        refs = []
+        for trial_index in range(2):
+            ledger = json.loads((store.run_dir(run_id)
+                                 / f"trials/t-{trial_index}.investigation.json").read_bytes())
+            a, b = ledger["decisions"]
+            assert a["thinking_ref"] == b["thinking_ref"]
+            refs.append(a["thinking_ref"])
+            assert report["process"]["deliberation"][f"t-{trial_index}"]["metrics"][
+                "thinking_coverage"]["value"] == 1
+        assert refs[0] != refs[1]
+
+
 def test_revision_requires_evidence_observed_after_parent_decision():
     result = evaluate({"decisions": [
         {"decision_id": "d1", "sequence": 3, "parameters": {"threshold": .4}},
@@ -202,3 +251,19 @@ def test_revision_requires_evidence_observed_after_parent_decision():
          "parameters": {"threshold": .6}, "evidence_refs": ["old"]}],
         "actions": [{"sequence": 1, "status": "success", "result_id": "old"}]})
     assert metric(result, "revisions_after_evidence")["numerator"] == 0
+
+
+def test_label_only_mismatch_keeps_sealed_decision_binding(context):
+    from test_investigation_acceptance import ScriptProvider, claim
+
+    store, card, config, run, assess, _ = context
+    (tool, call_id, parameters), action = claim("assigned-tool-id", .002, .002)
+    actions = [(tool, call_id, {**parameters, "action_id": "model-chosen-label"}), action]
+    run(store, card, config, ScriptProvider(actions), run_id="label-mismatch")
+
+    report = assess(store, "label-mismatch")
+
+    decision, = report["decisions"]
+    assert decision["action"] is not None
+    assert "invalid_action_link" not in decision["flags"]
+    assert report["process"]["numbers"]["decision_coverage"]["value"] == 1
