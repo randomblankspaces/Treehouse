@@ -153,7 +153,7 @@ def public_bundle(bundle):
                 key: value for key, value in event["attributes"].items() if key in SAFE_ATTRS
             }
         if row["error"]:
-            row["error"]["message"] = "Recorded span failed; raw error text is withheld."
+            row["error"]["message"] = "Tool call failed (details sealed in the trace)"
     return public_value(data)
 
 
