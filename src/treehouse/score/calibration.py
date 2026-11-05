@@ -1,10 +1,13 @@
 """Score (b) confidence calibration (R6.1): per-claim stated confidence vs graded correctness on keyed
 runs. Reports the Brier score, equal-width reliability bins with counts, and ECE (count-weighted
-|accuracy - mean confidence|). Pure: stdlib only."""
+|accuracy - mean confidence|). Pure: numpy only."""
 from __future__ import annotations
 
 import math
+import numbers
 from collections.abc import Sequence
+
+import numpy as np
 
 CALIBRATION_VERSION = "calib-v1"
 KEYED_ONLY = "keyed runs only: correctness comes from the grader, so unkeyed runs have no calibration"
@@ -14,10 +17,15 @@ def _validate(confidences: Sequence[float], correct: Sequence[bool], n_bins: int
     if len(confidences) != len(correct):
         raise ValueError(f"length mismatch: {len(confidences)} confidences vs {len(correct)} outcomes")
     for c in confidences:
-        if isinstance(c, bool) or not isinstance(c, int | float) or not math.isfinite(c) or not 0 <= c <= 1:
+        if (
+            isinstance(c, (bool, np.bool_))
+            or not isinstance(c, numbers.Real)
+            or not math.isfinite(c)
+            or not 0 <= c <= 1
+        ):
             raise ValueError(f"confidence must be a finite number in [0, 1], got {c!r}")
     for k in correct:
-        if not isinstance(k, bool) and type(k).__name__ != "bool_":  # accept numpy.bool_ without importing it
+        if not isinstance(k, (bool, np.bool_)):
             raise ValueError(f"correct must be boolean, got {k!r}")
 def calibrate(confidences: Sequence[float], correct: Sequence[bool], n_bins: int = 10) -> dict:
     _validate(confidences, correct, n_bins)
@@ -25,7 +33,9 @@ def calibrate(confidences: Sequence[float], correct: Sequence[bool], n_bins: int
     out = {"version": CALIBRATION_VERSION, "n": n, "n_bins": n_bins, "keyed_only": KEYED_ONLY}
     members: list[list[int]] = [[] for _ in range(n_bins)]
     for i, c in enumerate(confidences):
-        members[min(int(math.floor(c * n_bins)), n_bins - 1)].append(i)  # last bin includes 1.0
+        # The epsilon corrects products such as 0.29 * 100 evaluating just below 29.
+        bin_index = min(math.floor(float(c) * n_bins + 1e-9), n_bins - 1)
+        members[bin_index].append(i)  # last bin includes 1.0
     bins, ece = [], 0.0
     for b, idx in enumerate(members):
         row = {"lo": b / n_bins, "hi": (b + 1) / n_bins, "n": len(idx), "mean_confidence": None,

@@ -95,3 +95,48 @@ def test_bad_input_rejected():
         fit([{"a": 1.0}], [1.5], ["c"])
     with pytest.raises(ValueError):
         fit([{"a": float("nan")}], [0.5], ["c"])
+
+
+def test_prediction_interval_uses_leave_one_out_residuals_with_held_out_coverage():
+    rng = np.random.default_rng(20260312)
+
+    def make_rows(n):
+        matrix = rng.uniform(-1.0, 1.0, size=(n, 3))
+        noise = rng.normal(0.0, 0.05, size=n)
+        values = 0.5 + 0.15 * matrix[:, 0] - 0.1 * matrix[:, 1] + 0.05 * matrix[:, 2] + noise
+        features = [
+            {"rule_pass": float(row[0]), "coverage": float(row[1]), "revisions": float(row[2])}
+            for row in matrix
+        ]
+        return features, [float(value) for value in values]
+
+    train_features, train_targets = make_rows(40)
+    model = fit(train_features, train_targets, [f"cfg{i % 5}" for i in range(40)])
+    held_out_features, held_out_targets = make_rows(200)
+    predictions = predict(model, held_out_features)
+
+    assert all("leave-one-out" in prediction["interval"] for prediction in predictions)
+    coverage = np.mean(
+        [
+            prediction["lo"] <= actual <= prediction["hi"]
+            for prediction, actual in zip(predictions, held_out_targets, strict=True)
+        ]
+    )
+    assert 0.8 <= coverage <= 1.0
+
+
+def test_prediction_interval_is_none_when_rows_do_not_exceed_features():
+    features = [
+        {"f0": 0.0, "f1": 1.0, "f2": 2.0, "f3": 3.0},
+        {"f0": 1.0, "f1": 2.0, "f2": 3.0, "f3": 4.0},
+        {"f0": 2.0, "f1": 3.0, "f2": 4.0, "f3": 5.0},
+        {"f0": 3.0, "f1": 4.0, "f2": 5.0, "f3": 6.0},
+    ]
+    model = fit(features, [0.2, 0.4, 0.6, 0.8], ["a", "b", "c", "d"])
+    prediction = predict(model, [{"f0": 1.5, "f1": 2.5, "f2": 3.5, "f3": 4.5}])[0]
+
+    assert prediction["point"] == pytest.approx(0.5)
+    assert prediction["lo"] is None and prediction["hi"] is None
+    assert prediction["interval"] is None
+    assert prediction["reason"] == "insufficient data for an interval"
+    assert prediction["tier"] == "MODEL-ESTIMATED"

@@ -1,6 +1,7 @@
 """Score (b) confidence calibration: Brier, reliability bins with n, ECE (R6.1)."""
 from __future__ import annotations
 
+import numpy as np
 import pytest
 
 from treehouse.score.calibration import CALIBRATION_VERSION, calibrate
@@ -55,3 +56,22 @@ def test_bad_input_rejected(conf, correct):
 def test_bad_n_bins_rejected():
     with pytest.raises(ValueError):
         calibrate([0.5], [True], n_bins=0)
+
+
+def test_numpy_scalar_inputs_accepted():
+    result = calibrate(
+        [np.float32(0.5), np.float64(0.75), np.int64(1)],
+        [np.True_, np.False_, np.True_],
+    )
+    assert result["n"] == 3
+    assert result["brier"] == pytest.approx((0.25 + 0.5625 + 0.0) / 3)
+
+
+@pytest.mark.parametrize(
+    ("confidence", "expected_bin"),
+    [(0.29, 29), (0.57, 57), (0.58, 58), (1.0, 99)],
+)
+def test_decimal_edges_land_in_expected_bin(confidence, expected_bin):
+    result = calibrate([confidence], [True], n_bins=100)
+    assert result["bins"][expected_bin]["n"] == 1
+    assert sum(row["n"] for row in result["bins"]) == 1
