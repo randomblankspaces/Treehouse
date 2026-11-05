@@ -9,8 +9,8 @@ import { useNarration, usePrefs, useSnapshot } from './hooks.ts';
 import { renderMap, TILE_CREDIT } from './mapart.ts';
 import type { Prefs } from './prefs.ts';
 import { Settings } from './settings.tsx';
-import '@fontsource/pixelify-sans/400.css';
-import '@fontsource/pixelify-sans/700.css';
+import '@fontsource/pixelify-sans/latin-400.css';   // latin only: files, not data: URIs (the API's CSP blocks those)
+import '@fontsource/pixelify-sans/latin-700.css';
 import './shell.css';
 import './story.css';
 

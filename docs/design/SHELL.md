@@ -44,6 +44,9 @@ data allowlist. It is labelled MOCK in the UI at all times.
   production build uses HTTP unless `VITE_TREEHOUSE_API=mock`.
 
 ## Visual system
+The logo (flat treehouse: purple canopy, yellow roof and door, black trunk) is not committed: the repo bans image
+bytes (`tests/unit/test_licence_scan.py`). Every visual is drawn in code from its palette.
+
 - **Palette** from the logo. Dark (default): ink `#0d0b12`, panel `#16131d`, text `#ece8f4`,
   purple `#b59cff`, key-decision yellow `#f6c945`, error `#ff8a80`, ok `#6fd39a`. Light and high-contrast
   themes; a colour-blind-safe set (Okabe–Ito blue/orange). Status is never colour alone: every state has

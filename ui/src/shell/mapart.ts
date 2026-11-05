@@ -72,10 +72,10 @@ export function renderMap(ctx: CanvasRenderingContext2D, W: number, H: number, s
   for (let i = 40; i >= 0; i--) { const u = i / 40; ctx.lineTo(A.x + u * A.w, A.y + coast(u) * A.h); }
   ctx.lineTo(0, A.y + coast(0) * A.h); ctx.closePath(); ctx.fill();
   for (const p of [0.16, 0.34, 0.5, 0.66, 0.88]) ctx.fillRect(A.x + (p - 0.03) * A.w, A.y + coast(p) * A.h - 2, A.w * 0.06, A.h * 0.2);
-  // aerial tiles
+  // aerial tiles (GSI covers Japan only; elsewhere the drawn map stands)
   ctx.imageSmoothingEnabled = true;
-  const S = TILE * k;
-  for (let ty = Math.floor(-oy / S); ty <= Math.floor((H - oy) / S); ty++) for (let tx = Math.floor(-ox / S); tx <= Math.floor((W - ox) / S); tx++) {
+  const S = TILE * k, japan = w > 122 && e < 154 && s > 20 && n < 46;
+  if (japan) for (let ty = Math.floor(-oy / S); ty <= Math.floor((H - oy) / S); ty++) for (let tx = Math.floor(-ox / S); tx <= Math.floor((W - ox) / S); tx++) {
     if (ty < 0 || tx < 0 || ty >= 2 ** z || tx >= 2 ** z) continue;
     const t = tile(z, tx, ty);
     if (t.ok) ctx.drawImage(t.img, Math.floor(tx * S + ox), Math.floor(ty * S + oy), Math.ceil(S) + 1, Math.ceil(S) + 1);
