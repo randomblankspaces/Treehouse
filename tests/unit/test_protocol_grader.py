@@ -106,6 +106,23 @@ def test_review_effort_in_analyst_hours():
     assert r.minutes_per_cell_basis == "assumption"
 
 
+@pytest.mark.parametrize("completeness", ["complete", "incomplete"])
+def test_heldout_review_savings_use_evaluated_cells(completeness):
+    r = grade([*CLAIMS, claim(560, 560, 0.1)], ASSETS, AOI,
+              completeness=completeness, excluded_assets=[ASSETS[0]], minutes_per_cell=3.0)
+    assert r.n_excluded_cells == 1
+    assert r.n_grid_cells == 15
+    assert r.exhaustive_hours == pytest.approx(r.n_grid_cells * 3.0 / 60)
+    if completeness == "complete":
+        assert r.review_effort == {"50": 1, "80": 4, "90": 4}
+        assert r.analyst_hours == pytest.approx({"50": 0.05, "80": 0.2, "90": 0.2})
+        assert r.saving_pct == pytest.approx({"50": 100 * 14 / 15, "80": 100 * 11 / 15,
+                                            "90": 100 * 11 / 15})
+    else:
+        assert r.analyst_hours == pytest.approx({"claimed_cells": 0.2})
+        assert r.saving_pct == pytest.approx({"claimed_cells": 100 * 11 / 15})
+
+
 def test_unreachable_recall_has_no_hours_or_saving():
     r = toy()
     assert r.analyst_hours == {"50": 2 * 2 / 60, "80": None, "90": None}

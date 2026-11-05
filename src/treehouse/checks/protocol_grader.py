@@ -302,7 +302,7 @@ def grade(claims: Iterable[PredictedClaim], assets: Iterable[Asset], aoi: Sequen
              "analyst_hours": "hours; assumption: cells × minutes_per_cell / 60",
              "exhaustive_hours": "hours to review every AOI cell at the assumed minutes_per_cell",
              "saving_pct": "percent less review time than exhaustive review; no completeness claim"}
-    exhaustive_hours = len(all_cells) * minutes_per_cell / 60
+    exhaustive_hours = n_cells * minutes_per_cell / 60
 
     def hours(cells):
         return {name: count * minutes_per_cell / 60 if count is not None else None
