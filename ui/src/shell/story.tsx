@@ -6,7 +6,7 @@ import { FOCUS_LABEL, focusOf, isKey, terminal, type Agent, type Narration, type
 import { PHASES, bboxOf, clock, phaseState, sinceStart, words } from './describe.ts';
 import { canPickFolder, exportRun } from './export.ts';
 import { useNarration, usePrefs, useRunNarration, useSnapshot } from './hooks.ts';
-import { pickMarker, renderMap, TILE_CREDIT } from './mapart.ts';
+import { basemapCredit, pickMarker, renderMap } from './mapart.ts';
 import { isColorSafe, type Prefs } from './prefs.ts';
 import { EvaluationPanels, PredictionEvidence, money, tokenTotal } from './report.tsx';
 import { Settings } from './settings.tsx';
@@ -306,7 +306,7 @@ function MapStage({snap, error, lines, prefs, reduce, mode, onNewTask}: {snap: R
           {snap?.mode === 'mock' && <><li><i className="sw embed" />Mock embedded cell</li><li><i className="sw cand" />Mock candidate</li></>}
           <li><i className="sw pin" />Predicted present <b>{count('present')}</b></li><li><i className="sw rej" />Absent <b>{count('absent')}</b></li><li><i className="sw uns" />Cannot assess <b>{count('cannot_assess')}</b></li>
         </ul>
-        <p className="credit">{TILE_CREDIT} · browser basemap, not agent evidence. Drawn fallback is illustrative.</p>
+        <p className="credit">{basemapCredit(snap ? bboxOf(snap) : null)} · browser basemap, not agent evidence. Drawn fallback is illustrative.</p>
       </div>
     </section>
     <aside className="panel" aria-label="Run summary">

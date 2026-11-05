@@ -333,7 +333,8 @@ class Controller:
 
 
 def create_app(
-    store_root: Path, *, origin="http://127.0.0.1:8765", frontend_dist: Path | None = None, judge_app=None, server_reference: Path | None = None
+    store_root: Path, *, origin="http://127.0.0.1:8765", frontend_dist: Path | None = None, judge_app=None, server_reference: Path | None = None,
+    live: bool = False,
 ):
     """Serve verified public data. POST /api/runs starts a pinned offline replay; POST /api/pitch/live starts a
     pinned live run only when the operator set TREEHOUSE_PITCH_LIVE=1 (see pitch_live)."""
@@ -429,6 +430,24 @@ def create_app(
 
     @app.get("/api/capabilities")
     def capabilities():
+        value = _capabilities()
+        if live:  # ui serve --live: the dev-view agent console runs real Strands agents on Amazon Bedrock
+            value["execution"] = "live"
+            on = {
+                "bedrock": ("available", "Live runs call Amazon Bedrock (Converse) with the models in config/models.yaml; spend guard enforced."),
+                "strands": ("available", "Live console runs use the Strands harness."),
+                "live_runs": ("available", "Agent console in the dev view: prompt + Bedrock model, one run at a time."),
+                "polly": ("available", "Run summaries are spoken with Amazon Polly (neural) when no pre-rendered narration exists."),
+            }
+            caps = [c for c in value["capabilities"] if c["id"] != "polly"]
+            for c in caps:
+                if c["id"] in on:
+                    c["status"], c["reason"] = on[c["id"]]
+            caps.append({"id": "polly", "label": "Amazon Polly", "status": on["polly"][0], "reason": on["polly"][1]})
+            value["capabilities"] = caps
+        return value
+
+    def _capabilities():
         return {
             "schema_version": "treehouse.ui/1",
             "execution": "offline",
@@ -715,6 +734,15 @@ def create_app(
     if judge_app is not None:
         app.mount("/judge", judge_app)
 
+    if live:  # opt-in live console (ui serve --live): real Bedrock runs started from the dev view
+        from treehouse.ui.live import mount
+
+        mount(app, store_root)
+
+        from treehouse.ui.voice import mount_voice
+
+        mount_voice(app, store_root, lambda rid: controller.snapshot(rid, reference=server_reference))
+
     @app.get("/{path:path}")
     def frontend(path: str):
         if path == "api" or path.startswith("api/") or path == "judge" or path.startswith("judge/"):
@@ -736,10 +764,14 @@ def create_app(
             if path != "index.html" and not public_asset:
                 target = dist / "index.html"
             elif not target.is_file():
+                if public_asset:  # missing narration sidecar or asset: let the client fall back
+                    raise HTTPException(404, "Not found")
                 target = dist / "index.html"
             if not target.is_file() or target.is_symlink():
                 raise PublicDataError()
             return FileResponse(target)
+        except HTTPException:
+            raise
         except Exception:
             raise HTTPException(503, "Product UI build is unavailable") from None
 

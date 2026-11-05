@@ -64,7 +64,7 @@ export function DecisionTree({snap, selectedClaim, onSelectClaim}:
 
   return <section className="dtree" aria-label="Decision tree">
     <h2>Decision tree</h2>
-    <p className="dtree-intro">Follow the agent from the task it accepted (the root) through every choice to the red sites it recorded (the leaves). The branch it took is solid; the options it turned down are greyed out. Select a red site to light up the path that produced it.</p>
+    <p className="dtree-intro">Follow the agent from the task it accepted (the root) through every choice to the sites it recorded (the leaves). The branch it took is solid; the options it turned down are greyed out. Select a site to light up the path that produced it.</p>
     {scale && <ScaleCard node={scale} cell={cellSizeOf(scaleStep)} />}
     <ol className="dtree-roots">{forest.map(node => <TreeNode key={node.decision_id} node={node} depth={0}
       lit={litPath} markers={snap.markers} selectedClaim={selectedClaim} onSelectClaim={onSelectClaim} />)}</ol>

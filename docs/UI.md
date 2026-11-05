@@ -121,3 +121,11 @@ coverage, early stop, denied tools and insufficient observations retain their
 explicit no-grade/limitation explanations. Catalogue coordinate matching against a
 small public labelled reference is not a measurement of image-classifier accuracy,
 exhaustive geographic inventory quality, or parity with a human investigation.
+
+## Live console (dev view)
+
+Started with `treehouse ui serve --store out/live/store --live` (off by default, local-only, needs AWS credentials in the server environment, the `api` extra and a passing spend guard). `/dev` then shows a "Live console" above the run: a world map of the places a live run can use (task cards under `tasks/` whose tools match the pinned live template), a model list from `config/models.yaml` (models without vision are disabled for places that need vision), and a spend confirmation that must be ticked before launch. Code: `src/treehouse/ui/live.py` (server) and `ui/src/shell/console.tsx` (console and transcript).
+
+The server builds the config from `fixtures/live/configs/t1-nagoya-nova-strands.json`, checks the spend guard, and runs `treehouse sandbox run ... bedrock_recording` in a subprocess, one at a time. The sealed run opens in the dev view like any other run: red dots on the map for `present` claims, the decision tree, and an **Agent transcript**. The transcript lists every tool call with its recorded reason, turned-down alternatives and a pass/fail outcome, the model's thinking lines, and which foundation model (Clay v1.5 or AEF) the agent used. The agent makes that choice; the console only lists the models the place allows.
+
+Example (2026-11-05): Nova Pro on Nagoya made 51 tool calls in 134 s; 27 were refused as `missing_decision` and 6 `present` claims were shown. A Nova Lite run made 0 claims. A live run costs money and is not available in a replay-only server.

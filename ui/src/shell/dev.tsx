@@ -3,13 +3,14 @@ import { createRoot } from 'react-dom/client';
 import { client } from './client.ts';
 import { FOCUS_LABEL, focusOf, isKey, terminal, type Json, type RunSnapshot, type RunSummary, type TraceStep } from './contract.ts';
 import { KIND_WORD, PHASES, asOf, bboxOf, gist, phaseState, sentence, sinceStart, title } from './describe.ts';
-import { pick, pickMarker, renderMap, TILE_CREDIT } from './mapart.ts';
+import { basemapCredit, pick, pickMarker, renderMap } from './mapart.ts';
 import { useNarration, usePrefs, useRunNarration, useSnapshot } from './hooks.ts';
 import { isColorSafe, type Prefs } from './prefs.ts';
 import { EvaluationPanels, PredictionEvidence, money, tokenTotal } from './report.tsx';
 import { Settings } from './settings.tsx';
 import { DecisionTree, PlainRunSummary } from './tree.tsx';
 import { ExecutionMap } from './execmap.tsx';
+import { LiveConsole, Transcript } from './console.tsx';
 import './shell.css';
 import './tree.css';
 
@@ -98,7 +99,7 @@ function DevApp() {
         <div><dt>Tokens in / out</dt><dd>{tokenTotal(snap)} total</dd></div>
         <div><dt>Steps</dt><dd>{steps.length}</dd></div>
       </dl>}
-      <span className="source" title="Where this data comes from">{client.label} · {snap?.mode ?? 'unknown'}{snap?.synthetic ? ' · synthetic' : ''}</span>
+      <span className="source" title="Where this data comes from">{snap ? `${snap.mode !== 'unknown' ? snap.mode : snap.context.provider || 'recorded run'} · ${snap.context.model_id || 'model not recorded'}` : client.label}{snap?.synthetic ? ' · synthetic data' : ''}</span>
       {client.replay && runId && <button type="button" onClick={() => { client.replay!(runId); switchRun(runId); setTick(t => t + 1); }}>Replay</button>}
       <button type="button" onClick={() => settings.current?.showModal()}>Settings</button>
     </header>
@@ -111,6 +112,7 @@ function DevApp() {
         <li>Click any step (or use ↑ ↓) to see why it happened, what the model was thinking, its inputs and result. <b>Up to / Into</b> moves between a step and the steps inside it.</li>
       </ul>
     </details>
+    <LiveConsole onRun={id => { setTick(t => t + 1); switchRun(id); }} />
     {error && <p className="alert" role="alert">Could not load run data: {error}</p>}
     {!snap && !error && <p className="empty">Loading run…</p>}
     {snap && <>
@@ -155,6 +157,7 @@ function DevApp() {
         {lines.length > 1 && <details><summary>Earlier lines</summary><ol>{lines.slice(1).map((l, i) => <li key={i}>{l.text}</li>)}</ol></details>}
         {runNarr && <p className="narr-summary"><span className="voice-label">{runNarr.source === 'polly' ? 'Voice: Amazon Polly' : 'Voice: browser speech'}</span> {runNarr.text}</p>}
       </section>}
+      <Transcript snap={snap} />
       <ExecutionMap snap={snap} selectedClaim={selectedClaim} onSelectClaim={setSelectedClaim} />
       <DecisionTree snap={snap} selectedClaim={selectedClaim} onSelectClaim={setSelectedClaim} />
       <main className="work">
@@ -239,7 +242,7 @@ function DevMap({snap, step, night, reduce, palette, selectedClaim, onSelectClai
       <dt>Cursor</dt><dd>{hover ? `${hover.lat.toFixed(5)}°N ${hover.lon.toFixed(5)}°E · cell ${hover.col},${hover.row}` : 'hover the map'}</dd>
       <dt>Active tools</dt><dd>{running.length ? running.join(', ') : 'none'}</dd>
       <dt>Labels so far</dt><dd>{n('present')} predicted present · {n('absent')} absent · {n('cannot_assess')} cannot assess</dd>
-      <dt>Browser basemap</dt><dd>{TILE_CREDIT}. Display only; not evidence the agent inspected imagery. Drawn fallback is illustrative.</dd>
+      <dt>Browser basemap</dt><dd>{basemapCredit(bbox)}. Display only; not evidence the agent inspected imagery. Drawn fallback is illustrative.</dd>
     </dl>
     <PredictionEvidence snap={snap} selected={selectedPrediction} onSelect={setSelectedPrediction} />
     <EvaluationPanels snap={snap} />

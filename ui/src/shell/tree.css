@@ -3,27 +3,27 @@
    (data-cb=on) and contrast theme all work without new colours. Status and verdict are shown by glyph shape
    as well as colour. Single column on a phone; nodes are collapsible. */
 
-.shell .dtree{padding:.8rem 1rem;border-bottom:1px solid var(--line);background:var(--panel)}
-.shell .dtree-intro{font-size:.85rem;color:var(--muted);margin:.2rem 0 .8rem;max-width:52rem}
+.shell .dtree{padding:1.5rem;border-bottom:1px solid var(--line);background:var(--panel)}
+.shell .dtree-intro{font-size:.95rem;line-height:1.55;color:var(--muted);margin:.25rem 0 1rem;max-width:75ch}
 
 /* Pinned scale card */
-.shell .scale-card{border:1px solid var(--line);border-left:4px solid var(--fm);border-radius:6px;padding:.7rem .9rem;margin-bottom:1rem;background:var(--raised)}
-.shell .scale-eyebrow{font:600 .68rem var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--fm);margin:0 0 .25rem}
-.shell .scale-card h3{margin:0 0 .3rem;font-size:1rem}
-.shell .scale-why{margin:.1rem 0 .5rem;font-size:.9rem}
-.shell .scale-chosen{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin:.2rem 0;font-size:.85rem}
+.shell .scale-card{border:1px solid var(--line);border-left:4px solid var(--fm);border-radius:6px;padding:1rem 1.25rem;margin-bottom:1.25rem;background:var(--raised)}
+.shell .scale-eyebrow{font:650 .85rem var(--sans);letter-spacing:0;color:var(--fm);margin:0 0 .25rem}
+.shell .scale-card h3{margin:0 0 .5rem;font-size:1.1rem}
+.shell .scale-why{margin:.1rem 0 .75rem;font-size:1rem;line-height:1.55;max-width:75ch}
+.shell .scale-chosen{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin:.35rem 0;font-size:.92rem}
 .shell .scale-chosen .chosen b{color:var(--ok)}
-.shell .scale-rejected{list-style:none;margin:.2rem 0 .4rem;padding:0;font-size:.82rem;color:var(--muted)}
+.shell .scale-rejected{list-style:none;margin:.35rem 0 .5rem;padding:0;font-size:.9rem;line-height:1.5;color:var(--muted)}
 .shell .scale-rejected .rejected b{color:var(--muted);text-decoration:line-through}
-.shell .scale-conf{display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--muted);margin:.3rem 0 0}
+.shell .scale-conf{display:flex;align-items:center;gap:.5rem;font-size:.88rem;color:var(--muted);margin:.5rem 0 0}
 
 /* Confidence bar (shared) */
 .shell .dtree .bar{display:inline-block;inline-size:7rem;block-size:.55rem;background:var(--line);border-radius:3px;overflow:hidden;vertical-align:middle}
 .shell .dtree .bar>span{display:block;block-size:100%;background:var(--accent)}
-.shell .dtree .num{font-family:var(--mono);font-size:.78rem}
+.shell .dtree .num{font-family:var(--mono);font-size:.85rem}
 
 /* Verdict chip: glyph + word so it never relies on colour alone */
-.shell .verdict{display:inline-flex;align-items:center;gap:.2rem;font:600 .68rem var(--mono);padding:.05rem .4rem;border-radius:3px;border:1px solid currentColor;white-space:nowrap}
+.shell .verdict{display:inline-flex;align-items:center;gap:.2rem;font:600 .74rem var(--mono);padding:.1rem .45rem;border-radius:3px;border:1px solid currentColor;white-space:nowrap}
 .shell .verdict.v-sound{color:var(--ok)}
 .shell .verdict.v-invalid{color:var(--err)}
 .shell .verdict.v-not_evaluated{color:var(--muted)}
@@ -31,32 +31,32 @@
 /* Tree rows */
 .shell .dtree-roots,.shell .dnode-children{list-style:none;margin:0;padding:0}
 .shell .dnode-children{margin-inline-start:.9rem;border-inline-start:1px dashed var(--line);padding-inline-start:.5rem}
-.shell .dnode{margin:.15rem 0}
+.shell .dnode{margin:.35rem 0}
 .shell .dnode-head{display:flex;gap:.4rem;align-items:flex-start}
-.shell .dnode .twirl{flex:none;min-height:auto;width:1.4rem;height:1.6rem;padding:0;background:transparent;border:0;color:var(--accent);font-size:.9rem;line-height:1.6rem}
+.shell .dnode .twirl{flex:none;min-height:auto;width:1.75rem;height:1.75rem;padding:0;background:transparent;border:0;border-radius:4px;color:var(--accent);font-size:1rem;line-height:1.75rem}
 .shell .dnode .twirl.leaf-mark{color:var(--muted);text-align:center}
-.shell .dnode-body{flex:1;min-width:0;border:1px solid transparent;border-radius:5px;padding:.25rem .4rem}
+.shell .dnode-body{flex:1;min-width:0;border:1px solid transparent;border-radius:6px;padding:.5rem .75rem}
 .shell .dnode.on-path>.dnode-head>.dnode-body{border-color:var(--key);background:color-mix(in srgb,var(--key) 12%,var(--panel))}
 .shell .dnode.leaf>.dnode-head>.dnode-body{background:color-mix(in srgb,var(--err) 7%,var(--panel))}
-.shell .dnode-title{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;margin:0 0 .15rem;font-size:.82rem}
-.shell .dnode-title .root-tag{font:600 .64rem var(--mono);background:var(--accent);color:var(--ink);border-radius:3px;padding:.05rem .35rem;text-transform:uppercase}
-.shell .dnode-title .focus{font:600 .66rem var(--mono);color:var(--muted)}
+.shell .dnode-title{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .5rem;margin:0 0 .25rem;font-size:.95rem;line-height:1.4}
+.shell .dnode-title .root-tag{font:650 .72rem var(--sans);background:var(--accent);color:var(--ink);border-radius:3px;padding:.1rem .4rem}
+.shell .dnode-title .focus{font:600 .78rem var(--sans);color:var(--muted)}
 .shell .dnode-title .focus.f-foundation_model{color:var(--fm)}
 .shell .dnode-title .focus.f-data_access{color:var(--da)}
-.shell .dnode-title code{font-family:var(--mono);font-size:.78rem}
-.shell .dnode-why{margin:.1rem 0;font-size:.85rem}
-.shell .dnode-conf{display:flex;align-items:center;gap:.45rem;margin:.2rem 0}
-.shell .dnode-alts{list-style:none;margin:.2rem 0;padding:0;font-size:.78rem;color:var(--muted)}
-.shell .dnode-alts .not-taken{opacity:.72}
+.shell .dnode-title code{font-family:var(--mono);font-size:.88rem}
+.shell .dnode-why{margin:.2rem 0 .35rem;font-size:.95rem;line-height:1.55;max-width:75ch}
+.shell .dnode-conf{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin:.35rem 0;font-size:.88rem}
+.shell .dnode-alts{list-style:none;margin:.2rem 0;padding:0;font-size:.88rem;line-height:1.5;color:var(--muted)}
+.shell .dnode-alts .not-taken{opacity:1}
 .shell .dnode-alts .not-taken b{text-decoration:line-through}
-.shell .dnode-claims{list-style:none;margin:.3rem 0 .1rem;padding:0;display:flex;flex-wrap:wrap;gap:.35rem}
-.shell .claim-leaf{min-height:36px;padding:.15rem .5rem;font-size:.8rem;border:1px solid var(--line);border-radius:999px;background:var(--raised)}
+.shell .dnode-claims{list-style:none;margin:.5rem 0 .2rem;padding:0;display:flex;flex-wrap:wrap;gap:.5rem}
+.shell .claim-leaf{min-height:44px;padding:.25rem .8rem;font-size:.88rem;border:1px solid var(--line);border-radius:999px;background:var(--raised)}
 .shell .claim-leaf.on{border-color:var(--key);background:color-mix(in srgb,var(--key) 20%,var(--panel));font-weight:650}
 .shell .dnode-rv{margin:.2rem 0}
-.shell .dnode-rv ul{margin:.2rem 0;padding-inline-start:1.1rem;font-size:.78rem;color:var(--muted)}
+.shell .dnode-rv ul{margin:.2rem 0;padding-inline-start:1.1rem;font-size:.88rem;line-height:1.5;color:var(--muted)}
 .shell .dnode-rv .rv-pass b{color:var(--ok)}.shell .dnode-rv .rv-fail b{color:var(--err)}
-.shell .dnode-think summary{font-size:.8rem}
-.shell .dnode-think p{font-size:.84rem;color:var(--muted);border-inline-start:3px solid var(--line);padding:.3rem .6rem;margin:.2rem 0}
+.shell .dnode-think summary{font-size:.9rem}
+.shell .dnode-think p{font-size:.92rem;line-height:1.55;max-width:75ch;color:var(--muted);border-inline-start:3px solid var(--line);padding:.5rem .75rem;margin:.2rem 0}
 
 /* Status shape markers: present filled, cannot_assess hollow diamond, absent cross */
 .shell .shape{display:inline-block;font-weight:700;width:1.1em;text-align:center}
@@ -65,24 +65,24 @@
 .shell .shape.s-absent,.shell .shape.s-destroyed{color:var(--err)}
 
 /* Per-claim confidence provenance */
-.shell .claim-conf{margin-top:.9rem;border:1px solid var(--line);border-radius:6px;padding:.7rem .9rem;background:var(--raised)}
-.shell .claim-conf h3{margin:0 0 .4rem;font-size:.95rem}
-.shell .claim-conf .stated{font-size:.9rem;margin:.1rem 0 .4rem}
-.shell .claim-conf .earned{font:600 .72rem var(--mono);padding:.05rem .4rem;border-radius:3px;border:1px solid currentColor}
+.shell .claim-conf{margin-top:.9rem;border:1px solid var(--line);border-radius:6px;padding:1rem 1.25rem;background:var(--raised)}
+.shell .claim-conf h3{margin:0 0 .5rem;font-size:1.05rem}
+.shell .claim-conf .stated{font-size:1rem;line-height:1.55;margin:.1rem 0 .4rem}
+.shell .claim-conf .earned{font:600 .78rem var(--mono);padding:.05rem .4rem;border-radius:3px;border:1px solid currentColor}
 .shell .claim-conf .earned.e-earned{color:var(--ok)}
 .shell .claim-conf .earned.e-unearned{color:var(--err)}
 .shell .claim-conf .earned.e-unestablished{color:var(--muted)}
-.shell .claim-conf .lbl{font-size:.74rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:.4rem 0 .1rem}
-.shell .claim-conf ul{margin:.1rem 0;padding-inline-start:1.1rem;font-size:.82rem}
+.shell .claim-conf .lbl{font-size:.88rem;font-weight:650;color:var(--text);margin:.75rem 0 .2rem}
+.shell .claim-conf ul{margin:.1rem 0;padding-inline-start:1.1rem;font-size:.92rem;line-height:1.5}
 .shell .claim-conf .raised li{color:var(--ok)}
 .shell .claim-conf .lowered li{color:var(--err)}
-.shell .claim-conf .note{font-size:.82rem;color:var(--muted);margin:.5rem 0 0}
+.shell .claim-conf .note{font-size:.88rem;color:var(--muted);margin:.5rem 0 0}
 
 /* Plain-language run summary (ends both views) */
-.shell .run-summary{padding:.9rem 1rem 1.3rem;border-top:2px solid var(--line);background:var(--panel)}
-.shell .run-summary p{margin:.35rem 0;font-size:.92rem;line-height:1.55;max-width:60rem}
+.shell .run-summary{padding:1.5rem 1.5rem 2rem;border-top:2px solid var(--line);background:var(--panel)}
+.shell .run-summary p{margin:.6rem 0;font-size:1rem;line-height:1.6;max-width:75ch}
 .shell .run-summary p b{color:var(--text)}
-.shell .summary-limits{margin:.2rem 0;padding-inline-start:1.2rem;font-size:.85rem;color:var(--muted)}
+.shell .summary-limits{margin:.4rem 0;padding-inline-start:1.2rem;font-size:.95rem;line-height:1.55;max-width:75ch;color:var(--muted)}
 
 /* Story view: the tree lives inside the summary dialog, which is light-on-parchment; inherit its colours */
 .story .summary .dtree,.story .summary .run-summary{background:transparent;border:0;padding:0;margin:1rem 0}
@@ -92,33 +92,36 @@
 @media (max-width:640px){
   .shell .dnode-children{margin-inline-start:.5rem;padding-inline-start:.4rem}
   .shell .dtree .bar{inline-size:5rem}
-  .shell .dnode-title{font-size:.8rem}
+  .shell .dnode-title{font-size:.92rem}
+  .shell .dtree,.shell .execmap,.shell .run-summary{padding-inline:1rem}
+  .shell .dnode-body{padding:.4rem .5rem}
   .shell .scale-chosen{flex-direction:column;align-items:flex-start}
-  .shell .run-summary p{font-size:.9rem}
+  .shell .run-summary p{font-size:1rem}
 }
 
 /* Respect reduced motion: no transitions anywhere in the tree */
+@media (prefers-reduced-motion:reduce){.shell .dtree *{transition:none !important;animation:none !important}}
 .shell[data-motion=reduce] .dtree *{transition:none !important;animation:none !important}
 
 /* Narrator run summary + voice source label */
-.shell .narr-summary{font-size:.85rem;color:var(--muted);margin:.4rem 0 0}
-.shell .voice-label{display:inline-block;font:600 .64rem var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--ink);background:var(--da);border-radius:3px;padding:.05rem .4rem;margin-inline-end:.4rem;vertical-align:1px}
+.shell .narr-summary{font-size:.92rem;line-height:1.55;max-width:75ch;color:var(--muted);margin:.4rem 0 0}
+.shell .voice-label{display:inline-block;font:650 .72rem var(--sans);letter-spacing:0;color:var(--ink);background:var(--da);border-radius:3px;padding:.05rem .4rem;margin-inline-end:.4rem;vertical-align:1px}
 .story .narr-summary{display:block;margin-top:.3rem}
 .story .narr-summary .voice-label{background:rgba(0,0,0,.6);color:#fff}
 
 /* Execution map: lanes by kind of work, nodes left to right in time. Uses shell tokens only. */
-.shell .execmap{padding:.8rem 1rem;border-bottom:1px solid var(--line);background:var(--panel)}
-.shell .execmap h2{margin:0 0 .4rem}
-.shell .execmap-kpis{display:flex;flex-wrap:wrap;gap:.4rem 1.2rem;margin:0 0 .6rem;font:.85rem var(--mono);color:var(--muted)}
+.shell .execmap{padding:1.5rem;border-bottom:1px solid var(--line);background:var(--panel)}
+.shell .execmap h2{margin:0 0 .75rem}
+.shell .execmap-kpis{display:flex;flex-wrap:wrap;gap:.5rem 1.5rem;margin:0 0 .75rem;font:.92rem var(--mono);color:var(--muted)}
 .shell .execmap-kpis b{color:var(--text);font-size:1.05rem}
 .shell .execmap-kpis .bad b{color:var(--err)}
 .shell .execmap-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--raised)}
 .shell .execmap svg{display:block}
 .shell .execmap .lane-band{fill:transparent}
 .shell .execmap .lane-band.alt{fill:var(--line);opacity:.35}
-.shell .execmap .lane-label{fill:var(--muted);font:600 10px var(--mono);letter-spacing:.04em;text-transform:uppercase}
+.shell .execmap .lane-label{fill:var(--muted);font:600 11px var(--mono);letter-spacing:.04em;text-transform:uppercase}
 .shell .execmap .flow{fill:none;stroke:var(--muted);stroke-width:1.5;opacity:.55}
-.shell .execmap .node-label{fill:var(--muted);font:9px var(--mono);text-anchor:middle}
+.shell .execmap .node-label{fill:var(--muted);font:10.5px var(--mono);text-anchor:middle}
 .shell .execmap .node-count{fill:var(--err);font:700 10px var(--mono)}
 .shell .execmap .n-sound{fill:var(--ok);stroke:var(--ok)}
 .shell .execmap .n-invalid{fill:var(--err);stroke:var(--err)}
@@ -127,11 +130,13 @@
 .shell .execmap .n-claim polygon{stroke-width:2;fill-opacity:.85}
 .shell .execmap .n-claim{cursor:pointer}
 .shell .execmap .n-claim.on polygon{stroke:var(--text);stroke-width:3}
-.shell .execmap .n-claim:focus-visible{outline:2px solid var(--focus)}
+.shell .execmap .n-claim:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 .shell .execmap .n-fail line{stroke:var(--err);stroke-width:3;stroke-linecap:round}
 .shell .execmap .alt line,.shell .execmap .alt circle{fill:none;stroke:var(--muted);stroke-dasharray:2 2}
-.shell .execmap-legend{display:flex;flex-wrap:wrap;gap:.3rem 1rem;list-style:none;margin:.5rem 0 0;padding:0;font-size:.78rem;color:var(--muted)}
+.shell .execmap-legend{display:flex;flex-wrap:wrap;gap:.4rem 1.25rem;list-style:none;margin:.75rem 0 0;padding:0;font-size:.88rem;color:var(--muted)}
 .shell .execmap-legend li{display:flex;align-items:center;gap:.3rem}
 .shell .execmap-legend svg{overflow:visible}
 .shell .execmap-legend .n-sound{fill:var(--ok)}
 .shell .execmap-legend .n-invalid{fill:var(--err)}
+.shell .dnode .twirl:hover{background:var(--raised)}
+.shell .dtree .bar{padding:0;position:static;border:0;gap:0;flex-wrap:nowrap}

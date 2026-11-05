@@ -62,6 +62,7 @@ temp/
 
 # Treehouse outputs (demo store, cassettes from record mode)
 out/
+outputs/
 .treehouse/
 
 # /lead process state (local only)

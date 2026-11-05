@@ -29,3 +29,10 @@ models:
   claude-sonnet-5-5@us: {input: 0.0022, output: 0.011, cache_read: 0.00011, cache_write: 0.00275}
   claude-sonnet-5-5@global: {input: 0.002, output: 0.01, cache_read: 0.0001, cache_write: 0.0025}
   nova-pro@us: {input: 0.0008, output: 0.0032, cache_read: 0.0002, cache_write: null}
+  # Added 2026-11-05 from the first sandbox's price table (pricing/prices.yaml in the team-43 clay repo):
+  # Nova Lite and Llama from the AWS Price List API; Claude 4.x typed from AWS pricing (+10% on the us. profile).
+  nova-lite@us: {input: 0.00006, output: 0.00024, cache_read: null, cache_write: null}
+  claude-sonnet-4-6@us: {input: 0.0033, output: 0.0165, cache_read: null, cache_write: null}
+  claude-sonnet-4-6@global: {input: 0.003, output: 0.015, cache_read: null, cache_write: null}
+  claude-sonnet-4-5@us: {input: 0.0033, output: 0.0165, cache_read: null, cache_write: null}
+  llama-3-3-70b@us: {input: 0.00072, output: 0.00072, cache_read: null, cache_write: null}

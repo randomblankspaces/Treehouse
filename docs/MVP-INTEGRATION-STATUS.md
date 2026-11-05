@@ -1,5 +1,7 @@
 # MVP integration and presentation readiness
 
+> Superseded on 2026-11-05 — see [README.md](../README.md) and [docs/KIRO-STATUS.md](KIRO-STATUS.md).
+
 This page supersedes earlier UI-not-built and documentation-only status notes. Historical run artifacts remain unchanged. The product evaluates the observable workflow of an agent creating a geospatial database, and independently evaluates the resulting predictions. It does not recover hidden internal reasoning.
 
 ## Report contract

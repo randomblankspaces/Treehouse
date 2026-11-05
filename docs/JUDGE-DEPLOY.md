@@ -33,8 +33,7 @@ limits. Do not zip the Mac `.venv`. Direct requirements pin Strands 1.63.0 and
 boto3 1.43.123; transitive wheels resolve at package time. Retain the resulting
 artifact SHA-256 in deployment state as the reproducible artifact identity.
 
-Local outputs on a Mac must stay under `/Users/suhas/Codex`; the default repository
-already meets that requirement. In Kiro, use its checkout-local `outputs/judge`.
+Keep local outputs under the repository-relative `outputs/judge/` directory on both Mac and Kiro.
 No AgentCore CLI bootstrap or Transaction Search enablement is needed.
 
 ## Spend decision before applying

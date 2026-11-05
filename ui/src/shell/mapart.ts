@@ -5,6 +5,13 @@ import type { MapMarker, TraceStep } from './contract.ts';
 
 export const COLS = 62, ROWS = 48;   // ≈ 160 m cells over the Nagoya Port AOI
 export const TILE_CREDIT = 'Aerial imagery: GSI Japan (地理院タイル)';
+/** GSI tiles cover Japan only (same test as renderMap); elsewhere the map is drawn, with no imagery credit. */
+export function inJapan(bbox: [number, number, number, number] | null): boolean {
+  return !!bbox && bbox[0] > 122 && bbox[2] < 154 && bbox[1] > 20 && bbox[3] < 46;
+}
+export function basemapCredit(bbox: [number, number, number, number] | null): string {
+  return inJapan(bbox) ? TILE_CREDIT : 'Drawn map (no aerial tiles for this area)';
+}
 export type Palette = 'default' | 'okabe-ito' | 'blue-yellow' | 'monochrome';
 export type MapState = {mode: Mode; t: number; animate: boolean; colorSafe: boolean; palette?: Palette; bbox: [number, number, number, number] | null;
   steps: TraceStep[]; elapsed: number; markers: MapMarker[]; born: number[];
