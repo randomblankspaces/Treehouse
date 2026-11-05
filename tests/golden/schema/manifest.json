@@ -503,6 +503,18 @@
           "title": "Seed",
           "type": "integer"
         },
+        "servers": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Servers"
+        },
         "summarizer": {
           "anyOf": [
             {

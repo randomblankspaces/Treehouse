@@ -1,4 +1,4 @@
-"""Vision errors identify missing wiring before attempting any imagery reads."""
+"""Vision errors retain the byte-exact message used by recorded model requests."""
 
 import pytest
 
@@ -7,7 +7,7 @@ from treehouse.tools.retrieval import retrieval_for_card
 
 
 @pytest.mark.parametrize("missing", ["vision", "gsi", "allowlist"])
-def test_vision_error_names_missing_component_and_server_factory(missing):
+def test_vision_error_preserves_recorded_message(missing):
     tools = retrieval_for_card(load_card("tasks/t1-nagoya-warehouses.yaml"), vision=object(), gsi=object())
     if missing == "allowlist":
         tools.vision_allowed = False
@@ -15,6 +15,7 @@ def test_vision_error_names_missing_component_and_server_factory(missing):
         setattr(tools, missing, None)
     error = tools.classify("unused", "vision_subagent", ["r000c000"])
     assert error.code == "not_configured"
-    assert {"vision": "vision model", "gsi": "GSI imagery source", "allowlist": "task allow-list"}[missing] in error.message
-    assert "--servers treehouse.providers.factories:vision_servers" in error.message
-    assert "TREEHOUSE_VISION_MODE" in error.message
+    assert error.message == (
+        "vision_subagent needs an injected vision model and "
+        "the gsi-seamless-aerial-japan source on the task allow-list"
+    )
