@@ -47,11 +47,11 @@ flowchart LR
 |---|---|---|---|
 | **Amazon Bedrock** (Converse) | Worker models Claude Sonnet 5.5, Nova Pro, Haiku 5.5; vision model for the sub-agent; Sonnet *adaptive thinking* | **Ran live** — 18+ agent runs; Haiku and adaptive thinking verified 2026-11-05 | `fixtures/live/cassettes/`, `.spend/spend.jsonl` |
 | **Strands Agents** (AWS open source) | The agent loop under evaluation; also the vision sub-agent | **Ran live** | `fixtures/live/runs/`, `docs/design/STRANDS.md` |
-| **Amazon Bedrock AgentCore Evaluations** | Built-in ToolSelectionAccuracy, ToolParameterAccuracy, TrajectoryInOrderMatch, GoalSuccessRate on the run's spans, plus Treehouse **code-based Lambda evaluators** (`treehouse_rules`, `treehouse_guard`) | **Ran live** | `fixtures/live/agentcore/` |
+| **Amazon Bedrock AgentCore Evaluations** | Built-in ToolSelectionAccuracy, ToolParameterAccuracy, TrajectoryInOrderMatch, GoalSuccessRate on the run's spans, plus Treehouse **code-based Lambda evaluators** (`treehouse_rules`, `treehouse_guard`) | **Ran live on one recorded run**, `t1-nagoya-sonnet-strands-3` | `fixtures/live/agentcore/t1-nagoya-sonnet-strands-3.agentcore.json` |
 | **AgentCore Observability / CloudWatch Transaction Search (X-Ray)** | Span store the evaluators read; OTel-GenAI span shape (`invoke_agent` / `chat` / `execute_tool`) | **Enabled live** | `docs/KIRO-STATUS.md` task 0 |
 | **AWS Lambda** | Treehouse rule and guard evaluators deployed as AgentCore code-based evaluators | **Deployed live (CDK)** | `infra/cdk-outputs.json` |
 | **Amazon S3 Object Lock (COMPLIANCE)** | Every sealed run is write-once; even the account admin cannot delete a locked version | **Ran live** — admin delete **denied** | `fixtures/live/receipts/denied-delete.json` |
-| **AWS KMS** + bucket policy | Grading keys live in a separate KMS-encrypted bucket with an explicit Deny for the worker role, so the agent can never read the answer key | **Deployed live (CDK)** | `infra/treehouse_infra.py` |
+| **AWS KMS** + bucket policy | Separate KMS-encrypted key bucket and worker/grader roles implement the designed isolation; the recorded runs use the gateway policy to deny `keys/` paths | **Deployed live (CDK)** | `infra/treehouse_infra.py` |
 | **AWS CDK** (IaC) | Two stacks: `RunStoreStack`, `EvalStack`; reproducible in any account | **Deployed live** | `infra/` |
 | **AWS Open Data (source.coop on S3)** | Real LGND Clay v1.5 embeddings read anonymously with bounded range reads | **Ran live** (real index: 53 × 1,280 m cells, scene S2B_53SPU_20240419) | PR #29, `tasks/t1-nagoya-warehouses-real.yaml` |
 | **Amazon Polly** (neural) | Narrator for the web report (accessibility): `scripts/narrate_polly.py` renders the run's plain-language summary to MP3 + a sha256 sidecar; the UI plays the MP3 only when `sha256(shown text)` matches, else browser speech, labelled "Voice: Amazon Polly" | **Ran live** — MP3s generated for committed demo runs | `ui/public/narration/`, `scripts/narrate_polly.py` |
@@ -72,8 +72,11 @@ flowchart LR
   domain rules (scale fit, imagery licence, held-out isolation) that no generic evaluator knows.
 - **Object Lock COMPLIANCE, not Governance:** an evaluation is only trustworthy if nobody — including us — can rewrite
   a run after seeing its score. The denied admin delete is the proof.
-- **Separate key bucket with a worker Deny:** the agent physically cannot reach the answer key; isolation is enforced
-  by IAM, not by prompt.
+- **Key isolation:** the KMS-encrypted bucket and worker/grader roles are deployed for the designed IAM isolation
+  (`infra/treehouse_infra.py`). The recorded runs used the workshop admin role (`WSParticipantRole`), not those
+  roles. Keys are committed under `keys/{plateau,osm,public-benchmark,synth}/`; no code in `src/` or `scripts/`
+  reads the key bucket or assumes the worker/grader roles. In these runs, the tool gateway denies `keys/` paths
+  (`src/treehouse/gateway/policy.py`); the manifests describe local key isolation, not IAM enforcement.
 - **Three scores never blended:** reasoning validity, calibration and predicted accuracy answer different questions;
   blending them would hide exactly the failures ADB needs to see.
 - **Real public data, honestly labelled:** LGND Clay embeddings are real; where a source could not be read from the

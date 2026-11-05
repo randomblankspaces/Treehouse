@@ -47,5 +47,59 @@ models:
     image_delivery: user_turn
     max_image_px: 2048
     price_ref: nova-pro
-    quota_note: "UNVERIFIED until K1: on-demand RPM/TPM quotas unknown; adapter concurrency 2"
-    verified: false
+    quota_note: "Converse + tool use OK in us-east-1 (probe 2026-11-05, account WSParticipantRole); image delivery and quotas not measured"
+    verified: true
+  # --- Added 2026-11-05: the real Bedrock models from the team's first sandbox (team-43 clay repo). ---
+  # Same ids and inference profiles that sandbox called on Bedrock; UNVERIFIED here until the K1 probe.
+  - key: nova-lite
+    family: amazon-nova
+    model_id: amazon.nova-lite-v1:0
+    inference_profile: us.amazon.nova-lite-v1:0
+    alt_profiles: []
+    region: us-east-1
+    vision: true
+    tool_use: true
+    image_delivery: user_turn
+    max_image_px: 2048
+    price_ref: nova-lite
+    quota_note: "Converse + tool use OK in us-east-1 (probe 2026-11-05, account WSParticipantRole); image delivery and quotas not measured"
+    verified: true
+  - key: claude-sonnet-4-6
+    family: anthropic-claude
+    model_id: anthropic.claude-sonnet-4-6
+    inference_profile: us.anthropic.claude-sonnet-4-6
+    alt_profiles: [global.anthropic.claude-sonnet-4-6]
+    region: us-east-1
+    vision: true
+    tool_use: true
+    image_delivery: user_turn
+    max_image_px: 1568
+    price_ref: claude-sonnet-4-6
+    quota_note: "Converse + tool use OK in us-east-1 (probe 2026-11-05, account WSParticipantRole); image delivery and quotas not measured"
+    verified: true
+  - key: claude-sonnet-4-5
+    family: anthropic-claude
+    model_id: anthropic.claude-sonnet-4-5-20250929-v1:0
+    inference_profile: us.anthropic.claude-sonnet-4-5-20250929-v1:0
+    alt_profiles: []
+    region: us-east-1
+    vision: true
+    tool_use: true
+    image_delivery: user_turn
+    max_image_px: 1568
+    price_ref: claude-sonnet-4-5
+    quota_note: "Converse + tool use OK in us-east-1 (probe 2026-11-05, account WSParticipantRole); image delivery and quotas not measured"
+    verified: true
+  - key: llama-3-3-70b
+    family: meta-llama
+    model_id: meta.llama3-3-70b-instruct-v1:0
+    inference_profile: us.meta.llama3-3-70b-instruct-v1:0
+    alt_profiles: []
+    region: us-east-1
+    vision: false
+    tool_use: true
+    image_delivery: user_turn
+    max_image_px: null
+    price_ref: llama-3-3-70b
+    quota_note: "Converse + tool use OK in us-east-1 (probe 2026-11-05, account WSParticipantRole); quotas (text only, no vision) not measured"
+    verified: true

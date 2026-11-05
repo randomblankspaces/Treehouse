@@ -480,6 +480,7 @@ def ui_serve(
     host: Annotated[str, typer.Option("--host", help="Bind address; default is loopback.")] = "127.0.0.1",
     port: Annotated[int, typer.Option("--port", min=1, max=65535)] = 8765,
     origin: Annotated[str | None, typer.Option("--origin", help="Exact browser origin for a restricted port preview.")] = None,
+    live: Annotated[bool, typer.Option("--live", help="Enable the dev-view live console: real Bedrock runs that cost money (needs AWS credentials and the spend guard).")] = False,
 ) -> None:
     """Serve the product UI and recorded runs. Page loads never call AWS."""
     try:
@@ -493,13 +494,17 @@ def ui_serve(
     except ImportError as exc:
         typer.echo("Treehouse UI requires the api extra: uv sync --extra api", err=True)
         raise typer.Exit(2) from exc
+    if live and host not in ("127.0.0.1", "localhost", "::1"):
+        typer.echo("--live starts paid Bedrock runs and is only allowed on a loopback --host.", err=True)
+        raise typer.Exit(2)
     try:
         browser_origin = origin or f"http://{host}:{port}"
         settings = JudgeConfig.model_validate(read_json(judge_config)) if judge_config else None
         judge = create_judge_app(JudgeService(settings, recorded=read_json(judge_recorded) if judge_recorded else None),
                                  origin=browser_origin)
         web_app = create_app(store, origin=browser_origin,
-                             frontend_dist=frontend or repo_root() / "ui" / "dist", judge_app=judge, server_reference=reference)
+                             frontend_dist=frontend or repo_root() / "ui" / "dist", judge_app=judge, server_reference=reference,
+                             live=live)
     except (OSError, ValueError) as exc:
         typer.echo("Invalid UI configuration. Check the store, origin, frontend build and optional judge JSON.", err=True)
         raise typer.Exit(2) from exc

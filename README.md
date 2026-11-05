@@ -2,9 +2,13 @@
 
 Treehouse evaluates how a geospatial agent investigates a target area and whether its resulting database is accurate. It records the agent’s strategy, foundation-model/tool choices, decision explanations, alternatives, evidence, revisions and reported confidence, then checks the sealed output independently. Warehouses, solar facilities and bridges are task examples; the sandbox is configured by object class and geographic zone.
 
+There is no hosted UI. Judges run the offline replay locally using the Quickstart below. The AWS judge
+path (AgentCore Runtime, Gateway and Bedrock Knowledge Base in `scripts/judge_deploy.py`) is designed and
+tested offline, but has not been deployed; see [the judge deployment guide](docs/JUDGE-DEPLOY.md).
+
 **Start here:** [architecture and AWS integration](docs/ARCHITECTURE.md) (presentation reference: what ran live, what is designed), [MVP plan](docs/MVP-PLAN.md), [ADB/LGND report digest](docs/REPORT-TABLES.md), [defence book](docs/design/DEFENSE-BOOK.md), [Kiro AWS log](docs/KIRO-STATUS.md).
 
-**Live on AWS (2026-11-05):** Strands agents on Amazon Bedrock (Sonnet 5.5, Nova Pro, Haiku 5.5; Sonnet adaptive thinking), AgentCore Evaluations with Treehouse Lambda evaluators, S3 Object Lock COMPLIANCE run store (admin delete denied), KMS-isolated answer keys, CDK infrastructure, an **Amazon Polly** neural narrator for the web report, and the agent reading **real LGND Clay v1.5 embeddings** from AWS Open Data. The web UI presents a **decision tree** thinking view with colour-vision-safe themes.
+**Live on AWS (2026-11-05):** Strands agents on Amazon Bedrock (Sonnet 5.5, Nova Pro, Haiku 5.5; Sonnet adaptive thinking), AgentCore Evaluations with Treehouse Lambda evaluators, S3 Object Lock COMPLIANCE run store (admin delete denied), a deployed KMS key bucket and worker/grader roles (recorded runs use the gateway to deny `keys/` paths), CDK infrastructure, an **Amazon Polly** neural narrator for the web report, and the agent reading **real LGND Clay v1.5 embeddings** from AWS Open Data. The web UI presents a **decision tree** thinking view with colour-vision-safe themes.
 
 ## Warehouse MVP: what ran live (2026-11-05)
 
@@ -25,23 +29,31 @@ the pipeline working, not real-world accuracy.
 | AgentCore Evaluations: 4 built-ins + 2 Treehouse Lambda evaluators | `fixtures/live/agentcore/` |
 | CDK deploy (Compliance Object Lock run store, KMS key bucket, Lambda evaluators, AgentCore evaluators) | `infra/cdk-outputs.json`, `aws-foundation.json` |
 | Run sealed to S3 with COMPLIANCE retention; a delete of that version **denied** | `fixtures/live/receipts/` |
-| Bedrock spend ledger ($11.49 after the WP-004 merge) | `.spend/spend.jsonl` |
+| Bedrock spend ledger (about $10.97 committed, as of 2026-11-05 01:59 UTC) | `.spend/spend.jsonl` |
 | Thinking view: a **decision tree** (nodes linked by `parent_id`, branch-taken vs greyed alternatives, RV verdict chips, per-claim earned-confidence panel) in both the dev and story UIs, each ending with a plain-language run summary | `ui/src/shell/tree.tsx`, `src/treehouse/ui/decision_tree.py` |
 | Accessibility: **Amazon Polly** neural narrator (sha-matched MP3 or browser-speech fallback), colour-vision-safe palettes (Okabe–Ito, blue–yellow, monochrome) and status by marker shape | `ui/public/narration/`, `scripts/narrate_polly.py`, `ui/src/shell/mapart.ts` |
 | Real-data live run on `t1-nagoya-warehouses-real.yaml` (real LGND Clay v1.5, Sonnet adaptive thinking + Haiku) | `fixtures/live/real/` — see "Real-data live runs" below |
 
-The decision-tree thinking view, the Amazon Polly narrator and colour-vision-safe themes landed in the final push (they supersede the earlier task10 UI omission). WP-004 (model thinking capture + deliberation score) is merged. Recorded vision-subagent attempts in the earlier matrix errored; no successful live geospatial vision result is established. The predicted-accuracy panel has insufficient validation (2 configs). Historical experiment tables have not been recomputed under the corrected held-out population rules.
+The decision-tree thinking view, the Amazon Polly narrator and colour-vision-safe themes landed in the final push (they supersede the earlier task10 UI omission). WP-004 (model thinking capture + deliberation score) is merged. Earlier vision-subagent attempts errored. Run `t1-nagoya-sonnet-strands-vision-2` completed with five embedding-only `present` claims at confidence 0.3, all marked ungrounded; its Nova Pro review found no usable imagery (`fixtures/live/runs/t1-nagoya-sonnet-strands-vision-2/`, `fixtures/live/review/t1-nagoya-sonnet-strands-vision-2.nova-pro.review.json`). This does not establish successful live geospatial vision. The predicted-accuracy panel has insufficient validation (2 configs). Historical experiment tables have not been recomputed under the corrected held-out population rules.
 
 ### Real-data live runs (2026-11-05)
 
-A reduced live matrix was run on `tasks/t1-nagoya-warehouses-real.yaml` against **real LGND Clay v1.5 embeddings** (source.coop on S3, CC BY 4.0):
+Four runs are recorded under `fixtures/live/real/store/runs/`; two are shown below. The other two are
+`fixtures/live/real/store/runs/live-nagoya-real-sonnet-2/` and
+`fixtures/live/real/store/runs/nagoya-real-sonnet-thinking-2/`. This reduced live matrix used
+`tasks/t1-nagoya-warehouses-real.yaml` with **real LGND Clay v1.5 embeddings** (source.coop on S3, CC BY 4.0):
 
 | run id | worker | thinking | decisions | claims | Bedrock $ |
 |---|---|---|---|---|---|
 | `nagoya-real-sonnet-thinking-1` | Claude Sonnet 5.5 | adaptive ON | 11 | 1 × cannot_assess @ 0.9 | ~$0.52 |
 | `nagoya-real-haiku-1` | Claude Haiku 5.5 | off | 12 | 1 × cannot_assess @ 0.9 | ~$0.74 |
 
-Both agents read the real coarse Clay index (1.28–2.56 km cells, far larger than the 160 m scoring unit), had no usable fine imagery, and **declined to assert warehouses** — recording a single `cannot_assess` each rather than guessing. That is the honest behaviour for real coarse embeddings, not a measured accuracy number. Full numbers, deliberation metrics and manifests are in [docs/KIRO-STATUS.md](docs/KIRO-STATUS.md); sealed evidence (verified) is under `fixtures/live/real/`. AgentCore Evaluations on these runs and a wider matrix are listed in [docs/FUTURE-FEATURES.md](docs/FUTURE-FEATURES.md).
+Both runs shown read the real coarse Clay index (1.28–2.56 km cells, far larger than the 160 m scoring unit), had no usable fine imagery, and **declined to assert warehouses** — recording a single `cannot_assess` each rather than guessing. That is the honest behaviour for real coarse embeddings, not a measured accuracy number. Full numbers, deliberation metrics and manifests are in [docs/KIRO-STATUS.md](docs/KIRO-STATUS.md); sealed evidence (verified) is under `fixtures/live/real/`. AgentCore Evaluations on these runs and a wider matrix are listed in [docs/FUTURE-FEATURES.md](docs/FUTURE-FEATURES.md).
+
+The task card `tasks/t1-nagoya-warehouses-real.yaml` references
+`keys/osm/nagoya-warehouses-real.geojson`, which is absent, so these runs are effectively unkeyed.
+
+Only the JSONL tracer is built (`src/treehouse/store/backends.py`); tracer swapping is designed, not demonstrated.
 
 ### Quickstart: replay a live run offline (fresh machine, no AWS)
 
@@ -64,6 +76,28 @@ uv run treehouse sandbox run --task tasks/t1-nagoya-warehouses.yaml \
   --config fixtures/live/configs/t1-nagoya-sonnet-strands.json \
   --provider treehouse.providers.factories:bedrock_recording --run-id nagoya-1 --store out/live/store
 ```
+
+### Live console (dev view)
+
+`treehouse ui serve --live` adds a "Live console" at the top of the dev view (`/dev`), so a run can be started from the browser instead of the command line. It is off by default and local-only, like the rest of the UI; it is not a hosted deployment.
+
+```sh
+AWS_PROFILE=<profile> AWS_REGION=us-east-1 uv run treehouse ui serve --store out/live/store --live
+```
+
+Requirements: AWS credentials in the server's environment, the `api` extra, and the spend guard (`treehouse budget status` must pass). Every launch costs money.
+
+How it works:
+
+1. Pick a place on the world map. These are the task cards under `tasks/` whose tools match the pinned live template (Nagoya, Nagoya real-data, Gifu, Chattogram warehouses, Chattogram fuel tanks).
+2. Pick a Bedrock model from `config/models.yaml` (Haiku 5.5, Sonnet 5.5, Sonnet 4.6, Sonnet 4.5, Nova Pro, Nova Lite, Llama 3.3 70B). Models without vision are disabled for places that need vision.
+3. Tick the spend confirmation and launch.
+
+The server builds the run config from `fixtures/live/configs/t1-nagoya-nova-strands.json`, checks the spend guard, and runs the same `treehouse sandbox run ... bedrock_recording` command as "Run it live" above in a subprocess. Only one live run runs at a time. The sealed run then opens in the dev view with red dots on the map for `present` claims, the decision tree, and an "Agent transcript": every tool call with its recorded reason, turned-down alternatives and outcome, the model's thinking lines, and which foundation model the agent actually used. The agent chooses the foundation model (Clay v1.5 or AEF); the console only lists the ones the place allows.
+
+Verified example (2026-11-05): Nova Pro on Nagoya, launched from the browser, took 134 s and made 51 tool calls. 27 were refused as `missing_decision` (the agent acted before recording a decision), and 6 `present` claims were shown as red dots. A Nova Lite live run made 0 claims.
+
+Models added to `config/models.yaml` on 2026-11-05: Nova Lite, Claude Sonnet 4.6, Claude Sonnet 4.5 and Llama 3.3 70B. Each was probed with a Converse tool-use call in us-east-1 on 2026-11-05, and has a price row and a `fixtures/live/configs/t1-nagoya-<model>-strands.json` config.
 
 ## Agent investigation MVP
 

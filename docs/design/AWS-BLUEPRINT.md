@@ -1,8 +1,13 @@
 # Treehouse on AWS: blueprint, routing rule and Kiro prompts (T3)
 
-Status: prototype, 2026-11-04. Code: `infra/` (CDK, Python), `src/treehouse/aws/` (AgentCore adapter and
+**Deployment update — 2026-11-05:** CDK stacks `TreehouseRunStore` (run store, KMS key bucket and
+worker/grader roles) and `TreehouseEval` (Lambda and AgentCore evaluators) are deployed; see
+`infra/cdk-outputs.json` and `aws-foundation.json`. The prototype status and live steps below describe
+the earlier deployment plan.
+
+Status at the prototype checkpoint, 2026-11-04: Code: `infra/` (CDK, Python), `src/treehouse/aws/` (AgentCore adapter and
 Lambda evaluator), `scripts/agentcore_eval.py`. Everything here is tested offline (botocore Stubber, CDK
-assertions); nothing has been deployed yet. KA0-KA3 below are the live steps, run by Suhas through Kiro in
+assertions); deployment was pending at that checkpoint. KA0-KA3 below are the live steps, run by Suhas through Kiro in
 Workshop Studio, region **us-east-1**. Principle from A10: AWS-native, not AWS-locked; every AWS piece has a
 local stand-in and the manifest records which ran.
 

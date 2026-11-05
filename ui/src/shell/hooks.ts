@@ -60,6 +60,17 @@ export function useRunNarration(snap: RunSnapshot | null, voice: boolean) {
           }
         }
       } catch { /* no sidecar served (e.g. mock/dev): fall back below */ }
+      if (!result) {
+        try {  // live mode only: server synthesizes Polly on demand; 404 elsewhere is ignored
+          const res = await fetch(`/api/voice/runs/${encodeURIComponent(snap.run_id)}`, {cache: 'no-store'});
+          if (res.ok) {
+            const v = await res.json() as {text?: unknown; audio_url?: unknown};
+            if (typeof v.text === 'string' && typeof v.audio_url === 'string') result = {text: v.text, source: 'polly', audioUrl: v.audio_url};
+          }
+        } catch { /* no live voice: browser speech below */ }
+      }
+      const summary = snap.thinking_summary;
+      if (!result && summary?.status === 'available' && summary.text) result = {text: summary.text, source: 'browser', audioUrl: null};
       if (cancelled) return;
       setNarr(result);
     })();
@@ -106,6 +117,13 @@ export function useNarration(snap: RunSnapshot | null, voice: boolean) {
         setLines(l => [n, ...l].slice(0, 8));
         if (n.audio_url && voice) void new Audio(n.audio_url).play().catch(() => {});
       });
+    }
+    if (terminal(snap.status) && !ids.has('__run_end')) {
+      ids.add('__run_end');
+      const claims = snap.markers.length;
+      const end: Narration = {text: `Run ${snap.status.replaceAll('_', ' ')}: ${claims} claim${claims === 1 ? '' : 's'} recorded.`, audio_url: null};
+      // after the step lines above have resolved, so this stays on top
+      void Promise.resolve().then(() => { if (seen.current.key === key) setLines(l => [end, ...l].slice(0, 8)); });
     }
   }, [snap, voice]);
   return lines;

@@ -1,0 +1,17 @@
+/* Agent console (console.tsx): prompt, model, services, coverage map, live progress. Tokens from shell.css. */
+.shell .console .stack{display:flex;flex-wrap:wrap;gap:.4rem;list-style:none;margin:0;padding:0}
+.shell .console .stack li{font-size:.8rem;padding:.15rem .55rem;border:1px solid var(--line);border-radius:999px;color:var(--muted)}
+.shell .console-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.shell .console-form .field{font-weight:600;font-size:.9rem;margin-top:.35rem}
+.shell .console .prompt{width:100%;min-height:5.2rem;resize:vertical;font:1rem/1.5 var(--sans);padding:.65rem .75rem;border-radius:8px;
+  border:1px solid var(--line);background:var(--ink);color:var(--text)}
+.shell .console .prompt:focus-visible,.shell .console select:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.shell .console .examples{display:flex;flex-wrap:wrap;gap:.4rem}
+.shell .console .chip{font-size:.82rem;padding:.25rem .6rem;border-radius:999px;border:1px solid var(--line);background:var(--raised);color:var(--text);cursor:pointer}
+.shell .console .chip:hover{border-color:var(--accent)}
+.shell .console .where{margin:.1rem 0;min-height:1.5em}.shell .console .where b{color:var(--accent)}
+.shell .console .warn{color:var(--key)}.shell .console .fm{margin:.2rem 0;color:var(--text)}
+.shell .console .primary{padding:.6rem 1rem;font-weight:650;border-radius:8px}
+.shell .console .said{font:14px/1.5 var(--mono);color:var(--text);margin:.25rem 0}
+.shell .console-status{margin-top:1rem;border-top:1px solid var(--line);padding-top:.75rem}
+@media (max-width:820px){.shell .console-grid{grid-template-columns:1fr}.shell .console .world{order:-1}}
