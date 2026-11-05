@@ -229,3 +229,37 @@ no red-site claims (the agent refused without imagery; see below).
     `aws/agentcore.py` now emits scope `strands.telemetry.tracer` with inline `gen_ai.*` events (the "unified
     telemetry" format in the AgentCore docs), plus tool arguments taken from the investigation ledger.
 - Each source above is reported separately; none is blended into another.
+## Task 9 — Experiments (live)
+
+**12 live runs, 2026-11-05 ~01:51–01:59 UTC**, all Strands harness, one factor at a time from the baseline:
+Sonnet 5.5 × {Nagoya, Gifu, Bangladesh} × N=3, and Nova Pro × Nagoya × N=3. Ledger after: **$10.97**.
+The vision-path variant was not part of the matrix (vision was not used in live runs; see task 5).
+Analysis: `scripts/analyze_experiments.py`. Metrics: `fixtures/live/experiments/metrics.json`. Sealed-run
+manifests and ledgers: `fixtures/live/experiments/runs/`. Pixel-free cassettes: `fixtures/live/cassettes/exp-*`.
+
+**All numbers are on synthetic fixture embeddings and synthetic fixture references** (task 1/2 blockers).
+They test the pipeline, not real-world accuracy. Intervals are 95 % bootstrap over N=3 trials.
+
+| config (strands) | n | site recall | cell precision | RV pass rate | $ / run |
+|---|---|---|---|---|---|
+| Nagoya · Sonnet 5.5 | 3 | 0.033 [0, 0.10] | 0.30 (1 run with claims) | 0.69 [0.57, 0.83] | 0.79 [0.67, 0.99] |
+| Nagoya · Nova Pro | 3 | 0.033 [0, 0.10] | 0.30 (1 run with claims) | 0.68 [0.67, 0.71] | 0.32 [0.02, 0.71] |
+| Gifu · Sonnet 5.5 (transfer) | 3 | 0.0 | — (no `present` claims) | 0.56 [0.50, 0.67] | 0.45 |
+| Bangladesh · Sonnet 5.5 (unkeyed) | 3 | not reported (incomplete pool) | — (no `present` claims) | 0.50 | 0.32 |
+
+- **Model comparison (Sonnet − Nova, Nagoya):** no difference in recall or precision; Sonnet costs
+  +$0.47/run. One Nova run stopped with `max_tokens`, one made no claims.
+- **Transfer gap (Nagoya − Gifu, Sonnet):** recall +0.03, recall@10 +0.10, AUROC +0.016. Small, because both
+  cities are near zero.
+- **Classifier comparison (offline, synthetic fixture embeddings, not a live agent run):** linear probe recall
+  0.64 / precision 0.13; linear SVM recall 0.66 / precision 0.15; probe − SVM recall −0.011 (3 seeds).
+  Live agents mostly stopped short of claiming, so the live classifier choice was not varied.
+- **Calibration (keyed, pooled):** Brier 0.21 (Sonnet) vs 0.56 (Nova) on very few claims. Interval not
+  meaningful at this n.
+- **Predicted accuracy (score c, MODEL-ESTIMATED):** fit on 6 keyed Nagoya runs across 2 configs.
+  Leave-one-config-out is **insufficient validation** (fewer than 3 configs). Bangladesh predictions are
+  site recall ≈ 0.005 and precision 0.30, with **no interval** ("insufficient data for an interval"). This
+  panel is not yet evidence of anything.
+- **Main finding:** with no visual check, the Sonnet agents mostly declined to claim warehouses, or claimed
+  them as `cannot_assess` or at low confidence. RV7 (claims citing no evidence) and RV8 (unreviewed area)
+  are the most common rule failures. This is a reasoning-quality signal, not an accuracy result.

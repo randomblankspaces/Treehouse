@@ -45,7 +45,7 @@ run `uv run treehouse budget status` (stop at exit 2/3). If a task hits a hard A
   - `score/calibration.py`: Brier, reliability bins with n, ECE on keyed runs.
   - `score/predicted_accuracy.py`: fit reasoning features → site recall / cell precision on keyed runs; leave-one-config-out + Gifu validation; mean baseline; apply to Bangladesh labelled MODEL-ESTIMATED. _Req: 6.1, 7.1, 7.2_
 
-- [ ] 9. Experiments
+- [x] 9. Experiments
   - Baseline: Sonnet + Strands + all sources + agent's own choices, N = 3 on Nagoya, then Gifu and Bangladesh.
   - One-factor variants: model (Nova Pro), classifier (probe vs SVM vs vision sub-agent), tool set (AEF only vs LGND-Clay only). Size N from measured per-run cost; stay under the guard. Should: fan out with Step Functions Distributed Map.
   - Commit sealed-run manifests, metrics JSON and pixel-free cassettes. _Req: 8.1_
