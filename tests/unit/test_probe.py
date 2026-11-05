@@ -65,17 +65,20 @@ class Clients:
         return self.stubs[service]
 
 
-def queue_happy(cl: Clients, *, bucket=True, converse=4):
+def queue_happy(cl: Clients, *, bucket=True, converse=None):
+    entries = ModelRegistry.load().models
+    if converse is None:
+        converse = 2 * len(entries)
     cl.stub("sts").add_response("get_caller_identity", {"Account": ACCOUNT, "Arn": f"arn:aws:sts::{ACCOUNT}:x",
                                                         "UserId": "u"})
     b = cl.stub("bedrock")
     b.add_response("list_foundation_models", {"modelSummaries": [
-        {"modelArn": "arn:m1", "modelId": "anthropic.claude-sonnet-5-5", "inputModalities": ["TEXT", "IMAGE"]},
-        {"modelArn": "arn:m2", "modelId": "amazon.nova-pro-v1:0", "inputModalities": ["TEXT", "IMAGE"]}]})
+        {"modelArn": "arn:m:" + e.key, "modelId": e.model_id, "inputModalities": ["TEXT", "IMAGE"]}
+        for e in entries]})
     b.add_response("list_inference_profiles", {"inferenceProfileSummaries": [
         {"inferenceProfileName": n, "inferenceProfileArn": "arn:p:" + n, "models": [{"modelArn": "arn:m"}], "inferenceProfileId": n,
          "status": "ACTIVE", "type": "SYSTEM_DEFINED"}
-        for n in ("us.anthropic.claude-sonnet-5-5", "us.amazon.nova-pro-v1:0")]})
+        for n in (e.inference_profile for e in entries if e.inference_profile)]})
     for _ in range(converse):
         cl.stub("bedrock-runtime").add_response("converse", converse_ok())
     cl.stub("service-quotas").add_response("list_service_quotas", {"Quotas": [
@@ -128,7 +131,8 @@ def test_happy_path_matches_golden_schema(ledger):
     assert AwsCapabilities.model_validate(doc) == report
     assert AwsCapabilities.model_json_schema() == golden
     m = {x.key: x for x in report.models}
-    assert m["claude-sonnet-5-5"].user_turn_image == "ok" and m["claude-sonnet-5-5"].tool_result_image == "ok"
+    assert set(m) == set(ModelRegistry.load().keys())
+    assert all(x.user_turn_image == x.tool_result_image == "ok" for x in m.values())
     assert m["nova-pro"].recommended_image_delivery == "tool_result" and m["nova-pro"].listed is True
     assert m["nova-pro"].image_input is True and m["nova-pro"].profile_listed is True
     st = {c.name: c.status for c in report.checks}
@@ -140,13 +144,14 @@ def test_happy_path_matches_golden_schema(ledger):
         "policy"]
     assert report.quotas == [{"name": "On-demand model inference requests per minute for Amazon Nova Pro",
                               "value": 100.0, "adjustable": True}]
-    # AWS-B1: four calls, each reserved at $0.25, committed at placeholder ceiling prices, tagged estimated
-    assert cl.converse_calls == 4 and cl.unreserved_calls == 0
-    assert report.spend == ProbeSpend(cap_usd=3.0, per_call_cap_usd=0.25, max_tokens=32, reserved_usd=1.0,
-                                      committed_usd=report.spend.committed_usd, calls=4, price_table="probe-ceiling-1")
+    # AWS-B1: two image-delivery probes per model, each reserved at $0.25 and tagged estimated.
+    calls = 2 * len(m)
+    assert cl.converse_calls == calls and cl.unreserved_calls == 0
+    assert report.spend == ProbeSpend(cap_usd=3.0, per_call_cap_usd=0.25, max_tokens=32, reserved_usd=calls * 0.25,
+                                      committed_usd=report.spend.committed_usd, calls=calls, price_table="probe-ceiling-1")
     led = ledger.status()
-    assert led.calls == 4 and led.reserved_usd == 0
-    assert led.spent_usd == pytest.approx(led.estimated_usd) == pytest.approx(4 * (90 * 0.05 + 2 * 0.25) / 1000)
+    assert led.calls == calls and led.reserved_usd == 0
+    assert led.spent_usd == pytest.approx(led.estimated_usd) == pytest.approx(calls * (90 * 0.05 + 2 * 0.25) / 1000)
     assert report.summary["ok"] >= 12
 
 
@@ -158,9 +163,10 @@ def test_probe_cap_enforced_and_no_call_without_reservation(ledger):
         s.assert_no_pending_responses()
     assert cl.converse_calls == 2 and cl.unreserved_calls == 0
     m = {x.key: x for x in report.models}
-    assert (m["claude-sonnet-5-5"].user_turn_image, m["claude-sonnet-5-5"].tool_result_image) == ("ok", "ok")
-    assert (m["nova-pro"].user_turn_image, m["nova-pro"].tool_result_image) == ("skipped_budget", "skipped_budget")
-    assert report.summary["skipped_budget"] == 2 and report.spend.reserved_usd == 0.5
+    for i, key in enumerate(ModelRegistry.load().keys()):
+        expected = "ok" if i == 0 else "skipped_budget"
+        assert m[key].user_turn_image == m[key].tool_result_image == expected
+    assert report.summary["skipped_budget"] == 2 * (len(m) - 1) and report.spend.reserved_usd == 0.5
     assert ledger.status().calls == 2
 
 
@@ -235,8 +241,9 @@ def test_classification_never_aborts(ledger):
     assert st["budgets.describe_budgets"] == "error"  # account unknown because sts was denied
     # ValidationException on the first profile -> the alt (global.) profile is tried, then it stops
     names = [c.name for c in report.checks if c.name.startswith("bedrock.converse:claude")]
-    assert names == ["bedrock.converse:claude-sonnet-5-5:user_turn:us.anthropic.claude-sonnet-5-5",
-                     "bedrock.converse:claude-sonnet-5-5:user_turn:global.anthropic.claude-sonnet-5-5"]
+    assert names == [f"bedrock.converse:{e.key}:user_turn:{profile}"
+                     for e in ModelRegistry.load().models if e.key.startswith("claude")
+                     for profile in [e.invoke_id, *e.alt_profiles]]
     # M9: a ValidationException that is not about the model id is our request shape, not "unavailable"
     assert {m.user_turn_image for m in report.models} == {"invalid_request"}
     assert ledger.status().reserved_usd == 0 and ledger.status().calls == 0  # failed calls released

@@ -845,6 +845,12 @@
       "title": "Known Limits",
       "type": "array"
     },
+    "minutes_per_cell": {
+      "default": 2.0,
+      "exclusiveMinimum": 0,
+      "title": "Minutes Per Cell",
+      "type": "number"
+    },
     "must_notice": {
       "default": [],
       "items": {
