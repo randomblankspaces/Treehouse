@@ -90,6 +90,8 @@ class GradeReport(Frozen):
     review_effort: dict[str, int | None] | None
     null_reasons: dict[str, str]
     units: dict[str, str]
+    evaluated_population: str = "all AOI-intersecting cells"
+    n_excluded_cells: int = 0
 
 
 @dataclass(frozen=True)
@@ -200,13 +202,42 @@ def average_precision(scores: np.ndarray, labels: np.ndarray) -> float | None:
     return float(np.sum(d_recall * tp_t / n_t))
 
 
+def _excluded_cells(g, examples, assets, aoi, tol):
+    excluded = set().union(*(_touched(g, a, tol) for a in examples)) if examples else set()
+    touches = [_touched(g, a, tol) for a in assets if _asset_in_aoi(a, aoi)]
+    # Dropping an overlapping asset removes its entire footprint, including chained overlaps.
+    while True:
+        expanded = excluded | set().union(*(cells for cells in touches if cells & excluded))
+        if expanded == excluded:
+            return excluded
+        excluded = expanded
+
+
+def exclude_example_claims(claims, examples, aoi, *, assets=(), cell_size_m=160.0, edge_tol_m=1.0):
+    """Apply exactly the grader's excluded cell population before calibration as well."""
+    g = _grid(aoi, cell_size_m)
+    excluded = _excluded_cells(g, examples, assets, aoi, edge_tol_m)
+    kept = []
+    for claim in claims:
+        if not (aoi[0] <= claim.lon <= aoi[2] and aoi[1] <= claim.lat <= aoi[3]):
+            continue
+        x, y = g.xy(claim.lon, claim.lat)
+        cell = min(g.ny - 1, int(y // g.cell)) * g.nx + min(g.nx - 1, int(x // g.cell))
+        if cell not in excluded:
+            kept.append(claim)
+    return kept
+
+
 def grade(claims: Iterable[PredictedClaim], assets: Iterable[Asset], aoi: Sequence[float], *,
           completeness: str = "complete", cell_size_m: float = 160.0, edge_tol_m: float = 1.0,
-          ks: Sequence[int] = (10, 20, 50)) -> GradeReport:
+          ks: Sequence[int] = (10, 20, 50), excluded_assets: Sequence[Asset] = ()) -> GradeReport:
     if completeness not in COMPLETENESS:
         raise ValueError(f"completeness must be one of {COMPLETENESS}, got {completeness!r}")
     g = _grid(aoi, cell_size_m)
-    aoi_cells = _aoi_cells(g, aoi)
+    assets = list(assets)
+    all_cells = _aoi_cells(g, aoi)
+    excluded = _excluded_cells(g, excluded_assets, assets, aoi, edge_tol_m)
+    aoi_cells = all_cells - excluded
     n_cells = len(aoi_cells)
     west, south, east, north = aoi
 
@@ -218,9 +249,11 @@ def grade(claims: Iterable[PredictedClaim], assets: Iterable[Asset], aoi: Sequen
             raise ValueError("claim scores must be finite and non-negative")
         if not (west <= c.lon <= east and south <= c.lat <= north):
             continue
-        n_claims += 1
         x, y = g.xy(c.lon, c.lat)
         i = min(g.ny - 1, int(y // g.cell)) * g.nx + min(g.nx - 1, int(x // g.cell))
+        if i not in aoi_cells:
+            continue
+        n_claims += 1
         cell_score[i] = max(cell_score.get(i, -math.inf), score)
 
     touches: list[set[int]] = []
@@ -229,7 +262,10 @@ def grade(claims: Iterable[PredictedClaim], assets: Iterable[Asset], aoi: Sequen
         if not _asset_in_aoi(a, aoi):
             n_assets_outside_aoi += 1
             continue
-        touches.append(_touched(g, a, edge_tol_m) & aoi_cells)
+        touched = _touched(g, a, edge_tol_m)
+        if touched & excluded:
+            continue  # Overlapping holdouts are outside this population, never treated as negatives.
+        touches.append(touched & aoi_cells)
     asset_cells = set().union(*touches) if touches else set()
     ranked = sorted(cell_score, key=lambda i: (-cell_score[i], i))
     n_flag, n_assets = len(ranked), len(touches)
@@ -255,11 +291,20 @@ def grade(claims: Iterable[PredictedClaim], assets: Iterable[Asset], aoi: Sequen
              "auroc": f"over all {cell_size_m:g} m cells intersecting the AOI",
              "ap": f"over all {cell_size_m:g} m cells intersecting the AOI",
              "review_effort": "top-ranked flagged cells to inspect"}
-    common = dict(grader_version=GRADER_VERSION, cell_size_m=cell_size_m, edge_tol_m=edge_tol_m,
+    common = dict(grader_version="grade-lgnd-v2-heldout" if excluded_assets else GRADER_VERSION,
+                  evaluated_population="held-out cells; training/example-positive cells and overlapping holdouts excluded" if excluded_assets else "all AOI-intersecting cells",
+                  n_excluded_cells=len(excluded & all_cells), cell_size_m=cell_size_m, edge_tol_m=edge_tol_m,
                   completeness=completeness, n_assets=n_assets,
                   n_assets_outside_aoi=n_assets_outside_aoi, n_claims=n_claims,
                   n_predicted_sites=n_sites, n_flagged_cells=n_flag, n_grid_cells=n_cells,
                   n_asset_cells=len(asset_cells), precision=precision, units=units)
+    if excluded_assets and not n_assets:
+        common["precision"] = None
+        reasons.update({name: "no_valid_heldout_population" for name in (
+            "precision", "recall", "recall_at_k", "count_ratio", "auroc", "ap", "review_effort", "lift")})
+        return GradeReport(**common, n_found=None, precision_is_lower_bound=incomplete, lift=None, recall=None,
+                           recall_at_k=None, count_ratio=None, auroc=None, ap=None, review_effort=None,
+                           null_reasons=reasons)
     if incomplete:
         units["precision"] = f"share of flagged {cell_size_m:g} m cells holding a pool asset (lower bound)"
         for name in ("recall", "recall_at_k", "count_ratio", "auroc", "ap", "review_effort", "lift"):
@@ -295,7 +340,7 @@ def grade(claims: Iterable[PredictedClaim], assets: Iterable[Asset], aoi: Sequen
         effort = {name: next((k + 1 for k, f in enumerate(found_curve) if f >= share * n_assets - _EPS), None)
                   for name, share in EFFORT_SHARES.items()}
     keep("review_effort", effort, "no_assets")
-    base_rate = len(asset_cells) / n_cells
+    base_rate = len(asset_cells) / n_cells if n_cells else 0
     lift = keep("lift", precision / base_rate if precision is not None and base_rate > 0 else None,
                 "no_flagged_cells" if precision is None else "no_asset_cells")
     ordered_aoi_cells = sorted(aoi_cells)

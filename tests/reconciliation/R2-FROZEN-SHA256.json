@@ -1,0 +1,21 @@
+{
+  "baseline_commit": "54a3d1c4824633ad445e6f6a412e6f104fb11280",
+  "target": "intentional dirty post-R1 source before R2 repair",
+  "new_frozen_tests_and_provenance": {
+    "tests/reconciliation/test_r2_reference_scope.py": "d4f8885024627d41c99881aa19285135fb6da71d975aa049f6c2881ee2e75b41",
+    "tests/reconciliation/R2-PROVENANCE.md": "1f8e7bed57d6f58c502745a209596ec02d757e344fbb3713d07645364a244c05"
+  },
+  "pre_repair_source_sha256": {
+    "src/treehouse/ui/snapshot.py": "b58d21c81a6be8d71b4d8b8f5da583e03cbf01a8f414237c41b8ab048140ae31",
+    "src/treehouse/ui/scored.py": "93e5137fa9a76428bd0b0767314462bef12633639e8a254d8d30d64f451611f1",
+    "src/treehouse/ui/web.py": "1728274c1dd6c4dfb26cdcc3f61c01cf95e04d04aad7b1329c626a68b3e07a35",
+    "src/treehouse/investigation/evaluation.py": "0487150fd239ab66581e1e75b5f4d745659bdf2c37ff63bfd54dabc3d651c9f2",
+    "src/treehouse/ui/projection.py": "14a79f2b8ccc13cf710bf1bd75857ed921fabcd0f5f8cbaf3f1458c3e587eeb9"
+  },
+  "original_manifest_sha256": "efe5293a8c76f9d8d849c6ad7815d7f646db9939adee333f3146431d363b0eeb",
+  "r1_manifest_sha256": "1901dd9d3cda21c19ff2f68d002010f5bb25c5e728e7e661ea604251effd40a4",
+  "original_and_r1_tests_verified_unchanged": true,
+  "temporary_red_logs_sha256": {
+    "/tmp/r2-python-red.txt": "44f5b4d4e3004aae5a5792f2ede6c25fe5da04e5802fdcbe9a02803bb0fe218d"
+  }
+}

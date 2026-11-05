@@ -1,5 +1,7 @@
 # Treehouse product status
 
+**Current reconciliation:** [MVP integration and readiness](MVP-INTEGRATION-STATUS.md) supersedes older delivery notes below. Numeric percentages and a recorded-decision thinking summary are required; verification is still in progress.
+
 The [master UI specification](TREEHOUSE_MASTER_UI_IMPLEMENTATION_SPEC.md) is the product contract.
 This page describes the bounded initial delivery, not completion of the full product vision.
 

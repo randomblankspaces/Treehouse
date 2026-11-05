@@ -11,6 +11,7 @@ import argparse
 import json
 from pathlib import Path
 
+from treehouse import service
 from treehouse.cards import load_card
 from treehouse.investigation import run_investigation
 from treehouse.paths import repo_root
@@ -39,7 +40,11 @@ def main(argv: list[str] | None = None) -> int:
     store = LocalStore(a.store)
     run_investigation(store, load_card(repo_root() / "tasks" / f"{card_id}.yaml"), config,
                       ReplayProvider(Cassette(cassette)), run_id=a.run_id)
-    print("verify:", "ok" if verify(store, a.run_id).ok else "FAILED")
+    service.evaluate(store, a.run_id)
+    if not verify(store, a.run_id).ok:
+        print("verify: FAILED")
+        return 1
+    print("verify: ok; sealed scores and report available")
     for line in (store.run_dir(a.run_id) / "trials/t-0.claims.jsonl").read_text().splitlines():
         c = json.loads(line)
         print(f"{c['status']:>14}  {c['cls']}  {c['geometry']['coordinates']}  conf={c['confidence']}")

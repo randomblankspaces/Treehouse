@@ -1,0 +1,30 @@
+{
+  "baseline_commit": "54a3d1c4824633ad445e6f6a412e6f104fb11280",
+  "target": "intentional dirty post-MVP source before R1 repair",
+  "new_frozen_tests_and_provenance": {
+    "tests/reconciliation/test_r1_population.py": "8f8546f35c23a1ca67c4235ad025f68237b11d96528942bbd9aa2ffded034580",
+    "tests/reconciliation/test_r1_public.py": "9fcf2d438fa24fb49f61531f54924ea3901e5d01549b745caba4fd28513e7de6",
+    "tests/reconciliation/test_r1_scores.py": "25ddf93e216f634b2de22e32a05131d0785b5d2e84c4b51577b85a420b54c57e",
+    "ui/tests/reconciliation-r1-scores.mjs": "2b3b511e1af254439b6ff63b102848320ec225f354a8d38c5e6b8cf5caae5b47",
+    "tests/reconciliation/R1-PROVENANCE.md": "d9fc3be321b71b706cf0a3995d023c6dc2ca6772e45541b8debab9a5ac72720f"
+  },
+  "pre_repair_source_sha256": {
+    "scripts/analyze_experiments.py": "7ea0ece9de9ed317cfdd50c060a23a2090bfd4a51c2d76e779d34b62d44bdf5b",
+    "src/treehouse/checks/protocol_grader.py": "b5bb687a75c3e5fc982718efc78e9acafc9cfd2992a3141812b28dc276458d9c",
+    "src/treehouse/investigation/public.py": "e80882e3086e84ae155e5fb3111c056c4f0b2e3be396aeeaff261e5f274473b4",
+    "src/treehouse/investigation/reporting.py": "597e1c0531ca1a472c6a80e55e9a459fccfd30cfda685c3b3c0a17d2b068170f",
+    "src/treehouse/investigation/evaluation.py": "0487150fd239ab66581e1e75b5f4d745659bdf2c37ff63bfd54dabc3d651c9f2",
+    "src/treehouse/ui/snapshot.py": "32d6a5cdc2973915496dc5a423de94f4ef6258e2415e09c4bb0d3a5e19034e26",
+    "src/treehouse/ui/web.py": "9666199530b391f473cf504d853d72a14b28028e2b18c38de486758ea00eb8ba",
+    "ui/src/shell/report.tsx": "c8ac7c3f068cbb1e31b7930a2cd03bb9adfcd7a6c54c9a467b5b46e18a1249b0",
+    "ui/src/shell/export.ts": "5791eef32fb172650b969df1e945a1c399d78f982ffd0b03b02d2d3e9320eacb",
+    "ui/src/shell/contract.ts": "d672e89ea51416cb6e23eb2171984091dfd422969212de1603e0a50f56c34639",
+    "ui/src/shell/snapshot.ts": "42b4ddaa3f1d25d725d2a07f3d7434c7bbad743a5376d8123373153e6a018701"
+  },
+  "original_manifest_sha256": "efe5293a8c76f9d8d849c6ad7815d7f646db9939adee333f3146431d363b0eeb",
+  "original_frozen_tests_verified": true,
+  "temporary_red_logs_sha256": {
+    "/tmp/r1-python-red.txt": "7f0a963b4bb9fc499fcc98e8439f41e84c752ddfb496895de9c55017f469360d",
+    "/tmp/r1-node-red.txt": "f02d1e5238bdf7fa57ab3039d1da30437d23dad6d8116c410acdfdfb396d5c0d"
+  }
+}

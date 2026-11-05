@@ -1,5 +1,7 @@
 # Future features and refinement roadmap
 
+**Current boundary:** [MVP integration and readiness](MVP-INTEGRATION-STATUS.md) tracks the active UI/report repair and fresh AWS evidence. Real imagery/embedding access, successful live vision, fixed held-out evaluation and end-to-end Kiro testing remain gates. Broader roadmap items below are not presentation promises.
+
 Updated November 4, 2026 after Suhas clarified that the product evaluates an agent's investigation,
 decisions and resulting geospatial database. Current built scope is in [PRODUCT-STATUS.md](PRODUCT-STATUS.md),
 the product definition in [OUTLINE.md](OUTLINE.md), and execution order in [PLAN.md](PLAN.md).

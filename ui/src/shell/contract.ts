@@ -24,19 +24,30 @@ export type RunContext = {
 };
 export type Decision = {rationale: string; alternatives: {option: string; reason: string}[]; confidence: number};
 export type TraceStep = {
-  span_id: string; parent_span_id: string | null; kind: StepKind; name: string;
+  span_id: string; trial_id?: string; decision_id?: string; parent_span_id: string | null; kind: StepKind; name: string;
   start_ms: number; end_ms: number | null; status: StepStatus;
-  model?: {model_id: string; input_tokens: number; output_tokens: number; cost_usd: number; thinking: string | null; stop_reason: string | null};
-  tool?: {name: string; args: Record<string, Json>; result: string | null; bytes_read: number};
+  model?: {model_id: string; input_tokens: number | null; output_tokens: number | null; cost_usd: number | null; thinking: string | null; stop_reason: string | null};
+  tool?: {name: string; args: Record<string, Json>; result: string | null; bytes_read: number | null; result_metadata?: Json};
   decision?: Decision;           // the model's recorded reason for this action
   error?: {type: string; message: string};
   attributes: Record<string, Json>;
 };
 export type RunSummary = {run_id: string; title: string; status: RunStatus; synthetic: boolean};
-/** Where the agent put things on the map (display only; output is not graded in the shell). */
-export type MapMarker = {lon: number; lat: number; label: string; confidence: number; status: 'confirmed' | 'rejected' | 'unsure'; at_ms: number | null};   // at_ms: when recorded, run clock
+/** Recorded agent predictions; presence never establishes independent ground truth. */
+export type MapMarker = {lon: number; lat: number; label: string; confidence: number | null;
+  status: 'present' | 'absent' | 'cannot_assess' | 'intact' | 'damaged' | 'destroyed'; at_ms: number | null;
+  claim_id: string; trial_id: string; evidence_refs: {result_id: string; role: string}[]; decision_id: string | null};
+export type NumericScore = {metric: string; value: number | null; unit: 'percent' | 'raw'; numerator: number | null; denominator: number | null; basis: string; status: 'available' | 'unavailable' | 'method_test_only'; reason: string | null; trial_id?: string};
+export type EvaluationSection = {scores?: NumericScore[]; status: 'available' | 'unavailable' | 'method_test_only'; value: Json; reason: string | null};
+export const EVALUATIONS = ['reasoning_rules', 'reviewer', 'agentcore', 'output', 'calibration', 'predicted_accuracy'] as const;
 export type RunSnapshot = RunSummary & {
-  started_at: string | null; elapsed_ms: number; cost_usd: number;
+  mode: 'live' | 'replay' | 'fake' | 'mock' | 'unknown';
+  thinking_summary?: {status: 'available' | 'unavailable'; basis: 'recorded_decisions'; text: string; reason: string | null};
+  provenance: {embeddings: 'synthetic_reference_derived' | 'synthetic' | 'real' | 'unknown';
+    reference: 'synthetic' | 'real' | 'none' | 'unknown'; vision: 'used' | 'not_used' | 'unknown'; limitations: string[]};
+  evaluation: Record<typeof EVALUATIONS[number], EvaluationSection>;
+  started_at: string | null; elapsed_ms: number | null; cost_usd: number | null;
+  cost_basis?: string; timing_basis?: string;
   input: RunInput; context: RunContext; steps: TraceStep[]; markers: MapMarker[];
 };
 /** A task the backend can start: a pinned preset with a place and a default prompt. */

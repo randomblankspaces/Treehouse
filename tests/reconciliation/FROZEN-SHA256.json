@@ -1,0 +1,30 @@
+{
+  "baseline_commit": "54a3d1c4824633ad445e6f6a412e6f104fb11280",
+  "frozen_tests_logs_provenance": {
+    "tests/reconciliation/PROVENANCE.md": "8978cae597e143643b04bbdc12cdf6b0da1388371a056b9119b4b1be752ad4b3",
+    "tests/reconciliation/helpers.py": "e0191d1ee612c2ca90c8b3afc8143c72bc932a996dad01d5c6056c9d7dd039a7",
+    "tests/reconciliation/test_overlap_abstention.py": "ea73c56c429c7911ddb5c2155fa20cab8e12846a174c29d2c704f7f562bc35a2",
+    "tests/reconciliation/test_snapshot_http.py": "baf15457e6424c5dc2fe3cc0722cedbf2c2d70bc63389227406ef301dc3330d3",
+    "tests/reconciliation/test_year_and_split.py": "eb9db350bd5b0cdf1eff69546f8bf5822538dd38f70383a26401b7cc7ec74e2f",
+    "ui/tests/reconciliation-contract.test.mjs": "e260be08289a24bee4825c64503927abf8c11de423e43620d5db8926263194df"
+  },
+  "baseline_source_and_evidence": {
+    "fixtures/embeddings/aef-nagoya.npz": "2a7c2571deec4214061574cff2c93ec3902dac09cd0e15c2d2bb62a1019a4aa0",
+    "fixtures/live/cassettes/exp-nagoya-sonnet-1.model.jsonl": "adbb172497cac0bce07442b85ea09471640da1ae483e9fc4a40861d2781a2032",
+    "fixtures/live/experiments/runs/exp-nagoya-sonnet-1/manifest.json": "4d408a3535266306353087464ff3d4562e225400ae157eab7434f9a2ab3039de",
+    "keys/plateau/nagoya-provenance.json": "100cbbc5001356b50c149b95d151ee26380b435d0e61caa6ae711c5766c1303b",
+    "keys/plateau/nagoya-split.json": "63f395178228e02f1f297ed1a914fddd5f736f7c3ad6a2956f42d0e681e7766f",
+    "keys/plateau/nagoya-warehouses.geojson": "7d38c30f1cabd577362f4ecafa79a47cb73a140dc816357496bd91ea9645e365",
+    "scripts/analyze_experiments.py": "5b6c5a2848f77e09306b0955b3723afe6c6b47706cd80680a91453a75b26cfce",
+    "scripts/replay_live.py": "50109b24b854fbbf042b0e79f03ad5c1edfca5e625c787183537900abd0e4cbd",
+    "src/treehouse/tools/sources/aef.py": "7d097a40c06f940687a466f83620cff4c1eac085778eaffbcacbca3c67aa1de5",
+    "src/treehouse/ui/web.py": "e4685f4818fd27722f4555c4fb0f90615138adbe33909b74a871a02ddb39a45f",
+    "ui/src/shell/contract.ts": "60b776a3b6a54d6b2297743379bf2bb60d6608c600cdc53c21b8cc01541538ab",
+    "ui/src/shell/export.ts": "af7d10a3c8484b420fbff014eb4d0cf021a28ee9b2d69e86be2a47ffc6eef2f3",
+    "ui/src/shell/http.ts": "594f45c6a33cc7c89993d456a6761ff1eba58be452bb3ae9c8841b3a048deb9d"
+  },
+  "private_baseline_logs": {
+    "/Users/suhas/Codex/2026-11-04/alr/work/mvp-document-review/reconciliation-baseline-python.txt": "cf241cf8719f014570e12dc493527bd6db69993af3a5dcd97857034ce0fbf87c",
+    "/Users/suhas/Codex/2026-11-04/alr/work/mvp-document-review/reconciliation-baseline-node.txt": "0023f71e421ed9f49d77f494a916647edb99ec959e40c17bcc6963f2b692c621"
+  }
+}

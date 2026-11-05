@@ -13,6 +13,8 @@ from uuid import uuid4
 
 from treehouse import service
 from treehouse.cards import load_card
+from treehouse.investigation.public import PRIVATE
+from treehouse.investigation.public import public_value as redact_value
 from treehouse.schemas.checks import CheckLedger
 from treehouse.schemas.config import RunConfig
 from treehouse.schemas.passport import TrustPassport
@@ -20,6 +22,7 @@ from treehouse.schemas.scorecard import Scorecard
 from treehouse.schemas.tools import ClaySearchResult
 from treehouse.store.local import LEDGER_GENESIS, LocalStore, check_run_id
 from treehouse.store.verify import verify
+from treehouse.ui.projection import metadata, parameters
 
 MAX_BODY = 4096
 MAX_FILES = 20_000
@@ -106,6 +109,7 @@ class PublicDataError(Exception):
 
 
 def safe_text(value: str) -> str:
+    value = redact_value(value)
     if len(value) > 8000 or any(ord(char) < 32 and char not in "\n\t" for char in value):
         return "[redacted unsafe text]"
     if re.search(
@@ -126,10 +130,16 @@ def public_value(value):
     if isinstance(value, list):
         return [public_value(item) for item in value]
     if isinstance(value, dict):
+        value = dict(value)
+        if isinstance(value.get("tool"), str) and "parameters" in value:
+            value["parameters"] = parameters(value["tool"], value["parameters"])
+        if "provenance" in value and isinstance(value["provenance"], dict) and "embeddings" not in value["provenance"]:
+            value["provenance"] = metadata({"provenance": value["provenance"]})["provenance"]
         return {
             safe_text(str(key)): public_value(item)
             for key, item in value.items()
             if str(key).lower() not in PRIVATE_KEYS
+            and re.sub(r"[^a-z0-9]", "", str(key).lower()) not in PRIVATE
         }
     return value
 
@@ -249,7 +259,7 @@ class Controller:
         inspect_tree(self.root)
         return service.load_sealed(self.store, rid)
 
-    def bundle(self, rid):
+    def bundle(self, rid, reference=None):
         run = self.sealed(rid)
         records = {kind: self.store.list_records(rid, kind) for kind in ("rules", "score", "trust")}
         if not all(records.values()):
@@ -260,7 +270,18 @@ class Controller:
         trust = TrustPassport.model_validate(records["trust"][-1].record)
         if score.run_ref != run.manifest.manifest_hash or trust.manifest_ref != run.manifest.manifest_hash:
             raise PublicDataError()
-        return public_bundle(service.build_bundle(run, ledgers, score, trust))
+        return {**public_bundle(service.build_bundle(run, ledgers, score, trust)),
+                "snapshot": self.snapshot(rid, reference=reference)}
+
+    def snapshot(self, rid, reference=None):
+        from treehouse.ui.snapshot import pending_snapshot, snapshot
+
+        if self.pending(rid) or (rid in self.jobs and self.jobs[rid]["status"] == "failed"):
+            return public_value(pending_snapshot(self.summary(rid)))
+        result = snapshot(self.store, self.sealed(rid), reference=reference)
+        for step in result["steps"]:
+            step["attributes"] = {key: value for key, value in step["attributes"].items() if key in SAFE_ATTRS}
+        return public_value(result)
 
     def summary(self, rid):
         if rid in self.jobs:
@@ -333,6 +354,11 @@ def create_app(
     if root.is_symlink():
         raise ValueError("Store root must not be a symlink")
     root = root.resolve()
+    if server_reference is not None:
+        from treehouse.investigation.evaluation import Reference
+
+        # Server-owned current comparison input is fixed at startup, never selected by a browser.
+        server_reference = Reference.model_validate_json(Path(server_reference).read_bytes()).model_dump(mode="json")
     controller = Controller(root)
     allowed_hosts = {parsed.netloc.lower(), "127.0.0.1:8765", "localhost:8765"}
     allowed_origins = {origin, "http://127.0.0.1:8765", "http://localhost:8765"}
@@ -532,17 +558,25 @@ def create_app(
             return controller.summary(rid)
         return read(rid, lambda: controller.summary(rid))
 
+    @app.get("/api/runs/{rid}/snapshot")
+    def run_snapshot(rid: str):
+        exists(rid)
+        if controller.pending(rid):
+            with controller.store_lock:
+                return controller.snapshot(rid, reference=server_reference)
+        return read(rid, lambda: controller.snapshot(rid, reference=server_reference))
+
     @app.get("/api/runs/{rid}/bundle")
     def bundle(rid: str):
-        return read(rid, lambda: controller.bundle(rid))
+        return read(rid, lambda: controller.bundle(rid, reference=server_reference))
 
     @app.get("/api/runs/{rid}/investigation")
     def investigation(rid: str):
         def collect():
-            from treehouse.investigation import evaluate_investigation
+            from treehouse.ui.snapshot import investigation_report
 
-            inspect_tree(root)
-            return evaluate_investigation(controller.store, rid, reference=server_reference)
+            result = investigation_report(controller.store, controller.sealed(rid), reference=server_reference)
+            return public_value(result)
 
         return read(rid, collect)
 
@@ -558,7 +592,12 @@ def create_app(
 
     @app.get("/api/runs/{rid}/export")
     def export(rid: str):
-        result = read(rid, lambda: controller.bundle(rid))
+        def collect():
+            if all(controller.store.list_records(rid, kind) for kind in ("rules", "score", "trust")):
+                return controller.bundle(rid, reference=server_reference)
+            return {"snapshot": controller.snapshot(rid, reference=server_reference)}
+
+        result = read(rid, collect)
         return JSONResponse(result, headers={"Content-Disposition": f'attachment; filename="{rid}.json"'})
 
     @app.get("/api/runs/{rid}/clay-searches")
