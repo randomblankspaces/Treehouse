@@ -144,7 +144,10 @@ def test_unkeyed_and_incomplete_reference_do_not_claim_calibration(context):
         json.dumps(report)
 
 
-@pytest.mark.parametrize("variant", ["future_evidence", "wrong_id", "wrong_tool", "wrong_parameters", "posthoc"])
+# Contract v2 (2026-11-05): "wrong_id" was removed. A live Bedrock model cannot know the ToolUse id it will be
+# assigned, so a decision now also binds to the next action with the identical tool and parameters (see
+# test_label_only_mismatch_binds_by_exact_plan). Wrong tool, wrong parameters and post-hoc still fail.
+@pytest.mark.parametrize("variant", ["future_evidence", "wrong_tool", "wrong_parameters", "posthoc"])
 def test_invalid_decision_cannot_authorize_claim(context, tmp_path, variant):
     store, _, _, _, evaluate, export = context
     decision, action = claim("one", .002, .002)
@@ -164,6 +167,14 @@ def test_invalid_decision_cannot_authorize_claim(context, tmp_path, variant):
     with sqlite3.connect(paths["sqlite"]) as db:
         assert db.execute("SELECT COUNT(*) FROM detections").fetchone()[0] == 0
     assert evaluate(store, "case", reference=reference())["process"]["limitations"]
+
+
+def test_label_only_mismatch_binds_by_exact_plan(context, tmp_path):
+    store, _, _, _, _, export = context
+    (name, did, args), action = claim("one", .002, .002)
+    run(context, [(name, did, {**args, "action_id": "my-label"}), action])
+    with sqlite3.connect(export(store, "case", tmp_path / "export")["sqlite"]) as db:
+        assert db.execute("SELECT COUNT(*) FROM detections").fetchone()[0] == 1
 
 
 def test_decision_cannot_be_reused_for_second_action(context, tmp_path):

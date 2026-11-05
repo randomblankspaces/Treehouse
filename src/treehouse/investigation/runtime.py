@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from typing import Annotated, Any
+from typing import Annotated, Any, TypedDict
 
 from mcp.server import MCPServer
 from pydantic import Field
@@ -17,6 +17,10 @@ from treehouse.schemas.tools import ToolError, WindowResult
 
 class DecisionReceipt(Frozen):
     decision_id: str
+class Alternative(TypedDict):
+    """Typed so the tool schema shows the model the required keys (live runs guessed e.g. "why_not")."""
+    option: str
+    reason: str
 
 
 class ClassifierPrediction(Frozen):
@@ -38,8 +42,10 @@ class ClassifierPrediction(Frozen):
 
 class InvestigationSession:
     system = ("You are a geospatial investigation agent. Choose your own strategy using the task and observations. "
-              "Before each tool action, call record_decision with its future action_id (ToolUse.id), exact tool "
-              "and parameters, concise rationale, alternatives actually considered, and confidence. "
+              "Before each tool action, call record_decision with a new unique action_id label, the exact tool "
+              "and the exact parameters you will then send, concise rationale, alternatives actually "
+              "considered, and confidence; the decision binds to your next call with identical tool and "
+              "parameters. "
               "Cite only prior successful result IDs. A decision is consumed by one action. "
               "Use record_claim to build the database; confidence is your own estimate. "
               "Explain uncertainty, data scale, gaps, revisions and stopping with note_limitation. "
@@ -100,6 +106,12 @@ class InvestigationSession:
         call_id = span.attributes["gen_ai.tool.call.id"]
         candidates = [d for d in self.decisions if d["action_id"] == call_id and not d["flags"]
                       and d["action"] is None]
+        if not candidates:
+            # Live models cannot know the ToolUse id Bedrock will assign, so an unused prior decision with the
+            # identical tool and parameters binds instead (still one decision per action, before dispatch).
+            want = sha256_json(args)
+            candidates = [d for d in self.decisions if d["action"] is None and not d["flags"]
+                          and d["tool"] == name and sha256_json(d["parameters"]) == want][:1]
         prior = call_id in self.attempted
         self.attempted.add(call_id)
         if prior or not candidates:
@@ -140,7 +152,7 @@ class InvestigationSession:
 
         @srv.tool()
         def record_decision(action_id: str, tool: str, parameters: dict[str, Any], rationale: str,
-                            alternatives: list[dict[str, str]],
+                            alternatives: list[Alternative],
                             confidence: Annotated[float, Field(ge=0, le=1)],
                             parent_id: str | None = None,
                             evidence_refs: list[str] | None = None) -> DecisionReceipt | ToolError:

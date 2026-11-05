@@ -145,3 +145,48 @@ rest of the build, so the live Nagoya Strands-on-Bedrock run (task 4) can procee
   here) → committed AOI-sized fixture, `access: fixture` + real path in provenance.
 - **LGND GeoParquet not parsed**: `pyarrow` is not a dependency (design says no new deps) → committed
   fixture with the same 1,280 m cells; real path `s3://us-west-2.opendata.source.coop/clay/lgnd-embeddings/`.
+
+---
+
+## Task 4 — Strands agent run end to end (offline + live)
+
+**Status:** done. Live Strands-on-Bedrock Nagoya run sealed locally and to the Compliance S3 store; it made
+no red-site claims (the agent refused without imagery; see below).
+
+- Offline: `tests/investigation/test_warehouse_strands_e2e.py` runs the Nagoya card through the **Strands
+  harness** with a scripted provider exercising every retrieval tool and sealing ≥ 2 warehouse claims, plus a
+  "live-like" variant where ToolUse ids are assigned independently of the decision label.
+- Live factories: `treehouse.providers.factories:bedrock_recording` / `:replay`; configs in
+  `fixtures/live/configs/`; `scripts/make_live_config.py`; `scripts/publish_run_s3.py`.
+- Live runs (model `us.anthropic.claude-sonnet-5-5`, harness strands, all on 2026-11-05 UTC):
+
+| run | calls | $ (ledger) | outcome |
+|---|---|---|---|
+| `t1-nagoya-sonnet-strands-1` | 21 | 0.50 | **0 actions executed**: every action refused `missing_decision` (defect, fixed) |
+| `t1-nagoya-sonnet-strands-2` | 6 | 0.12 | decisions bound; Bedrock returned `stop_reason=content_filtered` with empty content after 3 actions |
+| `t1-nagoya-sonnet-strands-3` | 15 | 2.82 | completed: submit_understanding → sources → train examples → AEF 160 m index → linear probe → 2 imagery attempts (no imagery source wired) → limitation → 1 `cannot_assess` claim. Agent rejected LGND 1.28 km cells for warehouses and refused to claim sites it could not see. |
+
+- Evidence committed: `fixtures/live/cassettes/t1-nagoya-sonnet-strands-{1,2,3}.model.jsonl` (pixel-free,
+  replayable: `TREEHOUSE_CASSETTE_IN=... treehouse sandbox run --provider treehouse.providers.factories:replay`
+  reproduced run 3 offline), `fixtures/live/runs/<run>/` (SEALED, manifest, investigation ledger, claims),
+  `fixtures/live/receipts/t1-nagoya-sonnet-strands-3.s3.json` (8 objects in the run store, each
+  `ObjectLockMode: COMPLIANCE`, retain-until 2026-11-06).
+- Ledger after task 4: $3.55 (46 calls).
+
+### Defects found by the live run and fixed here
+1. **Decision binding was impossible for a live model.** `record_decision` required `action_id == ToolUse.id`,
+   but Bedrock assigns ToolUse ids. Now a decision also binds to the next action with the identical tool and
+   parameters (still one decision per action, before dispatch). The frozen acceptance test's `wrong_id`
+   variant was retired as **contract v2** with a replacement test (`test_label_only_mismatch_binds_by_exact_plan`);
+   wrong tool / wrong parameters / post-hoc decisions still fail.
+2. `record_decision.alternatives` is now a typed `{option, reason}` list so the tool schema tells the model
+   the keys (run 2 sent `why_not` and every decision was flagged `invalid_alternatives`).
+3. `score/scorecard.py` crashed post-seal when a run had no imagery windows (`bytes_model: "mixed"`).
+
+### Open issues (carried forward)
+- `imagery_window` has no source for the warehouse cards, so the agent cannot verify candidates visually →
+  wire GSI (Japan) chips (task 5).
+- `classify` returns all 3,430 cell scores, which inflates context (run 3 cost $2.82) → cap the returned list.
+- `content_filtered` (run 2) is unexplained; watch for recurrence.
+- `publish_run_s3.py` uploads the run directory (manifest, traces, claims, ledger) but not the store-level
+  request/response blobs; those are covered by the committed cassette.

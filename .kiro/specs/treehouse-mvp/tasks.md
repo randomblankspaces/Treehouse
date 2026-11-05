@@ -25,7 +25,7 @@ run `uv run treehouse budget status` (stop at exit 2/3). If a task hits a hard A
 - [x] 3. Retrieval tool server
   - `tools/retrieval.py`: `list_embedding_sources`, `build_index`, `get_examples`, `retrieve` (zero_shot_text via Bedrock vision on chips / few_shot / concept_vector), `classify` (linear_probe, linear_svm, vision_subagent), `aggregate` (threshold, merge neighbours into sites, count with range). Provenance on every result. Gateway refuses Maxar/Vantor (RV2). GSI imagery source for Japan chips with attribution. _Req: 2.3, 2.5, 2.6_
 
-- [ ] 4. Strands agent run end to end (offline first, then live)
+- [x] 4. Strands agent run end to end (offline first, then live)
   - Card opts into `record_decision`; `harness: strands`; system prompt states the analyst question and Table-8 definition only.
   - Offline: scripted provider test that exercises every tool and seals red sites.
   - Live: one Nagoya T1 run on `us.anthropic.claude-sonnet-5-5`; seal to the S3 run store; commit the pixel-free cassette for replay. _Req: 2.1, 2.4, 3.1, 9.2, 10.1_
