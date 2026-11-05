@@ -300,3 +300,25 @@ They test the pipeline, not real-world accuracy. Intervals are 95 % bootstrap ov
 
 **Totals:** 8 ticked, 2 partial, 1 not done.
 **Biggest caveat:** every accuracy number is computed on synthetic fixture embeddings and references.
+
+
+## Final push — 2026-11-05 (Kiro, autonomous)
+
+Landed after the experiment matrix, with `main` green at each merge (`uv run pytest -q`, `uv run ruff check .`,
+and `cd ui && npm run typecheck && npm run build` all passing before every PR):
+
+| Task | What landed | PR |
+|---|---|---|
+| 2 | **Thinking view = decision tree** in the dev and story UIs. Each recorded decision is a node linked by `parent_id` (root `submit_understanding`; a spine is derived from `sequence` when live runs leave `parent_id` null). Branch taken vs greyed-out alternatives, one-sentence why, confidence bar, RV verdict chip (✓/⚠/✗) and a thinking expander. Each claim is a leaf; selecting it lights its path to the root and shows how its confidence was formed (stated vs earned, which checks raised/lowered it). Pinned scale card; both views end with a plain-language run summary. Backend `src/treehouse/ui/decision_tree.py` exposes `decisions[]` + per-claim `confidence_provenance`, honouring the evaluator's `invalid_action_link` integrity check (no fabricated claim↔decision edges). | #34 |
+| 3 | **Amazon Polly narrator + colour themes.** `scripts/narrate_polly.py` renders the run summary to neural-Polly MP3 (≤2,900-char chunks) with a `<run>.json` sidecar (text, sha256, voice, engine). The UI plays the MP3 only when `sha256(shown text)` matches, else browser speech, labelled "Voice: Amazon Polly". Colour-vision-safe palettes (Okabe–Ito, blue–yellow, monochrome) and status by marker shape (present ● / cannot_assess ◇ / absent ✕). Real MP3s generated for `exp-nagoya-sonnet-1` and `exp-nagoya-nova-1`. | #36 |
+| 1 | **WP-004 merged**: per-decision `thinking_ref`, Sonnet `request_fields {thinking: {type: adaptive}}` (adaptive; `enabled` is rejected by the model), run-config `thinking` switch (drops temperature, replay-neutral), deliberation score. Merged `main` in; full suite green. | #37 |
+| 5 | Docs/numbers: ARCHITECTURE status rows and README "what ran live" updated to reflect the above; this section. | — |
+
+F1 (computing Clay embeddings on agent-chosen chips) remains a documented future feature only — no GPU available.
+
+### Reduced real-data live runs — task 4
+
+Budget-status-first; Bedrock ≤ $15 on `tasks/t1-nagoya-warehouses-real.yaml` (real LGND Clay v1.5 from
+source.coop). Evidence committed under `fixtures/live/real/` (scanned for account ids / AKIA / base64 first).
+
+<!-- FILLED AFTER THE RUNS: run ids, $ spent, decision count, deliberation numbers -->
