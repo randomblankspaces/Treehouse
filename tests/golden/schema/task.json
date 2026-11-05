@@ -181,7 +181,8 @@
             "static_catalog",
             "s3_listing",
             "synthetic",
-            "recorded"
+            "recorded",
+            "real"
           ],
           "title": "Access",
           "type": "string"

@@ -22,7 +22,7 @@ STATUSES_FOR = {
 class DataSource(Frozen):
     source_id: str
     kind: Literal["stac", "imagery", "embeddings", "vector"]
-    access: Literal["static_catalog", "s3_listing", "synthetic", "recorded"]
+    access: Literal["static_catalog", "s3_listing", "synthetic", "recorded", "real"]
     fixture_path: str | None = None
     item_ids: list[str] = []
     etags: dict[str, str] = {}

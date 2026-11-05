@@ -1,7 +1,7 @@
 """LGND Clay precomputed embeddings on Sentinel-2 (source.coop, CC BY 4.0), 1.28 km / 2.56 km cells.
 
-Real access path: GeoParquet under ``s3://us-west-2.opendata.source.coop/clay/lgnd-embeddings/`` (listed OK in
-the probe). pyarrow is not a dependency, so ``ClayLgndSource`` reads a committed AOI-sized fixture
+Real access is provided by ``clay_lgnd_real.RealClayLgndSource`` with the optional ``real`` extra.
+``ClayLgndSource`` keeps reading a committed AOI-sized fixture
 (``fixtures/embeddings/lgnd-<aoi>.npz``) with the same coarse 1,280 m cells and records ``access: fixture``.
 The cells are far coarser than the report's 160 m unit: a good agent may still pick this source and must say
 why (or reject it for warehouses); RV1 judges that choice.

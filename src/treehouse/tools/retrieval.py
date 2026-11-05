@@ -28,6 +28,7 @@ from treehouse.schemas.task import TaskCard
 from treehouse.schemas.tools import ToolError
 from treehouse.tools.sources.aef import AefSource
 from treehouse.tools.sources.clay_lgnd import NATIVE_CELLS_M, ClayLgndSource
+from treehouse.tools.sources.clay_lgnd_real import RealClayLgndSource
 from treehouse.tools.sources.embedding_source import BBox, CellIndex, EmbeddingSource, load_fixture_points
 from treehouse.tools.sources.gsi import ATTRIBUTION as GSI_ATTRIBUTION
 from treehouse.tools.sources.gsi import LICENCE as GSI_LICENCE
@@ -205,12 +206,13 @@ class RetrievalTools:
                 continue
             src = self.factories[sid](self.aoi)
             dates = list(self.date_range)
-            if sid == "lgnd-clay-embeddings":
+            access = getattr(src, "access", "fixture")
+            if sid == "lgnd-clay-embeddings" and access == "fixture":
                 dates = list(load_fixture_points(src.fixture)[3]["date_range"])
             out.append({"source_id": sid, "model": info["model"], "resolution_m": src.resolution_m,
                         "native_cell_m": src.native_cell_m, "cell_sizes_m": info["cell_sizes_m"],
                         "date_range": dates, "licence": src.licence, "estimated_cost_usd": 0.0,
-                        "access": "fixture"})
+                        "access": access})
         return {"aoi_bbox": list(self._bbox(aoi_bbox)), "sources": out}
 
     def build_index(self, source_id: str, cell_size_m: float, year: int, aoi_bbox: BBox | None = None
@@ -445,9 +447,12 @@ def retrieval_for_card(card: TaskCard, *, examples: ExampleProvider | None = Non
     allowed = [d.source_id for d in card.data_allowlist if d.kind == "embeddings"]
     vision_allowed = any(d.kind == "imagery" and d.source_id == "gsi-seamless-aerial-japan"
                          for d in card.data_allowlist)
+    factories = {k: v["factory"] for k, v in SOURCE_INFO.items()}
+    if any(d.source_id == "lgnd-clay-embeddings" and d.access == "real" for d in card.data_allowlist):
+        factories["lgnd-clay-embeddings"] = lambda aoi: RealClayLgndSource()
     return RetrievalTools(allowed_source_ids=allowed, aoi=aoi, aoi_bbox=_card_bbox(card),
                           date_range=tuple(str(d) for d in card.time_window), examples=examples,
-                          vision=vision, gsi=gsi, vision_allowed=vision_allowed)
+                          factories=factories, vision=vision, gsi=gsi, vision_allowed=vision_allowed)
 
 
 def make_retrieval_server(tools: RetrievalTools) -> MCPServer:
