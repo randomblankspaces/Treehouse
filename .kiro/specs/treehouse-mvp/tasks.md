@@ -22,7 +22,7 @@ run `uv run treehouse budget status` (stop at exit 2/3). If a task hits a hard A
   - `EmbeddingSource` protocol + `clay_lgnd` (source.coop GeoParquet) + `aef` (verify the AEF access path first: Earth Engine export or public cloud mirror; if unavailable from Workshop, record the blocker and use committed AOI-sized fixtures) + offline fixtures for tests.
   - Should: `clay_compute` on 160 m Sentinel-2 L2A chips (Clay v1.5 weights from Hugging Face `made-with-clay/Clay`, Apache-2.0) on SageMaker or a GPU EC2 instance; cache to S3. _Req: 2.2, 2.5_
 
-- [ ] 3. Retrieval tool server
+- [x] 3. Retrieval tool server
   - `tools/retrieval.py`: `list_embedding_sources`, `build_index`, `get_examples`, `retrieve` (zero_shot_text via Bedrock vision on chips / few_shot / concept_vector), `classify` (linear_probe, linear_svm, vision_subagent), `aggregate` (threshold, merge neighbours into sites, count with range). Provenance on every result. Gateway refuses Maxar/Vantor (RV2). GSI imagery source for Japan chips with attribution. _Req: 2.3, 2.5, 2.6_
 
 - [ ] 4. Strands agent run end to end (offline first, then live)
