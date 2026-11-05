@@ -18,6 +18,7 @@ class _ObservedProvider:
 
     def __init__(self, provider):
         self.provider = provider
+        self.model_turns = {}
 
     def __getattr__(self, name):
         return getattr(self.provider, name)
@@ -26,7 +27,9 @@ class _ObservedProvider:
         response = await self.provider.complete(*args, **kwargs)
         event = ProviderEvent(name="treehouse.investigation.model_pricing",
                               attributes={"pricing": "unpriced" if response.cost_usd is None else "reported"})
-        return response.model_copy(update={"events": [*response.events, event]})
+        response = response.model_copy(update={"events": [*response.events, event]})
+        self.model_turns[f"t-{kwargs['trial_index']}"] = response
+        return response
 
 
 def run_investigation(store, card, config, provider, *, run_id, classifier=None, server_factory=None):
@@ -46,8 +49,10 @@ def run_investigation(store, card, config, provider, *, run_id, classifier=None,
                                   getattr(config.budget, axis) if config.budget.enabled else None) if v is not None]
             limits[axis] = min(values) if values else None
         config = config.model_copy(update={"budget": Budget(**limits)})
-    factory = partial(InvestigationSession, card, classifier=classifier, server_factory=server_factory)
-    return execute(store, RunSpec(run_id=run_id, card=card, config=config, provider=_ObservedProvider(provider),
+    observed = _ObservedProvider(provider)
+    factory = partial(InvestigationSession, card, classifier=classifier, server_factory=server_factory,
+                      model_turns=observed.model_turns)
+    return execute(store, RunSpec(run_id=run_id, card=card, config=config, provider=observed,
                                  card_bytes=yaml.safe_dump(card.model_dump(mode="json")).encode(),
                                  investigation=factory))
 

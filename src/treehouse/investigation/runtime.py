@@ -58,7 +58,6 @@ class InvestigationSession:
         self.budget, self.tracer, self.classifier = budget, tracer, classifier
         self.server_factory = server_factory
         self.model_turns = model_turns if model_turns is not None else {}
-        self.thinking_recorded = False
         self.decisions: list[dict] = []
         self.actions: list[dict] = []
         self.results: dict[str, dict] = {}
@@ -182,15 +181,14 @@ class InvestigationSession:
             if response is not None and self.current_span and any(
                     isinstance(b, ToolUse) and b.id == self.current_span.attributes["gen_ai.tool.call.id"]
                     for b in response.message.content):
-                reasoning = [b.text for b in response.message.content if isinstance(b, Reasoning)]
-            self.thinking_recorded |= bool(reasoning)
+                reasoning = [b.text for b in response.message.content if isinstance(b, Reasoning) and b.text.strip()]
             d = {"decision_id": f"{self.ledger.trial_id}:d-{len(self.decisions) + 1:04d}",
                  "trial_id": self.ledger.trial_id, "action_id": action_id, "tool": tool,
                  "parameters": parameters, "rationale": rationale, "alternatives": alternatives,
                  "confidence": confidence, "parent_id": parent_id, "evidence_refs": refs,
                  "sequence": self.sequence, "span_id": span_id, "flags": flags, "action": None}
-            if self.thinking_recorded:
-                d.update(thinking_ref=sha256_bytes(pixel_free_json(response)) if reasoning else None,
+            if reasoning:
+                d.update(thinking_ref=sha256_bytes(pixel_free_json(response)),
                          thinking_text="\n".join(reasoning))
             self.decisions.append(d)
             if flags:
@@ -239,5 +237,9 @@ class InvestigationSession:
         return {**servers, "investigation": srv}
 
     def snapshot(self, result):
+        if any(d.get("thinking_ref") for d in self.decisions):
+            for d in self.decisions:
+                d.setdefault("thinking_ref", None)
+                d.setdefault("thinking_text", "")
         return {"schema_version": "treehouse.investigation-ledger/1", "decisions": self.decisions,
                 "actions": self.actions, "stop": result.stop, "stop_detail": result.detail}

@@ -17,6 +17,11 @@ def _contains(text, value):
     return re.search(r"(?<![\w.-])" + re.escape(_normal(value)) + r"(?![\w.-])", _normal(text)) is not None
 
 
+def _option_matches(option, key, value):
+    value = _normal(int(value) if isinstance(value, float) and value.is_integer() else value)
+    return option == value or (key in {"cell_size_m", "chip_size_m"} and option == f"{value} m")
+
+
 def _alternatives(decision):
     return sorted({_normal(a.get("option", "") if isinstance(a, dict) else a)
                    for a in decision.get("alternatives", [])} - {""})
@@ -66,11 +71,13 @@ def evaluate(ledger):
         chosen = list(_values(_parameters(d)))
         later = [a for a in actions if _success(a) and
                  (a.get("sequence", float("inf")) > d.get("sequence", -1))]
-        tried += sum(any(_contains(option, value) for a in later
-                         for _, value in _values(a.get("parameters", {}))) for option in options)
+        tried += sum(any(key == other_key and value != other_value and
+                         _option_matches(option, key, other_value)
+                         for key, value in chosen for a in later
+                         for other_key, other_value in _values(a.get("parameters", {}))) for option in options)
         choice_count += len(chosen) if options else 0
         compared += sum(any(key == other_key and value != other_value and
-                            any(_contains(option, other_value) for option in options)
+                            any(_option_matches(option, key, other_value) for option in options)
                             for action in later for other_key, other_value in _values(action.get("parameters", {})))
                         for key, value in chosen)
         text = d.get("thinking_text", "")
@@ -120,10 +127,14 @@ def evaluate(ledger):
             action = d.get("action")
             if not _success(action):
                 continue
+            executed = results.get(action.get("result_id"), action)
+            if not _success(executed) or executed.get("sequence", -1) >= claim.get("sequence", float("inf")):
+                continue
             params = _parameters(d)
-            checked |= _tool(d) in {"classify_window", "verify"} or params.get("method") == "vision_subagent"
+            tool = _tool(d)
+            checked |= tool == "classify_window" or (tool == "classify" and params.get("method") == "vision_subagent")
             source = params.get("source_id", params.get("source"))
-            if source:
+            if source and tool in {"imagery_window", "build_index"}:
                 sources.add(str(source))
         checked |= len(sources) > 1
         checked_count += checked

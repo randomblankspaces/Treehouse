@@ -1,5 +1,7 @@
 """Deliberation metrics are deterministic summaries of recorded decisions, not hidden cognition."""
 
+import pytest
+
 from treehouse.investigation.deliberation import evaluate
 
 
@@ -35,7 +37,7 @@ def test_deliberate_ledger_counts_comparison_verification_revision_and_thinking(
              "alternatives": ["LGND", "1280 m"], "confidence": 0.8,
              "evidence_refs": ["e1"], "thinking_ref": "t1",
              "thinking_text": "Compared AEF against LGND and 160 m against 1280 m; chose AEF and 160 m."},
-            {"decision_id": "d2", "action": {"tool": "verify", "parameters": {"source": "vision"}},
+            {"decision_id": "d2", "action": {"tool": "classify_window", "parameters": {}},
              "rationale": "Independent visual check supports the candidate.", "alternatives": [],
              "confidence": 0.2, "evidence_refs": ["e2"], "thinking_ref": "t2",
              "thinking_text": "The visual check supports the candidate."},
@@ -111,12 +113,24 @@ def test_uncertain_thinking_at_high_confidence_is_flagged():
     assert metric(result, "thinking_rationale_agreement")["numerator"] == 0
 
 
-def test_report_surfaces_deliberation_and_features_on_a_sealed_run(context):
+@pytest.mark.parametrize("thinking_text", [None, "", " "])
+def test_report_surfaces_deliberation_and_features_on_a_sealed_run(context, thinking_text):
     import json
 
     from test_investigation_acceptance import ScriptProvider, claim
+
+    from treehouse.schemas.model_io import Reasoning
+
+    class EmptyThinkingProvider(ScriptProvider):
+        async def complete(self, *args, **kwargs):
+            response = await super().complete(*args, **kwargs)
+            if thinking_text is not None:
+                response = response.model_copy(update={"message": response.message.model_copy(update={
+                    "content": [Reasoning(text=thinking_text), *response.message.content]})})
+            return response
+
     store, card, config, run, assess, _ = context
-    run(store, card, config, ScriptProvider(claim("c", .002, .002)), run_id="deliberation")
+    run(store, card, config, EmptyThinkingProvider(claim("c", .002, .002)), run_id="deliberation")
     ledger = json.loads((store.run_dir("deliberation") / "trials/t-0.investigation.json").read_bytes())
     assert all("thinking_ref" not in d for d in ledger["decisions"])
     report = assess(store, "deliberation")
@@ -163,7 +177,8 @@ def test_committed_live_ledgers_have_numeric_exploration_and_unavailable_thinkin
         assert result["metrics"]["alternatives_per_decision"]["denominator"] == len(ledger["decisions"])
 
 
-def test_decisions_link_only_thinking_from_the_emitting_turn(context):
+@pytest.mark.parametrize("thinking_turn", [0, 2])
+def test_decisions_link_only_thinking_from_the_emitting_turn(context, thinking_turn):
     import json
 
     import pytest
@@ -176,7 +191,7 @@ def test_decisions_link_only_thinking_from_the_emitting_turn(context):
     class ThinkingProvider(ScriptProvider):
         async def complete(self, *args, **kwargs):
             response = await super().complete(*args, **kwargs)
-            if kwargs["turn"] == 0:
+            if kwargs["turn"] == thinking_turn:
                 response = response.model_copy(update={"message": response.message.model_copy(update={
                     "content": [Reasoning(text="Choose this location after considering stop.", signature="sig"),
                                 Reasoning(text="A second thinking block."), *response.message.content]})})
@@ -188,15 +203,21 @@ def test_decisions_link_only_thinking_from_the_emitting_turn(context):
         provider = ThinkingProvider(claim("c1", .002, .002) + claim("c2", .003, .003))
         run(store, card, config.model_copy(update={"harness": harness}), provider, run_id=harness)
         ledger = json.loads((store.run_dir(harness) / "trials/t-0.investigation.json").read_text())
-        first, second = ledger["decisions"]
-        response = json.loads(store.blob_path(first["thinking_ref"]).read_bytes())
+        linked = ledger["decisions"][thinking_turn // 2]
+        unlinked = ledger["decisions"][1 - thinking_turn // 2]
+        response = json.loads(store.blob_path(linked["thinking_ref"]).read_bytes())
         assert response["message"]["content"][0]["text"] == "Choose this location after considering stop."
-        assert second["thinking_ref"] is None
+        assert unlinked["thinking_ref"] is None
+        assert unlinked["thinking_text"] == ""
+        chats = [json.loads(line)["rec"] for line in
+                 (store.run_dir(harness) / "trials/t-0.trace.jsonl").read_text().splitlines()
+                 if json.loads(line)["rec"]["op"] == "chat"]
+        assert linked["thinking_ref"] == chats[thinking_turn]["attributes"]["treehouse.output.messages_ref"]
         report = assess(store, harness)
         result = report["process"]["deliberation"]["t-0"]
         assert result["metrics"]["thinking_coverage"]["numerator"] == 1
         assert result["metrics"]["thinking_coverage"]["denominator"] == 2
-        assert "A second thinking block." in report["decisions"][0]["thinking_text"]
+        assert "A second thinking block." in report["decisions"][thinking_turn // 2]["thinking_text"]
 
 
 def test_multiple_decisions_link_to_their_shared_emitting_turn(context):
@@ -267,3 +288,81 @@ def test_label_only_mismatch_keeps_sealed_decision_binding(context):
     assert decision["action"] is not None
     assert "invalid_action_link" not in decision["flags"]
     assert report["process"]["numbers"]["decision_coverage"]["value"] == 1
+
+
+@pytest.mark.parametrize("option,parameters", [
+    ("not LGND", {"model": "LGND"}),
+    ("LGND", {"method": "LGND"}),
+    ("AEF", {"model": "AEF"}),
+    ("LGND with 1280 m cells", {"model": "LGND", "cell_size_m": 160}),
+])
+def test_alternative_requires_an_executed_distinct_option_on_the_same_axis(option, parameters):
+    result = evaluate({"decisions": [{"decision_id": "d", "sequence": 1,
+        "parameters": {"model": "AEF", "cell_size_m": 160}, "alternatives": [option]}],
+        "actions": [{"sequence": 2, "status": "success", "parameters": parameters}]})
+
+    assert metric(result, "alternatives_tried")["numerator"] == 0
+    assert metric(result, "key_choices_compared")["numerator"] == 0
+
+
+@pytest.mark.parametrize("key,chosen,option,executed,expected", [
+    ("threshold", .4, "0.6", .6000001, 0),
+    ("cell_size_m", 160, "1280 m", 1280.0, 1),
+])
+def test_numeric_alternatives_preserve_precision(key, chosen, option, executed, expected):
+    result = evaluate({"decisions": [{"decision_id": "d", "sequence": 1,
+        "parameters": {key: chosen}, "alternatives": [option]}],
+        "actions": [{"sequence": 2, "status": "success", "parameters": {key: executed}}]})
+
+    assert metric(result, "alternatives_tried")["numerator"] == expected
+    assert metric(result, "key_choices_compared")["numerator"] == expected
+
+
+@pytest.mark.parametrize("tool,parameters", [
+    ("verify", {}),
+    ("record_claim", {"method": "vision_subagent"}),
+])
+def test_unrelated_tool_or_vision_parameter_is_not_an_independent_check(tool, parameters):
+    result = evaluate({"decisions": [{"decision_id": "d", "sequence": 1,
+        "tool": tool, "parameters": parameters, "action": {"status": "success"}}],
+        "claims": [{"claim_id": "c", "sequence": 3, "confidence": .9, "decision_ids": ["d"]}]})
+
+    assert metric(result, "claims_independently_checked")["numerator"] == 0
+    assert result["earned_confidence"]["c"] == "unearned"
+
+
+def test_check_executed_after_claim_does_not_count_even_if_planned_before():
+    result = evaluate({"decisions": [{"decision_id": "d", "sequence": 1,
+        "tool": "classify_window", "action": {"status": "success", "result_id": "r"}}],
+        "actions": [{"result_id": "r", "sequence": 4, "status": "success"}],
+        "claims": [{"claim_id": "c", "sequence": 3, "confidence": .9, "decision_ids": ["d"]}]})
+
+    assert metric(result, "claims_independently_checked")["numerator"] == 0
+    assert result["earned_confidence"]["c"] == "unearned"
+
+
+@pytest.mark.parametrize("tool,checked", [("record_claim", False), ("imagery_window", True)])
+def test_second_source_requires_executed_observations(tool, checked):
+    result = evaluate({"decisions": [
+        {"decision_id": f"d{i}", "sequence": i * 2, "tool": tool,
+         "parameters": {"source_id": source}, "action": {"status": "success"}}
+        for i, source in enumerate(("source-a", "source-b"))],
+        "claims": [{"claim_id": "c", "sequence": 5, "confidence": .9,
+                    "decision_ids": ["d0", "d1"]}]})
+
+    assert metric(result, "claims_independently_checked")["numerator"] == int(checked)
+
+
+@pytest.mark.parametrize("tool,parameters", [
+    ("classify_window", {}),
+    ("classify", {"method": "vision_subagent"}),
+])
+def test_supported_vision_check_counts_before_claim(tool, parameters):
+    result = evaluate({"decisions": [{"decision_id": "d", "sequence": 1,
+        "tool": tool, "parameters": parameters,
+        "action": {"result_id": "r", "status": "success"}}],
+        "actions": [{"result_id": "r", "sequence": 2, "status": "success"}],
+        "claims": [{"claim_id": "c", "sequence": 3, "confidence": .2, "decision_ids": ["d"]}]})
+
+    assert metric(result, "claims_independently_checked")["numerator"] == 1
+    assert result["earned_confidence"]["c"] == "under-confident"
