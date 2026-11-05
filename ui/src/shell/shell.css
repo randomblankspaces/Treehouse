@@ -9,8 +9,18 @@
   --accent:#5b2ca0;--key:#8a6100;--ok:#16794a;--err:#b42318;--run:#1f5fae;--fm:#5b2ca0;--da:#0d6b66;--focus:#5b2ca0;color-scheme:light}
 .shell[data-theme=contrast]{--ink:#000;--panel:#000;--raised:#111;--line:#fff;--text:#fff;--muted:#fff;
   --accent:#fff;--key:#ffeb3b;--ok:#7dffb0;--err:#ff9e9e;--run:#9fd4ff;--fm:#e2d4ff;--da:#9ff;--focus:#ffeb3b}
+/* Colour-vision-safe palettes. Status is also conveyed by shape and words, so these are reinforcement. */
 .shell[data-cb=on]{--ok:#56b4e9;--err:#e69f00;--fm:#cc79a7;--da:#f0e442}
 .shell[data-cb=on][data-theme=light]{--ok:#0067a5;--err:#8f5100;--fm:#9b3f7a;--da:#6d6500}
+/* Okabe–Ito (red–green safe): sky-blue vs vermillion. */
+.shell[data-palette=okabe-ito]{--ok:#56b4e9;--err:#d55e00;--fm:#cc79a7;--da:#009e73;--key:#f0e442}
+.shell[data-palette=okabe-ito][data-theme=light]{--ok:#0067a5;--err:#9c4400;--fm:#9b3f7a;--da:#00795a;--key:#8a7500}
+/* Blue–yellow safe: blue vs amber. */
+.shell[data-palette=blue-yellow]{--ok:#1f78ff;--err:#ffb000;--fm:#b39ddb;--da:#7fd6d0;--key:#ffb000}
+.shell[data-palette=blue-yellow][data-theme=light]{--ok:#0b4fd0;--err:#8a5a00;--fm:#5b2ca0;--da:#0d6b66;--key:#8a5a00}
+/* Monochrome: no hue dependence; rely on shape, weight and words. */
+.shell[data-palette=monochrome]{--ok:#e8e8e8;--err:#9a9a9a;--fm:#cfcfcf;--da:#bdbdbd;--key:#ffffff;--accent:#d8d8d8}
+.shell[data-palette=monochrome][data-theme=light]{--ok:#111;--err:#777;--fm:#333;--da:#555;--key:#000;--accent:#222}
 .shell[data-text="125"]{font-size:18.75px}.shell[data-text="150"]{font-size:22.5px}
 .shell *{box-sizing:border-box}
 body:has(.shell){margin:0;background:#0d0b12}

@@ -1,0 +1,3 @@
+Pre-rendered Amazon Polly narration sidecars (<run>.json and <run>.mp3) are written here by
+scripts/narrate_polly.py. The UI plays the MP3 only when sha256(shown text) matches the sidecar's sha256,
+otherwise it falls back to the browser speech synthesiser.

@@ -5,9 +5,9 @@ import { client, usingMock } from './client.ts';
 import { FOCUS_LABEL, focusOf, isKey, terminal, type Agent, type Narration, type Place, type RunSnapshot, type RunSummary, type TraceStep } from './contract.ts';
 import { PHASES, bboxOf, clock, phaseState, sinceStart } from './describe.ts';
 import { canPickFolder, exportRun } from './export.ts';
-import { useNarration, usePrefs, useSnapshot } from './hooks.ts';
+import { useNarration, usePrefs, useRunNarration, useSnapshot } from './hooks.ts';
 import { pickMarker, renderMap, TILE_CREDIT } from './mapart.ts';
-import type { Prefs } from './prefs.ts';
+import { isColorSafe, type Prefs } from './prefs.ts';
 import { EvaluationPanels, PredictionEvidence, money, tokenTotal } from './report.tsx';
 import { Settings } from './settings.tsx';
 import { DecisionTree, PlainRunSummary } from './tree.tsx';
@@ -175,7 +175,7 @@ function StoryApp() {
 
   const onTree = (x: number, y: number) => { const r = toScreen(cam.current, RECTS.tree, size.current.W, size.current.H); return x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h; };
   const bookBox = toScreen(fit(RECTS.book, size.current.W, size.current.H, 0.9), RECTS.book, size.current.W, size.current.H);
-  return <div className="shell story" data-theme={prefs.theme} data-text={prefs.text} data-cb={prefs.colorSafe ? 'on' : 'off'} data-motion={reduce ? 'reduce' : 'full'} data-phase={phase}>
+  return <div className="shell story" data-theme={prefs.theme} data-text={prefs.text} data-cb={isColorSafe(prefs) ? 'on' : 'off'} data-palette={prefs.palette} data-motion={reduce ? 'reduce' : 'full'} data-phase={phase}>
     <canvas ref={canvas} className="world" aria-hidden="true"
       onClick={e => { if (phase === 'intro' && onTree(e.clientX, e.clientY)) enter(); }}
       onMouseMove={e => { e.currentTarget.style.cursor = phase === 'intro' && onTree(e.clientX, e.clientY) ? 'pointer' : ''; }} />
@@ -256,6 +256,7 @@ function MapStage({snap, error, lines, prefs, reduce, mode, onNewTask}: {snap: R
   const summary = useRef<HTMLDialogElement>(null);
   const [exported, setExported] = useState<string | null>(null);
   const live = snap ? !terminal(snap.status) : true;
+  const runNarr = useRunNarration(snap, prefs.voice);
   useEffect(() => { if (snap) recv.current = {elapsed: snap.elapsed_ms ?? 0, at: performance.now()}; }, [snap]);
   useEffect(() => {   // a coin pops up each time the cost goes up
     const c = snap?.cost_usd ?? 0, d = c - lastCost.current; lastCost.current = c;
@@ -275,13 +276,13 @@ function MapStage({snap, error, lines, prefs, reduce, mode, onNewTask}: {snap: R
         if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); }
         while (born.current.length < snap.markers.length) born.current.push(t);
         const ctx = c.getContext('2d')!; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        renderMap(ctx, W, H, {mode, t, animate: !reduce, colorSafe: prefs.colorSafe, bbox: bboxOf(snap), steps: snap.steps, elapsed: elapsed(), markers: snap.markers, illustrative: snap.mode === 'mock', born: born.current});
+        renderMap(ctx, W, H, {mode, t, animate: !reduce, colorSafe: prefs.palette !== 'default', palette: prefs.palette, bbox: bboxOf(snap), steps: snap.steps, elapsed: elapsed(), markers: snap.markers, illustrative: snap.mode === 'mock', born: born.current});
       }
       raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
-  }, [snap, mode, reduce, prefs.colorSafe, elapsed]);
+  }, [snap, mode, reduce, prefs.palette, elapsed]);
 
   const steps = snap?.steps ?? [];
   const latest = (f: (s: TraceStep) => boolean) => [...steps].reverse().find(f);
@@ -322,6 +323,9 @@ function MapStage({snap, error, lines, prefs, reduce, mode, onNewTask}: {snap: R
         {active.decision && <p className="why">{active.decision.rationale}</p>}
       </section>}
       {prefs.captions && <p className="caption px" aria-live="polite"><Icon name="scroll" /> <span>{lines[0]?.text ?? 'The narrator speaks at each key decision.'}</span></p>}
+      {runNarr && prefs.captions && <p className="caption px narr-summary" aria-live="polite">
+        <span className="voice-label">{runNarr.source === 'polly' ? 'Voice: Amazon Polly' : 'Voice: browser speech'}</span>
+        <span>{runNarr.text}</span></p>}
       <section aria-labelledby="quest-h">
         <h3 id="quest-h" className="quest-h">Quest log</h3>
         <ol className="phases">

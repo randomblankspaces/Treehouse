@@ -99,3 +99,9 @@
 
 /* Respect reduced motion: no transitions anywhere in the tree */
 .shell[data-motion=reduce] .dtree *{transition:none !important;animation:none !important}
+
+/* Narrator run summary + voice source label */
+.shell .narr-summary{font-size:.85rem;color:var(--muted);margin:.4rem 0 0}
+.shell .voice-label{display:inline-block;font:600 .64rem var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--ink);background:var(--da);border-radius:3px;padding:.05rem .4rem;margin-inline-end:.4rem;vertical-align:1px}
+.story .narr-summary{display:block;margin-top:.3rem}
+.story .narr-summary .voice-label{background:rgba(0,0,0,.6);color:#fff}
