@@ -32,6 +32,10 @@ class ReferenceSource(Frozen):
     license: str
 
 
+class OsmSelector(Frozen):
+    tags: list[dict[str, str | list[str]]]
+
+
 class AssetClass(Frozen):
     label: str
     positive: str
@@ -42,6 +46,7 @@ class AssetClass(Frozen):
     suitable_gsd_m: list[float]
     cell_size_m: float
     references: list[ReferenceSource]
+    osm: OsmSelector | None = None
 
 
 class AssetClasses(Frozen):

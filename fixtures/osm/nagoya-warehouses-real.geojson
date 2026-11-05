@@ -1,0 +1,25 @@
+{
+  "type": "FeatureCollection",
+  "snapshot_date": "2026-11-05",
+  "synthetic_fixture": true,
+  "notice": "Synthetic offline geometry, not observed OSM; never use as a live reference.",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "synthetic:nagoya-warehouses-real:1",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.85,
+          35.08
+        ]
+      },
+      "properties": {
+        "cls": "warehouse",
+        "tags": {
+          "building": "warehouse"
+        }
+      }
+    }
+  ]
+}

@@ -67,8 +67,17 @@ steps:
     question_id: exists
     statuses_allowed: [present, absent, cannot_assess]
     keying:
-      mode: unkeyed
-      status: none
+      mode: keyed
+      key_source: OpenStreetMap candidate pool (incomplete; never report recall)
+      key_path: keys/osm/nagoya-warehouses-real.geojson
+      license: ODbL-1.0
+      reference_quality: incomplete
+      match_rule:
+        tolerance_m:
+          warehouse: 80
+        one_to_one: true
+      status: pending_fetch
+      completeness_caveat: Sparse OSM candidate pool, not a complete inventory. Precision within the pool only; never recall.
 forbidden_sources:
   - {kind: path, pattern: keys/}
   - {kind: dataset_id, pattern: plateau-nagoya-warehouses}
@@ -92,3 +101,4 @@ sampling_plan:
   seed: 20261104
 thresholds: {rely_lo: 0.8}
 budget: {enabled: true, usd: 15, tool_calls: 200, bytes: 500000000, wall_s: 1800, tokens: 3000000}
+minutes_per_cell: 2.0

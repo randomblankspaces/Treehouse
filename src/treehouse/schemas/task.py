@@ -201,10 +201,14 @@ class TaskCard(Frozen):
     gold_plan: GoldPlan | None = None
     thresholds: Thresholds
     budget: Budget
+    minutes_per_cell: float = Field(default=2.0, gt=0)
 
     @model_serializer(mode="wrap")
     def _serialize(self, handler):
         data = handler(self)
+        # Historical cards must retain their exact sealed JSON and hashes.
+        if "minutes_per_cell" not in self.model_fields_set:
+            data.pop("minutes_per_cell", None)
         # Absent examples must preserve existing card hashes and recorded model requests.
         if not self.user_examples:
             data.pop("user_examples", None)
