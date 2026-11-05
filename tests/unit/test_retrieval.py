@@ -159,9 +159,22 @@ def test_classifiers_in_unit_interval_and_deterministic(rt, idx_id, method):
     b = rt.classify(idx_id, method, None, train)
     assert a == b and PROV <= set(a["provenance"])
     s = np.array([c["score"] for c in a["scores"]])
-    assert len(s) == len(rt.indexes[idx_id].cell_ids) and s.min() >= 0 and s.max() <= 1
+    assert len(s) == 200 and a["n_scored"] == len(rt.indexes[idx_id].cell_ids)
+    assert s.min() >= 0 and s.max() <= 1 and np.all(s[:-1] >= s[1:])
+    assert set(a["score_summary"]) == {"min", "median", "max"}
+    assert 0 <= a["score_summary"]["min"] <= a["score_summary"]["median"] <= a["score_summary"]["max"] <= 1
+    assert a["score_summary"]["max"] == s.max()
+
+    all_ids = rt.indexes[idx_id].cell_ids.tolist()
+    capped = rt.classify(idx_id, method, all_ids, train, k=2_000)
+    assert len(capped["scores"]) == 1_000 and capped["n_scored"] == len(all_ids)
     sub = rt.classify(idx_id, method, [a["scores"][0]["cell_id"]], train)
     assert len(sub["scores"]) == 1 and sub["scores"][0]["score"] == a["scores"][0]["score"]
+    assert sub["n_scored"] == 1 and sub["score_summary"] == {
+        "min": a["scores"][0]["score"],
+        "median": a["scores"][0]["score"],
+        "max": a["scores"][0]["score"],
+    }
 
 
 def test_not_configured_seams(rt, idx_id):

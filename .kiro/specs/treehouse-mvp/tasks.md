@@ -30,7 +30,7 @@ run `uv run treehouse budget status` (stop at exit 2/3). If a task hits a hard A
   - Offline: scripted provider test that exercises every tool and seals red sites.
   - Live: one Nagoya T1 run on `us.anthropic.claude-sonnet-5-5`; seal to the S3 run store; commit the pixel-free cassette for replay. _Req: 2.1, 2.4, 3.1, 9.2, 10.1_
 
-- [ ] 5. Strands vision sub-agent classifier
+- [x] 5. Strands vision sub-agent classifier
   - `classify(method="vision_subagent")` → Strands agent with Bedrock vision on GSI chips; metered; switchable with probe/SVM. Live run once. _Req: 2.3_
 
 - [x] 6. Output grader v2 (report protocol)
