@@ -1,0 +1,17 @@
+Live run: nagoya-real-sonnet-thinking-2
+Date: 2026-11-05 UTC
+Card: tasks/t1-nagoya-warehouses-real.yaml (real LGND Clay v1.5 embeddings, source.coop S3, CC BY 4.0)
+Worker: us.anthropic.claude-sonnet-5-5 (Strands harness), thinking ON with request_fields
+{thinking: {type: adaptive, display: summarized}} (rerun of -1 after the summarized-display fix).
+Provider: treehouse.providers.factories:bedrock_recording
+Servers: treehouse.providers.factories:vision_servers (TREEHOUSE_VISION_MODE=record)
+Outcome: stop=completed; 1 trial; 1 claim (cannot_assess @ 0.9); 9 decisions, 5 now carry a thinking_ref
+(signed reasoning block bound to the decision) — up from 0/11 on -1 with bare adaptive.
+Manifest: sha256:590a67710c395da5301bd6bb6289e23e4379f3564a3d81729eddd65b945dfc0e
+Verify: ok. Bedrock ledger delta ~$0.33.
+
+Fix + residual gap: a direct Bedrock Converse probe with display=summarized returns non-empty
+reasoningContent.reasoningText.text (~190 chars); bare adaptive returns empty. With the field set, decisions now
+attach thinking_ref and the signed thinking blocks are captured. However, the thinking blocks persisted through
+the Strands recording path store only the signature (block text empty), so the summarized text is still dropped
+before it reaches the decision. Follow-up: carry reasoningText.text through the Strands->provider->blob path.

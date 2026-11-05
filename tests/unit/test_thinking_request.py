@@ -28,7 +28,7 @@ def test_thinking_on_sends_configured_fields_and_omits_temperature():
     kwargs = build_converse_kwargs(request, entry, thinking=True)
     client.converse(**kwargs)
 
-    assert client.kwargs["additionalModelRequestFields"] == {"thinking": {"type": "adaptive"}}
+    assert client.kwargs["additionalModelRequestFields"] == {"thinking": {"type": "adaptive", "display": "summarized"}}
     assert client.kwargs["inferenceConfig"] == {"maxTokens": 64}
 
 

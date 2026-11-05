@@ -94,3 +94,10 @@ Haiku), both sealed under `fixtures/live/real/`. Deferred under the credit/time 
   resolved; wire a GSI/Sentinel window the vision sub-agent can actually read at the candidate cells.
 - Compute Clay embeddings on agent-chosen chips (F1) would let these runs pick a 160 m cell instead of the
   precomputed 1.28–2.56 km grid, which is why the agents declined to assert warehouses.
+
+- **Carry summarized thinking text through the Strands recording path.** `config/models.yaml` now sets Sonnet
+  `request_fields: {thinking: {type: adaptive, display: summarized}}`, and a direct Bedrock Converse probe confirms
+  non-empty `reasoningContent.reasoningText.text`. In a full Strands run (`nagoya-real-sonnet-thinking-2`) decisions
+  now attach a `thinking_ref`, but the persisted thinking blocks keep only the block signature (text empty), so the
+  summarized text is dropped before it binds to the decision. Fix: preserve `reasoningText.text` in the
+  Strands→provider→blob serialization so `thinking_ref` resolves to readable thinking in the decision-tree expander.

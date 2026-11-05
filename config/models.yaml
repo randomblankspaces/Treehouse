@@ -32,7 +32,7 @@ models:
     image_delivery: user_turn
     max_image_px: 1568
     price_ref: claude-sonnet-5-5
-    request_fields: {thinking: {type: adaptive}}
+    request_fields: {thinking: {type: adaptive, display: summarized}}
     quota_note: "UNVERIFIED until K1: on-demand RPM/TPM quotas unknown; adapter concurrency 2"
     verified: false
   - key: nova-pro
