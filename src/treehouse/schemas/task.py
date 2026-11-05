@@ -209,11 +209,6 @@ class TaskCard(Frozen):
         # Historical cards must retain their exact sealed JSON and hashes.
         if "minutes_per_cell" not in self.model_fields_set:
             data.pop("minutes_per_cell", None)
-        return data
-
-    @model_serializer(mode="wrap")
-    def _serialize(self, handler):
-        data = handler(self)
         # Absent examples must preserve existing card hashes and recorded model requests.
         if not self.user_examples:
             data.pop("user_examples", None)
