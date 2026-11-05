@@ -97,6 +97,35 @@ def test_review_effort_reaches_all_when_every_asset_is_flagged():
     assert r.review_effort == {"50": 2, "80": 5, "90": 5}
 
 
+def test_review_effort_in_analyst_hours():
+    r = grade([*CLAIMS, claim(560, 560, 0.1)], ASSETS, AOI, minutes_per_cell=3.0)
+    assert r.analyst_hours == pytest.approx({"50": 0.1, "80": 0.25, "90": 0.25})
+    assert r.exhaustive_hours == pytest.approx(0.8)
+    assert r.saving_pct == pytest.approx({"50": 87.5, "80": 68.75, "90": 68.75})
+    assert r.minutes_per_cell == 3.0
+    assert r.minutes_per_cell_basis == "assumption"
+
+
+def test_unreachable_recall_has_no_hours_or_saving():
+    r = toy()
+    assert r.analyst_hours == {"50": 2 * 2 / 60, "80": None, "90": None}
+    assert r.saving_pct == {"50": 87.5, "80": None, "90": None}
+
+
+def test_incomplete_hours_review_only_distinct_claimed_cells():
+    r = toy("incomplete", minutes_per_cell=3.0)
+    assert r.analyst_hours == {"claimed_cells": 0.2}
+    assert r.exhaustive_hours == pytest.approx(0.8)
+    assert r.saving_pct == {"claimed_cells": 75.0}
+    assert r.recall is None and r.review_effort is None
+
+
+@pytest.mark.parametrize("minutes", [0, -1, float("inf"), float("nan")])
+def test_invalid_analyst_time_is_rejected(minutes):
+    with pytest.raises(ValueError, match="minutes_per_cell"):
+        toy(minutes_per_cell=minutes)
+
+
 def test_any_touch_on_cell_edge_from_either_side():
     left = grade([claim(200, 400, 1.0)], [asset(320, 400, "A2")], AOI)  # cell (1,2)
     right = grade([claim(440, 400, 1.0)], [asset(320, 400, "A2")], AOI)  # cell (2,2)

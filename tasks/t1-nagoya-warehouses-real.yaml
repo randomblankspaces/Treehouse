@@ -1,0 +1,154 @@
+# Designed real-data card; fetch and pin the OSM pool before live grading.
+# Offline-only synthetic pool: fixtures/osm/nagoya-warehouses-real.geojson
+schema_version: treehouse.task/1
+id: t1-nagoya-warehouses-real
+version: 1.0.0
+title: Nagoya warehouses with real LGND embeddings (incomplete OSM pool)
+family: asset-retrieval
+synthetic: false
+goal: Find every warehouse in the area of interest. A warehouse is a warehouse or
+  large logistics/storage building (roughly 1,600 m2 of floor area or more). Do NOT
+  count factories, markets, aircraft hangars or other large roofs that are not warehouses.
+  Return each warehouse as a point inside the building, with the resources and image
+  windows you used and your confidence. State the resolution and cell size you chose
+  and why, the area you searched, any area you could not review, and a count with
+  a range.
+aoi:
+  type: Polygon
+  coordinates:
+  - - - 136.82
+      - 35.05
+    - - 136.92
+      - 35.05
+    - - 136.92
+      - 35.12
+    - - 136.82
+      - 35.12
+    - - 136.82
+      - 35.05
+smoke_aoi:
+- 136.82
+- 35.05
+- 136.87
+- 35.085
+time_window:
+- 2024-01-01
+- 2024-12-31
+as_of: 2024-12-31 23:59:00+00:00
+data_allowlist:
+- source_id: lgnd-clay-embeddings
+  kind: embeddings
+  access: real
+  license: CC-BY-4.0
+  status: unpinned
+- source_id: gsi-seamless-aerial-japan
+  kind: imagery
+  access: s3_listing
+  license: LicenseRef-gsi-japan-attribution
+  status: unpinned
+tools_allowed:
+- record_decision
+- list_embedding_sources
+- build_index
+- retrieve
+- classify
+- imagery_window
+- aggregate
+- record_claim
+- note_limitation
+- submit_understanding
+needs_vision: true
+classes:
+  warehouse:
+    min_size_m: 40
+    max_effective_gsd_for_existence_m: 10
+    max_effective_gsd_for_status_m: 10
+    match_tolerance_m: 80
+    key_geometry: point
+windows:
+  max_side_m: 5000
+  max_out_px: 512
+  max_bytes_per_run: 500000000
+steps:
+- step_id: inventory
+  question_id: exists
+  statuses_allowed:
+  - present
+  - absent
+  - cannot_assess
+  keying:
+    mode: keyed
+    key_source: OpenStreetMap candidate pool (incomplete; never report recall)
+    key_path: keys/osm/nagoya-warehouses-real.geojson
+    license: ODbL-1.0
+    reference_quality: incomplete
+    match_rule:
+      tolerance_m:
+        warehouse: 80
+      one_to_one: true
+    status: pending_fetch
+    completeness_caveat: Sparse OSM candidate pool, not a complete inventory. Precision
+      within the pool only; never recall.
+forbidden_sources:
+- kind: path
+  pattern: keys/
+- kind: tool
+  pattern: key_lookup
+- kind: host
+  pattern: securewatch.maxar.com
+- kind: host
+  pattern: '*.maxar.com'
+- kind: dataset_id
+  pattern: maxar
+- kind: dataset_id
+  pattern: vantor
+must_notice:
+- id: resolution
+  kind: mentions_any
+  terms:
+  - 10 m
+  - resolution
+  - gsd
+  - cell size
+  - 160 m
+- id: cell-merge
+  kind: mentions_any
+  terms:
+  - merge
+  - aggregate
+  - site
+  - cell
+- id: count-range
+  kind: mentions_any
+  terms:
+  - range
+  - count
+  - approximately
+  - about
+- id: incomplete
+  kind: declares_limit
+  terms:
+  - incomplete
+  - pool
+  - cannot claim recall
+known_limits:
+- 'OSM is incomplete: report precision within the pool only; never recall.'
+- LGND Clay precomputed cells are 1.28 / 2.56 km, coarser than individual buildings
+  and the 160 m evaluation grid.
+- GSI aerial imagery requires attribution; current OSM and 2024 embeddings may differ
+  in time.
+sampling_plan:
+  strata_keys:
+  - conf_tercile
+  n_total: 40
+  seed: 20261104
+thresholds:
+  rely_lo: 0.8
+budget:
+  enabled: true
+  usd: 15
+  tool_calls: 200
+  bytes: 500000000
+  wall_s: 1800
+  tokens: 3000000
+minutes_per_cell: 2.0

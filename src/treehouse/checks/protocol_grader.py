@@ -88,6 +88,11 @@ class GradeReport(Frozen):
     auroc: float | None
     ap: float | None
     review_effort: dict[str, int | None] | None
+    minutes_per_cell: float = 2.0
+    minutes_per_cell_basis: Literal["assumption"] = "assumption"
+    analyst_hours: dict[str, float | None] = {}
+    exhaustive_hours: float = 0.0
+    saving_pct: dict[str, float | None] = {}
     null_reasons: dict[str, str]
     units: dict[str, str]
     evaluated_population: str = "all AOI-intersecting cells"
@@ -230,9 +235,12 @@ def exclude_example_claims(claims, examples, aoi, *, assets=(), cell_size_m=160.
 
 def grade(claims: Iterable[PredictedClaim], assets: Iterable[Asset], aoi: Sequence[float], *,
           completeness: str = "complete", cell_size_m: float = 160.0, edge_tol_m: float = 1.0,
-          ks: Sequence[int] = (10, 20, 50), excluded_assets: Sequence[Asset] = ()) -> GradeReport:
+          ks: Sequence[int] = (10, 20, 50), excluded_assets: Sequence[Asset] = (),
+          minutes_per_cell: float = 2.0) -> GradeReport:
     if completeness not in COMPLETENESS:
         raise ValueError(f"completeness must be one of {COMPLETENESS}, got {completeness!r}")
+    if not math.isfinite(minutes_per_cell) or minutes_per_cell <= 0:
+        raise ValueError("minutes_per_cell must be finite and positive")
     g = _grid(aoi, cell_size_m)
     assets = list(assets)
     all_cells = _aoi_cells(g, aoi)
@@ -290,14 +298,31 @@ def grade(claims: Iterable[PredictedClaim], assets: Iterable[Asset], aoi: Sequen
              "count_ratio": "8-neighbour connected flagged-cell sites / known assets",
              "auroc": f"over all {cell_size_m:g} m cells intersecting the AOI",
              "ap": f"over all {cell_size_m:g} m cells intersecting the AOI",
-             "review_effort": "top-ranked flagged cells to inspect"}
+             "review_effort": "top-ranked flagged cells to inspect",
+             "analyst_hours": "hours; assumption: cells × minutes_per_cell / 60",
+             "exhaustive_hours": "hours to review every AOI cell at the assumed minutes_per_cell",
+             "saving_pct": "percent less review time than exhaustive review; no completeness claim"}
+    exhaustive_hours = len(all_cells) * minutes_per_cell / 60
+
+    def hours(cells):
+        return {name: count * minutes_per_cell / 60 if count is not None else None
+                for name, count in cells.items()}
+
+    def savings(analyst_hours):
+        return {name: 100 * (1 - value / exhaustive_hours)
+                if value is not None and exhaustive_hours else None
+                for name, value in analyst_hours.items()}
+
+    analyst_hours = hours({"claimed_cells": n_flag})
     common = dict(grader_version="grade-lgnd-v2-heldout" if excluded_assets else GRADER_VERSION,
                   evaluated_population="held-out cells; training/example-positive cells and overlapping holdouts excluded" if excluded_assets else "all AOI-intersecting cells",
                   n_excluded_cells=len(excluded & all_cells), cell_size_m=cell_size_m, edge_tol_m=edge_tol_m,
                   completeness=completeness, n_assets=n_assets,
                   n_assets_outside_aoi=n_assets_outside_aoi, n_claims=n_claims,
                   n_predicted_sites=n_sites, n_flagged_cells=n_flag, n_grid_cells=n_cells,
-                  n_asset_cells=len(asset_cells), precision=precision, units=units)
+                  n_asset_cells=len(asset_cells), precision=precision, units=units,
+                  minutes_per_cell=minutes_per_cell, analyst_hours=analyst_hours,
+                  exhaustive_hours=exhaustive_hours, saving_pct=savings(analyst_hours))
     if excluded_assets and not n_assets:
         common["precision"] = None
         reasons.update({name: "no_valid_heldout_population" for name in (
@@ -340,6 +365,8 @@ def grade(claims: Iterable[PredictedClaim], assets: Iterable[Asset], aoi: Sequen
         effort = {name: next((k + 1 for k, f in enumerate(found_curve) if f >= share * n_assets - _EPS), None)
                   for name, share in EFFORT_SHARES.items()}
     keep("review_effort", effort, "no_assets")
+    if effort is not None:
+        common.update(analyst_hours=hours(effort), saving_pct=savings(hours(effort)))
     base_rate = len(asset_cells) / n_cells if n_cells else 0
     lift = keep("lift", precision / base_rate if precision is not None and base_rate > 0 else None,
                 "no_flagged_cells" if precision is None else "no_asset_cells")

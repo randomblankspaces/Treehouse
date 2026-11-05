@@ -60,8 +60,8 @@ def _config(name: str) -> RunConfig:
 
 def test_analyze_experiments_writes_separate_offline_panels(tmp_path: Path) -> None:
     store = LocalStore(tmp_path / "store")
-    nagoya = load_card("tasks/t1-nagoya-warehouses.yaml")
-    nagoya_config = _config("t1-nagoya-sonnet-strands.json")
+    nagoya = load_card("tasks/t1-nagoya-warehouses.yaml").model_copy(update={"minutes_per_cell": 3.0})
+    nagoya_config = _config("t1-nagoya-sonnet-strands.json").model_copy(update={"task_ref": nagoya.ref()})
     for run_id in ("nagoya-a", "nagoya-b"):
         run_investigation(store, nagoya, nagoya_config, WarehouseScriptProvider(), run_id=run_id)
 
@@ -94,6 +94,8 @@ def test_analyze_experiments_writes_separate_offline_panels(tmp_path: Path) -> N
         panels = metrics["runs"][run_id]["panels_by_trial"]["t-0"]
         assert panels["output"]["recall"] is not None
         assert panels["output"]["precision"] is not None
+        assert panels["output"]["minutes_per_cell"] == 3.0
+        assert panels["output"]["minutes_per_cell_basis"] == "assumption"
         assert panels["calibration"]["n_bins"] == 5
     unkeyed = metrics["runs"]["bangladesh-a"]["panels_by_trial"]["t-0"]
     assert unkeyed["calibration"] == {"no_grade_reason": "unkeyed"}
