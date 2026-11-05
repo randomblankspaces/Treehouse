@@ -11,6 +11,7 @@ for i in ${RUNS:-1}; do
   id=live-$NAME-$TAG-$i
   [ -e out/live/$id.model.jsonl ] && { echo "SKIP $id exists"; continue; }
   uv run python scripts/make_live_config.py $CARD $MODEL strands --output out/live/$id.json || { echo CFG-FAIL; continue; }
+  TREEHOUSE_VISION_MODE=record TREEHOUSE_VISION_CASSETTE=$PWD/out/live/$id.vision.jsonl TREEHOUSE_GSI_LOG=$PWD/out/live/$id.gsi.jsonl \
   TREEHOUSE_CASSETTE_OUT=$PWD/out/live/$id.model.jsonl timeout 2400 uv run treehouse sandbox run --task $CARD \
     --config out/live/$id.json --provider treehouse.providers.factories:bedrock_recording --run-id $id --store out/store > out/live/$id.log 2>&1
   echo "RUN $id rc=$?"; tail -2 out/live/$id.log | cut -c1-200
