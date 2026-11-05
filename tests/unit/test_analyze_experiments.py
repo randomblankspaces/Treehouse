@@ -58,6 +58,17 @@ def _config(name: str) -> RunConfig:
     )
 
 
+def test_classifier_comparison_uses_card_review_assumption(monkeypatch):
+    comparison = runpy.run_path(str(ROOT / "scripts/analyze_experiments.py"))["_classifier_comparison"]
+    card = load_card("tasks/t1-nagoya-warehouses.yaml").model_copy(update={"minutes_per_cell": 3.0})
+    monkeypatch.setitem(comparison.__globals__, "load_card", lambda path: card)
+    for trial in comparison()["trials"]:
+        for report in trial["methods"].values():
+            assert report["minutes_per_cell"] == 3.0
+            for target, cells in report["review_effort"].items():
+                assert report["analyst_hours"][target] == (cells * 3.0 / 60 if cells is not None else None)
+
+
 def test_analyze_experiments_writes_separate_offline_panels(tmp_path: Path) -> None:
     store = LocalStore(tmp_path / "store")
     nagoya = load_card("tasks/t1-nagoya-warehouses.yaml").model_copy(update={"minutes_per_cell": 3.0})
