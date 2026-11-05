@@ -1,8 +1,8 @@
 # HANDOFF — overnight job (for whichever agent picks this up)
 
 > **Latest instruction — minimal sandbox confirmed:** read
-> [docs/LGND-REPORT-CONTEXT.md](docs/LGND-REPORT-CONTEXT.md) and
-> [docs/KIRO-NEXT-PROMPTS.md](docs/KIRO-NEXT-PROMPTS.md). Suhas confirmed natural-language target/zone →
+> [docs/LGND-REPORT-CONTEXT.md](../LGND-REPORT-CONTEXT.md) and
+> [docs/KIRO-NEXT-PROMPTS.md](../KIRO-NEXT-PROMPTS.md). Suhas confirmed natural-language target/zone →
 > embeddings/classification/red markers as a representative agent workflow. Evaluate why/how it
 > uses foundation models and components including Strands; keep decision/evidence/confidence/time/cost
 > distinct from independently assessed process/output quality. This Codex update publishes context and Kiro prompts. PR #8's investigation code is merged; inspected
@@ -12,8 +12,8 @@
 > no feature code and makes no AWS calls; Kiro receives the scoped integration work. The report
 > brief preserves the needed context without publishing the private PDF.
 
-> Current handoff: read [docs/KIRO-HANDOFF.md](docs/KIRO-HANDOFF.md),
-> [docs/OUTLINE.md](docs/OUTLINE.md) and [docs/PLAN.md](docs/PLAN.md) first. The product now includes
+> Current handoff: read [docs/KIRO-HANDOFF.md](../KIRO-HANDOFF.md),
+> [docs/OUTLINE.md](../OUTLINE.md) and [docs/PLAN.md](../PLAN.md) first. The product now includes
 > an opt-in decision/evidence investigation sandbox and observatory UI. Local checks do not prove
 > live model/imagery accuracy. Use the confirmed minimal scope and new Kiro prompts;
 > Kiro later handles AWS integration/live testing, followed by refinement. The overnight narrative
