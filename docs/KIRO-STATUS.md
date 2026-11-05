@@ -145,3 +145,121 @@ rest of the build, so the live Nagoya Strands-on-Bedrock run (task 4) can procee
   here) → committed AOI-sized fixture, `access: fixture` + real path in provenance.
 - **LGND GeoParquet not parsed**: `pyarrow` is not a dependency (design says no new deps) → committed
   fixture with the same 1,280 m cells; real path `s3://us-west-2.opendata.source.coop/clay/lgnd-embeddings/`.
+
+---
+
+## Task 4 — Strands agent run end to end (offline + live)
+
+**Status:** done. Live Strands-on-Bedrock Nagoya run sealed locally and to the Compliance S3 store; it made
+no red-site claims (the agent refused without imagery; see below).
+
+- Offline: `tests/investigation/test_warehouse_strands_e2e.py` runs the Nagoya card through the **Strands
+  harness** with a scripted provider exercising every retrieval tool and sealing ≥ 2 warehouse claims, plus a
+  "live-like" variant where ToolUse ids are assigned independently of the decision label.
+- Live factories: `treehouse.providers.factories:bedrock_recording` / `:replay`; configs in
+  `fixtures/live/configs/`; `scripts/make_live_config.py`; `scripts/publish_run_s3.py`.
+- Live runs (model `us.anthropic.claude-sonnet-5-5`, harness strands, all on 2026-11-05 UTC):
+
+| run | calls | $ (ledger) | outcome |
+|---|---|---|---|
+| `t1-nagoya-sonnet-strands-1` | 21 | 0.50 | **0 actions executed**: every action refused `missing_decision` (defect, fixed) |
+| `t1-nagoya-sonnet-strands-2` | 6 | 0.12 | decisions bound; Bedrock returned `stop_reason=content_filtered` with empty content after 3 actions |
+| `t1-nagoya-sonnet-strands-3` | 15 | 2.82 | completed: submit_understanding → sources → train examples → AEF 160 m index → linear probe → 2 imagery attempts (no imagery source wired) → limitation → 1 `cannot_assess` claim. Agent rejected LGND 1.28 km cells for warehouses and refused to claim sites it could not see. |
+
+- Evidence committed: `fixtures/live/cassettes/t1-nagoya-sonnet-strands-{1,2,3}.model.jsonl` (pixel-free,
+  replayable: `TREEHOUSE_CASSETTE_IN=... treehouse sandbox run --provider treehouse.providers.factories:replay`
+  reproduced run 3 offline), `fixtures/live/runs/<run>/` (SEALED, manifest, investigation ledger, claims),
+  `fixtures/live/receipts/t1-nagoya-sonnet-strands-3.s3.json` (8 objects in the run store, each
+  `ObjectLockMode: COMPLIANCE`, retain-until 2026-11-06).
+- Ledger after task 4: $3.55 (46 calls).
+
+### Defects found by the live run and fixed here
+1. **Decision binding was impossible for a live model.** `record_decision` required `action_id == ToolUse.id`,
+   but Bedrock assigns ToolUse ids. Now a decision also binds to the next action with the identical tool and
+   parameters (still one decision per action, before dispatch). The frozen acceptance test's `wrong_id`
+   variant was retired as **contract v2** with a replacement test (`test_label_only_mismatch_binds_by_exact_plan`);
+   wrong tool / wrong parameters / post-hoc decisions still fail.
+2. `record_decision.alternatives` is now a typed `{option, reason}` list so the tool schema tells the model
+   the keys (run 2 sent `why_not` and every decision was flagged `invalid_alternatives`).
+3. `score/scorecard.py` crashed post-seal when a run had no imagery windows (`bytes_model: "mixed"`).
+
+### Open issues (carried forward)
+- `imagery_window` has no source for the warehouse cards, so the agent cannot verify candidates visually →
+  wire GSI (Japan) chips (task 5).
+- `classify` returns all 3,430 cell scores, which inflates context (run 3 cost $2.82) → cap the returned list.
+- `content_filtered` (run 2) is unexplained; watch for recurrence.
+- `publish_run_s3.py` uploads the run directory (manifest, traces, claims, ledger) but not the store-level
+  request/response blobs; those are covered by the committed cassette.
+
+---
+
+## Task 5 — Strands vision sub-agent classifier (merged, PR #23)
+
+- `classify(method="vision_subagent")` sends a GSI 0.5 m aerial tile per cell (Japan only, attribution
+  recorded) to a Bedrock vision model through the Treehouse provider path (metered, cassette-recorded).
+  Injected into live runs with `--servers treehouse.providers.factories:vision_servers`; replay uses a
+  pixel-free GSI tile log, so no pixels are committed.
+- Design choice (labelled): one direct `ModelRequest` per cell rather than a Strands `Agent` loop.
+  Classification has no tools or iteration, so the "sub-agent" is a provider-backed classifier.
+- `classify` probe/SVM output is now capped at k=200 cells with `n_scored` and `score_summary`.
+- Live: two vision-enabled Nagoya runs (`t1-nagoya-sonnet-strands-vision-{1,2}`). **Neither run called
+  `vision_subagent`.** Both agents tried `imagery_window` (no imagery source on the warehouse cards) and
+  then fell back to embeddings. Vision run 2 recorded **5 `present` warehouse claims at confidence 0.3**,
+  labelled embedding-only and unverified. The vision path is tested offline but **not exercised live**.
+
+## Task 7 — Reasoning validity, score (a)
+
+- Rules RV1–RV10 (`investigation/reasoning_rules.py`), now **rv-v2**. Two false positives seen on live runs
+  are fixed: an omitted `get_examples` split is the server default "train" (RV4); a missing numeric
+  `stated_count` is not_applicable, because `note_limitation` only takes free text (RV7). Planted-bad-agent
+  tests still fail RV1 / RV2 / RV4.
+- Live rule results: `fixtures/live/rules/*.rv.json`. Run 3 fails RV7 (its claim cites no evidence).
+  Vision run 2 fails RV7 (no cited evidence) and RV8 (unreviewed area not stated).
+- **Reviewer model (live):** Nova Pro (`us.amazon.nova-pro-v1:0`, a different family from the Claude worker)
+  reviewed vision run 2 against `RUBRIC-v1.md`: strategy supported, **evidence_use contradicted** ("claims
+  recorded as present without imagery"), adaptation supported, uncertainty supported, stopping supported.
+  Evidence: `fixtures/live/review/t1-nagoya-sonnet-strands-vision-2.nova-pro.{review.json,model.jsonl}`.
+  The first attempt stopped at `max_tokens`, so the review output cap was raised from 800 to 2,000.
+- **AgentCore Evaluations (live):** on run 3 with `Builtin.ToolSelectionAccuracy` (9/10 tool calls Yes),
+  `Builtin.ToolParameterAccuracy` (8/10 Yes), `Builtin.TrajectoryInOrderMatch` (Yes), `Builtin.GoalSuccessRate`
+  (Yes, judged against the card's assertions), plus the Treehouse Lambda evaluators `treehouse_rules` (FAIL:
+  R4 fabrication, the claim cites no evidence) and `treehouse_guard` (PASS).
+  Evidence: `fixtures/live/agentcore/t1-nagoya-sonnet-strands-3.agentcore.json` (account id redacted).
+  - Fix needed first: AgentCore accepts only Strands/LangChain span scopes and needs message content.
+    `aws/agentcore.py` now emits scope `strands.telemetry.tracer` with inline `gen_ai.*` events (the "unified
+    telemetry" format in the AgentCore docs), plus tool arguments taken from the investigation ledger.
+- Each source above is reported separately; none is blended into another.
+## Task 9 — Experiments (live)
+
+**12 live runs, 2026-11-05 ~01:51–01:59 UTC**, all Strands harness, one factor at a time from the baseline:
+Sonnet 5.5 × {Nagoya, Gifu, Bangladesh} × N=3, and Nova Pro × Nagoya × N=3. Ledger after: **$10.97**.
+The vision-path variant was not part of the matrix (vision was not used in live runs; see task 5).
+Analysis: `scripts/analyze_experiments.py`. Metrics: `fixtures/live/experiments/metrics.json`. Sealed-run
+manifests and ledgers: `fixtures/live/experiments/runs/`. Pixel-free cassettes: `fixtures/live/cassettes/exp-*`.
+
+**All numbers are on synthetic fixture embeddings and synthetic fixture references** (task 1/2 blockers).
+They test the pipeline, not real-world accuracy. Intervals are 95 % bootstrap over N=3 trials.
+
+| config (strands) | n | site recall | cell precision | RV pass rate | $ / run |
+|---|---|---|---|---|---|
+| Nagoya · Sonnet 5.5 | 3 | 0.033 [0, 0.10] | 0.30 (1 run with claims) | 0.69 [0.57, 0.83] | 0.79 [0.67, 0.99] |
+| Nagoya · Nova Pro | 3 | 0.033 [0, 0.10] | 0.30 (1 run with claims) | 0.68 [0.67, 0.71] | 0.32 [0.02, 0.71] |
+| Gifu · Sonnet 5.5 (transfer) | 3 | 0.0 | — (no `present` claims) | 0.56 [0.50, 0.67] | 0.45 |
+| Bangladesh · Sonnet 5.5 (unkeyed) | 3 | not reported (incomplete pool) | — (no `present` claims) | 0.50 | 0.32 |
+
+- **Model comparison (Sonnet − Nova, Nagoya):** no difference in recall or precision; Sonnet costs
+  +$0.47/run. One Nova run stopped with `max_tokens`, one made no claims.
+- **Transfer gap (Nagoya − Gifu, Sonnet):** recall +0.03, recall@10 +0.10, AUROC +0.016. Small, because both
+  cities are near zero.
+- **Classifier comparison (offline, synthetic fixture embeddings, not a live agent run):** linear probe recall
+  0.64 / precision 0.13; linear SVM recall 0.66 / precision 0.15; probe − SVM recall −0.011 (3 seeds).
+  Live agents mostly stopped short of claiming, so the live classifier choice was not varied.
+- **Calibration (keyed, pooled):** Brier 0.21 (Sonnet) vs 0.56 (Nova) on very few claims. Interval not
+  meaningful at this n.
+- **Predicted accuracy (score c, MODEL-ESTIMATED):** fit on 6 keyed Nagoya runs across 2 configs.
+  Leave-one-config-out is **insufficient validation** (fewer than 3 configs). Bangladesh predictions are
+  site recall ≈ 0.005 and precision 0.30, with **no interval** ("insufficient data for an interval"). This
+  panel is not yet evidence of anything.
+- **Main finding:** with no visual check, the Sonnet agents mostly declined to claim warehouses, or claimed
+  them as `cannot_assess` or at low confidence. RV7 (claims citing no evidence) and RV8 (unreviewed area)
+  are the most common rule failures. This is a reasoning-quality signal, not an accuracy result.

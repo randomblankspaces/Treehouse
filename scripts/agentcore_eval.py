@@ -22,6 +22,17 @@ from treehouse.service import load_sealed
 from treehouse.store.local import LocalStore
 
 
+def _load_tool_args(run_dir: Path) -> dict[str, object] | None:
+    ledgers = sorted((run_dir / "trials").glob("*.investigation.json"))
+    if not ledgers:
+        return None
+    tool_args = {}
+    for path in ledgers:
+        for action in json.loads(path.read_text()).get("actions", []):
+            tool_args[action["span_id"]] = action["parameters"]
+    return tool_args
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--run", type=Path, required=True, help="<store>/runs/<run_id>")
@@ -36,7 +47,8 @@ def main(argv: list[str] | None = None) -> int:
     store = LocalStore(run_dir.parent.parent)
     run = load_sealed(store, run_dir.name)
     evaluators = [e.strip() for e in a.evaluators.split(",") if e.strip()]
-    results = run_agentcore_eval(run, evaluators, region=a.region, references=[] if a.no_references else None)
+    results = run_agentcore_eval(run, evaluators, region=a.region, references=[] if a.no_references else None,
+                                 tool_args=_load_tool_args(run_dir))
     key = record_results(store, run, evaluators, results)
     for r in results:
         print(json.dumps({"evaluator": r.evaluator_id, "trace": r.trace_id, "label": r.label, "value": r.value,

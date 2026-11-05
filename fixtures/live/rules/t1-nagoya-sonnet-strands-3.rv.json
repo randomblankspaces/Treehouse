@@ -1,0 +1,195 @@
+{
+ "rules_version": "rv-v2",
+ "results": [
+  {
+   "rule_id": "RV1",
+   "decision_id": "t-0:d-0004",
+   "action_id": "d4",
+   "claim_id": null,
+   "verdict": "pass",
+   "reason": "cell_size_m=160 m fits the registry scale"
+  },
+  {
+   "rule_id": "RV2",
+   "decision_id": "t-0:d-0004",
+   "action_id": "d4",
+   "claim_id": null,
+   "verdict": "pass",
+   "reason": "the recorded source and licence do not impose a non-commercial restriction"
+  },
+  {
+   "rule_id": "RV3",
+   "decision_id": null,
+   "action_id": null,
+   "claim_id": null,
+   "verdict": "not_applicable",
+   "reason": "no claim recorded both object size and GSD"
+  },
+  {
+   "rule_id": "RV4",
+   "decision_id": "t-0:d-0001",
+   "action_id": "d1",
+   "claim_id": null,
+   "verdict": "pass",
+   "reason": "the decision does not access held-out grading data"
+  },
+  {
+   "rule_id": "RV4",
+   "decision_id": "t-0:d-0002",
+   "action_id": "d2",
+   "claim_id": null,
+   "verdict": "pass",
+   "reason": "the decision does not access held-out grading data"
+  },
+  {
+   "rule_id": "RV4",
+   "decision_id": "t-0:d-0003",
+   "action_id": "d3",
+   "claim_id": null,
+   "verdict": "pass",
+   "reason": "the decision does not access held-out grading data"
+  },
+  {
+   "rule_id": "RV4",
+   "decision_id": "t-0:d-0004",
+   "action_id": "d4",
+   "claim_id": null,
+   "verdict": "pass",
+   "reason": "the decision does not access held-out grading data"
+  },
+  {
+   "rule_id": "RV4",
+   "decision_id": "t-0:d-0005",
+   "action_id": "d5",
+   "claim_id": null,
+   "verdict": "pass",
+   "reason": "the decision does not access held-out grading data"
+  },
+  {
+   "rule_id": "RV4",
+   "decision_id": "t-0:d-0006",
+   "action_id": "d6",
+   "claim_id": null,
+   "verdict": "pass",
+   "reason": "the decision does not access held-out grading data"
+  },
+  {
+   "rule_id": "RV4",
+   "decision_id": "t-0:d-0007",
+   "action_id": "d7",
+   "claim_id": null,
+   "verdict": "pass",
+   "reason": "the decision does not access held-out grading data"
+  },
+  {
+   "rule_id": "RV4",
+   "decision_id": "t-0:d-0008",
+   "action_id": "d8",
+   "claim_id": null,
+   "verdict": "pass",
+   "reason": "the decision does not access held-out grading data"
+  },
+  {
+   "rule_id": "RV4",
+   "decision_id": "t-0:d-0009",
+   "action_id": "d9",
+   "claim_id": null,
+   "verdict": "pass",
+   "reason": "the decision does not access held-out grading data"
+  },
+  {
+   "rule_id": "RV5",
+   "decision_id": null,
+   "action_id": null,
+   "claim_id": null,
+   "verdict": "not_applicable",
+   "reason": "no zero-shot prompt was recorded"
+  },
+  {
+   "rule_id": "RV6",
+   "decision_id": "t-0:d-0004",
+   "action_id": "d4",
+   "claim_id": null,
+   "verdict": "pass",
+   "reason": "recorded search bounds cover the card AOI"
+  },
+  {
+   "rule_id": "RV7",
+   "decision_id": "t-0:d-0009",
+   "action_id": "d9",
+   "claim_id": null,
+   "verdict": "fail",
+   "reason": "claim cites no evidence"
+  },
+  {
+   "rule_id": "RV7",
+   "decision_id": null,
+   "action_id": null,
+   "claim_id": "c-0001",
+   "verdict": "fail",
+   "reason": "external claim cites no evidence"
+  },
+  {
+   "rule_id": "RV7",
+   "decision_id": null,
+   "action_id": null,
+   "claim_id": null,
+   "verdict": "not_applicable",
+   "reason": "no numeric stated count was recorded"
+  },
+  {
+   "rule_id": "RV8",
+   "decision_id": null,
+   "action_id": null,
+   "claim_id": null,
+   "verdict": "pass",
+   "reason": "limits, unreviewed areas, and a count range are stated without unsupported recall"
+  },
+  {
+   "rule_id": "RV9",
+   "decision_id": null,
+   "action_id": null,
+   "claim_id": null,
+   "verdict": "not_applicable",
+   "reason": "no contradictory result or failed action was recorded"
+  },
+  {
+   "rule_id": "RV10",
+   "decision_id": null,
+   "action_id": null,
+   "claim_id": null,
+   "verdict": "not_applicable",
+   "reason": "no present claim was recorded"
+  }
+ ],
+ "summary": {
+  "verdict_by_rule": {
+   "RV1": "pass",
+   "RV2": "pass",
+   "RV3": "not_applicable",
+   "RV4": "pass",
+   "RV5": "not_applicable",
+   "RV6": "pass",
+   "RV7": "fail",
+   "RV8": "pass",
+   "RV9": "not_applicable",
+   "RV10": "not_applicable"
+  },
+  "failed_rules": [
+   "RV7"
+  ],
+  "passed_rules": [
+   "RV1",
+   "RV2",
+   "RV4",
+   "RV6",
+   "RV8"
+  ],
+  "not_applicable_rules": [
+   "RV3",
+   "RV5",
+   "RV9",
+   "RV10"
+  ]
+ }
+}
