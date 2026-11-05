@@ -1,0 +1,12 @@
+Live run: nagoya-real-sonnet-thinking-1
+Date: 2026-11-05 UTC
+Card: tasks/t1-nagoya-warehouses-real.yaml (real LGND Clay v1.5 embeddings, source.coop S3, CC BY 4.0)
+Worker: us.anthropic.claude-sonnet-5-5 (Strands harness), adaptive thinking ON (request_fields {thinking: {type: adaptive}})
+Provider: treehouse.providers.factories:bedrock_recording
+Servers: treehouse.providers.factories:vision_servers (TREEHOUSE_VISION_MODE=record)
+Outcome: stop=completed; 1 trial; 1 claim (cannot_assess @ 0.9); 11 decisions, all 11 bound to actions.
+Manifest: sha256:68effcde8e56f6eeb115398c9a6e6a85267a4c614d4198c7fd126dbe6e70b389
+Verify: ok.
+Note: one classify tool call raised a handled ToolError; the agent continued and sealed normally.
+Deliberation (deliberation/1): alternatives_per_decision 6/11; alternatives_tried 0/6; key_choices_compared 0/4;
+revisions_after_evidence 0/11; claims_independently_checked 0/1.

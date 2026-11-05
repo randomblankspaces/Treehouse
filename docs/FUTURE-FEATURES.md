@@ -78,3 +78,19 @@ grid would put 20+ warehouses in one cell."
 - User-supplied examples (20–30 points) and a cluster survey that finds "clumps" (e.g. wind farms) with no examples,
   then confirms a few with the vision sub-agent and expands from them (package WP-007).
 - Text-to-image retrieval with a vision-language embedding model (FarSLIP-style) for zero-shot queries.
+
+
+## F7. Remaining live-run matrix (deferred from the 2026-11-05 final push)
+
+The reduced real-data pass ran two runs on `tasks/t1-nagoya-warehouses-real.yaml` (Sonnet adaptive-thinking ON,
+Haiku), both sealed under `fixtures/live/real/`. Deferred under the credit/time stop, each a one-command follow-up:
+
+- **AgentCore Evaluations** on `nagoya-real-sonnet-thinking-1` (built-ins + Treehouse Lambda evaluators), then
+  commit the result JSON with the account id redacted (`src/treehouse/aws/` helpers; `scripts/agentcore_eval.py`).
+- **Nova Pro ×1** and a second Sonnet trial on the same real card, for a model comparison with intervals.
+- **Chattogram fuel tanks** live run (`tasks/t1-chattogram-fuel-tanks.yaml`, WP-003 card) once its reference pool
+  is fetched.
+- A **real vision-subagent** success: both committed real runs recorded `cannot_assess` because no fine imagery
+  resolved; wire a GSI/Sentinel window the vision sub-agent can actually read at the candidate cells.
+- Compute Clay embeddings on agent-chosen chips (F1) would let these runs pick a 160 m cell instead of the
+  precomputed 1.28–2.56 km grid, which is why the agents declined to assert warehouses.
