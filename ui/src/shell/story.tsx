@@ -203,43 +203,47 @@ function BookForm({places, agents, runs, onOpen, box, error, onBegin}: {places: 
   const [agentId, setAgentId] = useState<string>('');
   const agent = agents?.find(a => a.agent_id === agentId) ?? agents?.[0] ?? null;
   const [placeId, setPlaceId] = useState<string>('');
-  const place = places?.find(p => p.place_id === placeId) ?? places?.[0] ?? null;
+  // Default to the Nagoya warehouses preset when one is offered; otherwise the first place.
+  const nagoya = places?.find(p => /nagoya/i.test(p.place_id) || /nagoya/i.test(p.title)) ?? places?.[0] ?? null;
+  const place = places?.find(p => p.place_id === placeId) ?? nagoya;
   const [goal, setGoal] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState('');
   const style = {'--bx': `${box.x}px`, '--by': `${box.y}px`, '--bw': `${box.w}px`, '--bh': `${box.h}px`} as CSSProperties;
-  return <form className="book" style={style} aria-labelledby="book-h" onSubmit={async e => { e.preventDefault(); if (!place || !agent) return; setBusy(true); await onBegin(place, goal ?? place.goal, agent); setBusy(false); }}>
-    <section className="page left">
+  return <form className="book console" style={style} aria-labelledby="book-h" onSubmit={async e => { e.preventDefault(); if (!place || !agent) return; setBusy(true); await onBegin(place, goal ?? place.goal, agent); setBusy(false); }}>
+    <section className="page main" aria-label="Task prompt">
       <p className="chapter">Chapter one</p>
       <h2 id="book-h">What should the agent find?</h2>
       <label htmlFor="goal" className="sr">Task for the agent</label>
       <textarea id="goal" className="px" rows={9} value={goal ?? place?.goal ?? ''} readOnly={!place?.editable_goal} onChange={e => setGoal(e.target.value)} aria-describedby="goal-note" />
       <p id="goal-note" className="note">{place && !place.editable_goal ? 'Pinned recorded replay. Goal, model and harness must match an available preset; live/custom runs are unavailable.' : 'Edit the prompt or keep the example.'}</p>
+      {place?.aoi_bbox && <p className="note">Area: {place.aoi_bbox[1]}°N–{place.aoi_bbox[3]}°N, {place.aoi_bbox[0]}°E–{place.aoi_bbox[2]}°E</p>}
     </section>
-    <section className="page right">
-      <p className="chapter">Chapter two</p>
-      <h2>Where, and who goes?</h2>
-      <label className="field-block">Place
+    <section className="bar" aria-label="Agent, place and run">
+      {/* DOM order (and therefore tab order) matches the original: Place, then Agent, then Send.
+          CSS `order` places the Agent chip first visually without changing keyboard order. */}
+      <label className="field-block chip chip-place">Place
         <select className="px" value={place?.place_id ?? ''} onChange={e => { setPlaceId(e.target.value); setGoal(null); }} disabled={!places?.length}>
           {places?.map(p => <option key={p.place_id} value={p.place_id}>{p.title}</option>)}
         </select>
       </label>
-      {place?.aoi_bbox && <p className="note">Area: {place.aoi_bbox[1]}°N–{place.aoi_bbox[3]}°N, {place.aoi_bbox[0]}°E–{place.aoi_bbox[2]}°E</p>}
-      <label className="field-block">Agent
+      <label className="field-block chip chip-agent">Agent
         <select className="px" value={agent?.agent_id ?? ''} onChange={e => setAgentId(e.target.value)} disabled={!agents?.length} aria-describedby="agent-note">
           {agents?.map(a => <option key={a.agent_id} value={a.agent_id}>{a.label}</option>)}
         </select>
       </label>
-      {agent && <p id="agent-note" className="note">{agent.note} Model <code>{agent.model_id}</code> in a <i>{agent.harness}</i> harness.</p>}
+      {agent && <p id="agent-note" className="note agent-note">{agent.note} Model <code>{agent.model_id}</code> in a <i>{agent.harness}</i> harness.</p>}
       {error && <p className="book-error" role="alert">Could not start: {error}</p>}
       <button type="submit" className="px primary" disabled={!place || !agent || busy}>{busy ? 'Starting…' : usingMock ? 'Send the agent (mock)' : 'Replay preset'}</button>
-      <label htmlFor="saved-run">Saved runs</label>
-      <select id="saved-run" value={saved} onChange={e => setSaved(e.target.value)} disabled={!runs.length}>
+    </section>
+    <aside className="side" aria-label="Saved runs">
+      <label htmlFor="saved-run" className="side-h">Saved runs</label>
+      <select id="saved-run" className="px" value={saved} onChange={e => setSaved(e.target.value)} disabled={!runs.length}>
         <option value="">Choose a saved run</option>
-        {runs.map(r => <option key={r.run_id} value={r.run_id}>{r.title} · {r.status}</option>)}
+        {[...runs].reverse().map(r => <option key={r.run_id} value={r.run_id}>{r.title} · {r.status}</option>)}
       </select>
       <button type="button" className="px" disabled={!saved} onClick={() => onOpen(saved)}>Open saved run</button>
-    </section>
+    </aside>
   </form>;
 }
 
