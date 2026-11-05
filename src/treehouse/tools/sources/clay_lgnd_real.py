@@ -27,8 +27,8 @@ from treehouse.tools.sources.embedding_source import BBox, CellIndex, pool_to_gr
 
 BUCKET = "us-west-2.opendata.source.coop"
 BASE = "clay/lgnd-embeddings/monthly-aggregated/model_version=v1.5/collection=sentinel-2-l2a/chip_size=1280m/dims=256/"
-S3_HOST = f"https://{BUCKET}.s3.us-west-2.amazonaws.com"
-DEFAULT_MAX_BYTES = 64 * 1024 * 1024
+S3_HOST = f"https://s3.us-west-2.amazonaws.com/{BUCKET}"  # path-style: the dotted bucket name breaks virtual-host TLS
+DEFAULT_MAX_BYTES = 256 * 1024 * 1024  # one Nagoya row-group read is ~70-180 MB of a 174 MB monthly object
 
 
 class _RangeReader(io.RawIOBase):
