@@ -6,9 +6,9 @@ size, licence, cost; ``CellIndex.describe()``). Classifiers are plain numpy (log
 linear SVM by hinge-loss subgradient descent), trained on example cells versus random negative cells drawn with
 a fixed seed, so a run is deterministic.
 
-Few-shot examples come from the training split only (RV4). The server reads the split itself through an
-injectable ``ExampleProvider``; the agent never passes a ``keys/`` path, and no key path appears in a result.
-Gifu (transfer target) and Bangladesh get ``NoExamples``.
+Few-shot examples come from the training split or explicit analyst-supplied card points (RV4). The server
+reads the training split through an injectable ``ExampleProvider``; the agent never passes a ``keys/`` path.
+``survey_clusters`` is available only on opted-in cards and supplies unlabelled medoids for inspection.
 
 ``retrieve(method="zero_shot_text")`` remains an unconfigured seam. ``classify(method="vision_subagent")``
 is enabled only when the card allow-lists GSI and the caller injects a vision classifier.
@@ -36,7 +36,8 @@ from treehouse.tools.sources.gsi import SOURCE as GSI_SOURCE
 from treehouse.tools.sources.gsi import GsiSeamlessPhotoSource
 from treehouse.verifier.vision_classifier_agent import MAX_CELLS
 
-TOOL_NAMES = ("list_embedding_sources", "build_index", "get_examples", "retrieve", "classify", "aggregate")
+TOOL_NAMES = ("list_embedding_sources", "build_index", "get_examples", "retrieve", "classify", "aggregate",
+              "survey_clusters")
 SEED = 20261104
 FORBIDDEN_VENDORS = ("maxar", "vantor")  # RV2: commercial VHR imagery is never a permitted source
 SOURCE_INFO: dict[str, dict[str, Any]] = {
@@ -126,10 +127,13 @@ class RetrievalTools:
     def __init__(self, *, allowed_source_ids: list[str], aoi: str | None, aoi_bbox: BBox,
                  date_range: tuple[str, str], examples: ExampleProvider,
                  factories: dict[str, Callable[[str], EmbeddingSource]] | None = None,
-                 vision: Any | None = None, gsi: Any | None = None, vision_allowed: bool = False) -> None:
+                 vision: Any | None = None, gsi: Any | None = None, vision_allowed: bool = False,
+                 user_examples: list[dict] | None = None, survey_allowed: bool = False) -> None:
         self.allowed = list(allowed_source_ids)
         self.aoi, self.aoi_bbox, self.date_range = aoi, tuple(aoi_bbox), date_range
         self.examples = examples
+        self.user_examples = user_examples or []
+        self.survey_allowed = survey_allowed
         self.factories = factories if factories is not None else {k: v["factory"] for k, v in SOURCE_INFO.items()}
         self.vision, self.vision_allowed = vision, vision_allowed
         self.gsi = gsi if gsi is not None else GsiSeamlessPhotoSource() if vision and vision_allowed else None
@@ -149,6 +153,7 @@ class RetrievalTools:
                        query_lonlat: tuple[float, float] | None = None
                        ) -> tuple[list[int], list[str]] | ToolError:
         pool = {e["example_id"]: e for e in self.examples.train_examples()}
+        pool.update({e["example_id"]: e for e in self.user_examples})
         ids = list(pool) if example_ids is None else list(example_ids)
         bad = [i for i in ids if i not in pool]
         if bad:
@@ -239,12 +244,73 @@ class RetrievalTools:
                 "provenance": idx.describe()}
 
     def get_examples(self, n: int = 10, split: str = "train") -> dict | ToolError:
+        if split == "user" and (self.user_examples or self.survey_allowed):
+            return {"split": "user", "available": len(self.user_examples),
+                    "examples": self.user_examples[:max(0, int(n))],
+                    "provenance": {"source": "analyst-supplied", "split": "user", "cost_usd": 0.0}}
         if split != "train":
             return ToolError(code="heldout_forbidden", message="few-shot examples come from the training split "
                              "only; the held-out split is grading-only (RV4)")
         ex = self.examples.train_examples()
         return {"split": "train", "available": len(ex), "examples": ex[: max(0, int(n))],
                 "provenance": self.examples.provenance()}
+
+    def survey_clusters(self, index_id: str, n_clusters: int = 8, seed: int = SEED) -> dict | ToolError:
+        """Seeded k-means++ followed by Lloyd updates; spatial scores do not imply an asset label."""
+        if (type(n_clusters) is not int or not 8 <= n_clusters <= 64
+                or type(seed) is not int or seed < 0):
+            return ToolError(code="bad_args", message="n_clusters must be an integer in 8..64; seed a nonnegative integer")
+        idx = self._index(index_id)
+        if isinstance(idx, ToolError):
+            return idx
+        x = idx.emb.astype(np.float64)
+        if not np.isfinite(x).all():
+            return ToolError(code="bad_args", message="index embeddings must be finite")
+        rng = np.random.default_rng(seed)
+        centers = [x[int(rng.integers(len(x)))]]
+        nearest = np.full(len(x), np.inf)
+        for _ in range(min(n_clusters, len(x)) - 1):
+            nearest = np.minimum(nearest, ((x - centers[-1]) ** 2).sum(axis=1))
+            total = nearest.sum()
+            if total <= 1e-12:
+                break  # Fewer distinct vectors than requested clusters.
+            centers.append(x[int(rng.choice(len(x), p=nearest / total))])
+        centers = np.array(centers)
+        previous = None
+        for _iteration in range(100):
+            distances = (x * x).sum(axis=1)[:, None] + (centers * centers).sum(axis=1) - 2 * x @ centers.T
+            labels = np.argmin(distances, axis=1)
+            if previous is not None and np.array_equal(labels, previous):
+                break
+            previous = labels.copy()
+            for c in range(len(centers)):
+                members = x[labels == c]
+                if len(members):
+                    centers[c] = members.mean(axis=0)
+        labels = np.argmin((x * x).sum(axis=1)[:, None] + (centers * centers).sum(axis=1)
+                           - 2 * x @ centers.T, axis=1)
+        clusters = []
+        for c in range(len(centers)):
+            members = np.flatnonzero(labels == c)
+            if not len(members):
+                continue
+            center = x[members].mean(axis=0)
+            distance = ((x[members] - center) ** 2).sum(axis=1)
+            medoid = min(zip(distance, members, strict=True), key=lambda pair: (pair[0], idx.cell_ids[pair[1]]))[1]
+            positions = {tuple(map(int, _CELL.fullmatch(str(idx.cell_ids[j])).groups())) for j in members}
+            touching = sum(any((y + dy, xx + dx) in positions for dy in (-1, 0, 1) for dx in (-1, 0, 1)
+                               if dy or dx) for y, xx in positions)
+            half = idx.cell_deg / 2
+            clusters.append({"cluster_id": f"cluster-{c + 1:03d}", "size": len(members),
+                             "medoid_cell": {"cell_id": str(idx.cell_ids[medoid]),
+                                             "lon": float(idx.lon[medoid]), "lat": float(idx.lat[medoid])},
+                             "spatial_compactness": touching / len(members),
+                             "bbox": [round(float(idx.lon[members].min() - half), 8),
+                                      round(float(idx.lat[members].min() - half), 8),
+                                      round(float(idx.lon[members].max() + half), 8),
+                                      round(float(idx.lat[members].max() + half), 8)]})
+        return {"index_id": index_id, "n_clusters": n_clusters, "seed": seed, "iterations": _iteration + 1,
+                "clusters": clusters, "provenance": idx.describe()}
 
     def retrieve(self, index_id: str, method: str, k: int = 50, example_ids: list[str] | None = None,
                  query_lonlat: tuple[float, float] | None = None) -> dict | ToolError:
@@ -257,13 +323,39 @@ class RetrievalTools:
         if isinstance(idx, ToolError):
             return idx
         example_cells = self._example_cells(idx, example_ids, query_lonlat)
-        if isinstance(example_cells, ToolError):
+        user_provenance = None
+        if isinstance(example_cells, ToolError) and example_cells.code != "no_examples":
             return example_cells
-        pos, dropped = example_cells
+        pos, dropped = example_cells if not isinstance(example_cells, ToolError) else ([], [
+            e["example_id"] for e in self.user_examples if example_ids is None or e["example_id"] in example_ids])
+        external = [e for e in self.user_examples if e["example_id"] in dropped] if method == "few_shot" else []
+        vectors = idx.emb[pos].astype(np.float64)
+        if external:
+            half = idx.cell_deg / 2
+            bbox = (min(e["lon"] for e in external) - half, min(e["lat"] for e in external) - half,
+                    max(e["lon"] for e in external) + half, max(e["lat"] for e in external) + half)
+            try:
+                example_index = self.factories[idx.source_id](self.aoi).index(
+                    bbox, idx.cell_size_m, int(idx.date_range[0][:4]))
+            except (ValueError, FileNotFoundError) as e:
+                return ToolError(code="bad_args", message=str(e))
+            selected = self._example_cells(example_index, [e["example_id"] for e in external])
+            if isinstance(selected, ToolError):
+                return selected
+            rows, missing = selected
+            if example_index.emb.shape[1] != idx.emb.shape[1]:
+                return ToolError(code="bad_args", message="user-example and target embedding dimensions differ")
+            vectors = np.concatenate([vectors, example_index.emb[rows]])
+            user_provenance = example_index.describe()
+            dropped = [e for e in dropped if e not in {p["example_id"] for p in external} or e in missing]
+        if isinstance(example_cells, ToolError) and not external:
+            return example_cells
         if method == "few_shot":
-            q = idx.emb[pos].astype(np.float64).mean(0)
+            q = vectors.mean(0)
             scores = idx.emb.astype(np.float64) @ (q / max(np.linalg.norm(q), 1e-12))
             extra: dict = {"query": "mean of example-cell embeddings", "score": "cosine similarity"}
+            if user_provenance is not None:
+                extra["user_example_provenance"] = user_provenance
         else:
             w, _, extra = self._train(idx, pos, "linear_probe")
             scores = idx.emb.astype(np.float64) @ (w / max(np.linalg.norm(w), 1e-12))
@@ -271,7 +363,7 @@ class RetrievalTools:
         r = np.round(scores, 6)
         order = sorted(range(len(r)), key=lambda j: (-r[j], idx.cell_ids[j]))[: max(1, min(int(k), 1000))]
         return {"index_id": index_id, "method": method, "cells": self._cells(idx, order, scores),
-                "example_cells": len(pos), "dropped_example_ids": dropped, "details": extra,
+                "example_cells": len(vectors), "dropped_example_ids": dropped, "details": extra,
                 "provenance": idx.describe()}
 
     def _vision_error(self, cell_ids: list[str] | None) -> ToolError | None:
@@ -450,9 +542,13 @@ def retrieval_for_card(card: TaskCard, *, examples: ExampleProvider | None = Non
     factories = {k: v["factory"] for k, v in SOURCE_INFO.items()}
     if any(d.source_id == "lgnd-clay-embeddings" and d.access == "real" for d in card.data_allowlist):
         factories["lgnd-clay-embeddings"] = lambda aoi: RealClayLgndSource()
+        aoi = aoi or card.id  # Real sources use the bbox, not the fixture-city lookup.
     return RetrievalTools(allowed_source_ids=allowed, aoi=aoi, aoi_bbox=_card_bbox(card),
                           date_range=tuple(str(d) for d in card.time_window), examples=examples,
-                          factories=factories, vision=vision, gsi=gsi, vision_allowed=vision_allowed)
+                          factories=factories, vision=vision, gsi=gsi, vision_allowed=vision_allowed,
+                          user_examples=[{"example_id": f"user-{i:04d}", **e.model_dump(exclude_none=True)}
+                                         for i, e in enumerate(card.user_examples, 1)],
+                          survey_allowed="survey_clusters" in card.tools_allowed)
 
 
 def make_retrieval_server(tools: RetrievalTools) -> MCPServer:
@@ -471,9 +567,15 @@ def make_retrieval_server(tools: RetrievalTools) -> MCPServer:
                     aoi_bbox: tuple[float, float, float, float] | None = None) -> dict | ToolError:
         return tools.build_index(source_id, cell_size_m, year, aoi_bbox)
 
-    @srv.tool(description=(
+    example_description = (
         "Up to n permitted few-shot positive examples (id, lon, lat) from the training split. Other splits are\n"
-        "refused. May return none when the area has no labelled examples."))
+        "refused. May return none when the area has no labelled examples.")
+    if tools.user_examples:
+        example_description = ('Up to n positive examples (id, lon, lat, optional label). split="user" returns '
+                               'analyst-supplied card examples; split="train" returns training examples. '
+                               'Held-out reference labels are forbidden (RV4).')
+
+    @srv.tool(description=example_description)
     def get_examples(n: int = 10, split: str = "train") -> dict | ToolError:
         return tools.get_examples(n, split)
 
@@ -505,5 +607,14 @@ def make_retrieval_server(tools: RetrievalTools) -> MCPServer:
     def aggregate(index_id: str, scored_cells: list[dict[str, Any]], threshold: float,
                   merge_rule: Literal["8-neighbour", "4-neighbour"] = "8-neighbour") -> dict | ToolError:
         return tools.aggregate(index_id, scored_cells, threshold, merge_rule)
+
+    if tools.survey_allowed:
+        @srv.tool(description=(
+            "Survey an index without labels using deterministic seeded k-means (8..64 clusters). Returns size, "
+            "medoid_cell, bbox and spatial_compactness: share with a same-cluster 8-neighbour. Clumps are not "
+            "confirmed assets. Inspect medoid cell_ids with classify(vision_subagent) where allowed, then use "
+            "a confirmed medoid lon/lat as retrieve(few_shot) query_lonlat. Fewer distinct vectors yield fewer clusters."))
+        def survey_clusters(index_id: str, n_clusters: int = 8, seed: int = SEED) -> dict | ToolError:
+            return tools.survey_clusters(index_id, n_clusters, seed)
 
     return srv
