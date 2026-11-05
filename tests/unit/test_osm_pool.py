@@ -7,6 +7,10 @@ from pathlib import Path
 import pytest
 import yaml
 
+from treehouse.cards import load_card
+from treehouse.checks.protocol_grader import PredictedClaim, grade
+from treehouse.tools.retrieval import retrieval_for_card
+
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -63,6 +67,30 @@ def test_offline_geojson_fixture_stays_synthetic(tmp_path, name, cls, bbox):
     assert fetcher()["main"](args) == 0
     assert json.loads(output.read_text())["features"]
     assert json.loads(output.with_suffix(".provenance.json").read_text())["synthetic_fixture"] is True
+
+
+@pytest.mark.parametrize("name", ["nagoya-warehouses-real", "chattogram-fuel-tanks"])
+def test_fetched_pool_grades_new_card_without_training_leakage(tmp_path, monkeypatch, name):
+    card = load_card(ROOT / "tasks" / f"t1-{name}.yaml")
+    analyzer = runpy.run_path(str(ROOT / "scripts/analyze_experiments.py"))
+    monkeypatch.setitem(analyzer["_reference"].__globals__, "repo_root", lambda: tmp_path)
+    bbox = analyzer["_aoi_bbox"](card)
+    output = tmp_path / card.steps[0].keying.key_path
+    assert fetcher()["main"]([
+        "--class", next(iter(card.classes)), "--bbox", *map(str, bbox),
+        "--extract", str(ROOT / "fixtures/osm" / f"{name}.geojson"), "--out", str(output),
+    ]) == 0
+
+    assets, completeness, keyed, note = analyzer["_reference"](card)
+    assert completeness == "incomplete" and keyed is True
+    assert {asset.id for asset in assets} == {f["id"] for f in json.loads(output.read_text())["features"]}
+    assert "held-out split" in note
+    assert analyzer["_examples"](card) == []
+    assert retrieval_for_card(card).get_examples()["examples"] == []
+    report = grade([PredictedClaim(assets[0].lon, assets[0].lat, 0.9)], assets, bbox,
+                   completeness=completeness, minutes_per_cell=card.minutes_per_cell)
+    assert report.precision == 1.0 and report.precision_is_lower_bound
+    assert report.recall is None and report.null_reasons["recall"] == "incomplete_reference"
 
 
 def test_fetch_failure_does_not_create_synthetic_fallback(tmp_path, monkeypatch):

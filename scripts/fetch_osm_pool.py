@@ -4,6 +4,7 @@
 without network access. Pinned extracts need a snapshot_date (or --snapshot-date).
 Outputs are point GeoJSON and a .provenance.json sidecar containing SHA256 hashes,
 ODbL attribution and snapshot date. Never silently substitute synthetic geometry.
+An adjacent <stem>-split.json keeps every candidate grading-only, with no training examples.
 Write live grading pools under keys/osm/; keep them off the agent's allowlist.
 """
 from __future__ import annotations
@@ -152,6 +153,8 @@ def main(argv: list[str] | None = None) -> int:
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(content, encoding="utf-8")
     args.out.with_suffix(".provenance.json").write_text(json.dumps(provenance, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    split = {"train": [], "heldout": [feature["id"] for feature in features]}
+    args.out.with_name(args.out.stem + "-split.json").write_text(json.dumps(split, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(provenance, indent=2, ensure_ascii=False))
     return 0
 
