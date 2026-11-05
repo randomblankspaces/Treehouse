@@ -18,10 +18,13 @@ from treehouse.geo.geom import (
     point_in_polygons,
     polygon_problems,
 )
+from treehouse.investigation.deliberation import evaluate as evaluate_deliberation
 from treehouse.investigation.public import public_value
+from treehouse.investigation.reporting import deliberation_scores
 from treehouse.schemas.base import Frozen
 from treehouse.schemas.geo import Polygon
 from treehouse.schemas.numbers import TypedNumber
+from treehouse.score.predicted_accuracy import deliberation_features
 from treehouse.service import load_sealed
 
 POSITIVE = {"present", "intact", "damaged", "destroyed"}
@@ -99,6 +102,7 @@ def evaluate_investigation(store, run_id, *, reference=None):
     unsupported = poor_scale = repeated = ignored_errors = 0
     model_costs, elapsed, model_unknown = [], 0.0, False
     diagnostics = []
+    deliberation, features = {}, {}
     for trial in run.trials:
         ledger = ledgers[trial.trial_id]
         if ledger.get("legacy"):
@@ -168,6 +172,22 @@ def evaluate_investigation(store, run_id, *, reference=None):
                              for s in chats)
         agent = [s for s in trial.spans if s.op == "invoke_agent"]
         elapsed += sum((s.end_ns - s.start_ns) / 1e9 for s in agent)
+        trial_decisions = [d for d in decisions if d["trial_id"] == trial.trial_id]
+        bindings = {d["action"]["span_id"]: d["decision_id"] for d in trial_decisions if d.get("action")}
+        claims = []
+        for claim in trial.claims:
+            action = next((a for a in trial_actions if a["span_id"] == claim.span_id), {})
+            ids = [bindings[claim.span_id]] if claim.span_id in bindings else []
+            for ref in claim.evidence_refs:
+                call = calls.get(ref.result_id)
+                if call and call.span_id in bindings:
+                    ids.append(bindings[call.span_id])
+            claims.append({"claim_id": claim.claim_id, "confidence": claim.confidence,
+                           "decision_ids": ids, "sequence": action.get("sequence", float("inf"))})
+        result = evaluate_deliberation({"decisions": trial_decisions, "actions": trial_actions, "claims": claims})
+        result["scores"] = deliberation_scores(result)
+        deliberation[trial.trial_id] = result
+        features[trial.trial_id] = deliberation_features(result)
     cover = [[bbox_ring(w.payload["bbox_read"]) ] for w in successful_windows]
     coverage = coverage_fraction(cover, run.card.aoi.polygons()) if cover else 0
     limitations.append("Coverage is an approximate 30×30 AOI grid intersected with successful image footprints; it does not measure visibility or correct interpretation.")
@@ -286,7 +306,8 @@ def evaluate_investigation(store, run_id, *, reference=None):
             "claims": [{"claim_id": c.claim_id, "trial_id": c.trial_id, "cls": c.cls, "status": c.status,
                         "evidence_refs": [r.model_dump(mode="json") for r in c.evidence_refs]}
                        for trial in run.trials for c in trial.claims],
-            "process": {"numbers": process, "limitations": limitations, "diagnostics": diagnostics,
+            "predicted_accuracy_features": features,
+            "process": {"numbers": process, "deliberation": deliberation, "limitations": limitations, "diagnostics": diagnostics,
                         "stops": [{"trial_id": t.trial_id, "reason": t.stop,
                                    "detail": ledgers[t.trial_id].get("stop_detail")} for t in run.trials]},
             "output": {"numbers": output, "no_grade_reason": reason,

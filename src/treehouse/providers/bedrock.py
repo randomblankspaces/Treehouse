@@ -34,6 +34,7 @@ import random
 import threading
 import time
 from collections.abc import Awaitable, Callable
+from copy import deepcopy
 from typing import Any
 
 from treehouse.canon import canonical_json
@@ -246,7 +247,8 @@ def _user_blocks(m: Message, delivery: str) -> list[dict[str, Any]]:
     return out + moved
 
 
-def build_converse_kwargs(req: ModelRequest, entry: ModelEntry, *, delivery: str | None = None) -> dict[str, Any]:
+def build_converse_kwargs(req: ModelRequest, entry: ModelEntry, *, delivery: str | None = None,
+                          thinking: bool = False) -> dict[str, Any]:
     """The ``converse`` kwargs for ``req``. ``delivery`` defaults to the registry's image_delivery."""
     delivery = delivery or entry.image_delivery
     if delivery not in ("tool_result", "user_turn"):
@@ -265,11 +267,15 @@ def build_converse_kwargs(req: ModelRequest, entry: ModelEntry, *, delivery: str
         kw["toolConfig"] = {"tools": [{"toolSpec": {"name": t.name, "description": t.description,
                                                      "inputSchema": {"json": t.input_schema}}}
                                        for t in req.tools]}
-    if (entry.family == "anthropic-claude" and req.params.temperature is not None
+    if thinking:
+        if not entry.request_fields.get("thinking"):
+            raise BedrockValidationError(f"{entry.key}: no thinking request_fields configured")
+        kw["additionalModelRequestFields"] = deepcopy(entry.request_fields)
+    if (not thinking and entry.family == "anthropic-claude" and req.params.temperature is not None
             and req.params.top_p is not None):
         raise BedrockValidationError(f"{entry.key}: recent Claude models reject temperature and top_p together")
     inf: dict[str, Any] = {"maxTokens": req.params.max_tokens}
-    if req.params.temperature is not None:
+    if req.params.temperature is not None and not thinking:
         inf["temperature"] = req.params.temperature
     if req.params.top_p is not None:
         inf["topP"] = req.params.top_p
@@ -349,6 +355,7 @@ class BedrockConverseProvider:
         image_delivery: str | None = None,
         allow_over_alarm: bool = False,
         over_alarm_reason: str | None = None,
+        thinking: bool = False,
     ) -> None:
         if max_attempts < 1 or concurrency < 1:
             raise ValueError("max_attempts and concurrency must be >= 1")
@@ -367,6 +374,7 @@ class BedrockConverseProvider:
         self._sleep, self._rng = sleep, rng or random.Random()
         self.unpriced_cap_usd, self.commit_price_override = unpriced_cap_usd, commit_price_override
         self.image_delivery = image_delivery
+        self.thinking = thinking
         self.allow_over_alarm, self.over_alarm_reason = allow_over_alarm, over_alarm_reason
         self.price_table_version = lp.version if lp is not None else (prices.version if prices else "none")
         self._verified: dict[tuple[str, str], tuple[int, ...] | None] = {}  # (bytes sha, Image.sha256) -> shape
@@ -407,7 +415,7 @@ class BedrockConverseProvider:
             if shape is not None and entry.max_image_px is not None and max(shape[:2]) > entry.max_image_px:
                 raise UnsupportedImage(f"image {img.sha256}: {shape[1]}x{shape[0]} px exceeds {entry.key} "
                                        f"max_image_px {entry.max_image_px}")
-        return entry, build_converse_kwargs(req, entry, delivery=self.image_delivery)
+        return entry, build_converse_kwargs(req, entry, delivery=self.image_delivery, thinking=self.thinking)
 
     def _verify_pixels(self, i: int, img: Image) -> tuple[int, ...] | None:
         """Decode once per (bytes, claimed hash): the history resends every image each turn (M8)."""

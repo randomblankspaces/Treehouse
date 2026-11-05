@@ -9,9 +9,11 @@ import json
 
 import pytest
 
+from treehouse.canon import canonical_json
 from treehouse.cards import load_card
 from treehouse.investigation import run_investigation
 from treehouse.paths import repo_root
+from treehouse.providers.base import pixel_free_json
 from treehouse.providers.cassette import Cassette, ReplayProvider
 from treehouse.schemas.config import RunConfig
 from treehouse.store.local import LocalStore
@@ -42,7 +44,15 @@ def test_live_run_replays_offline_with_identical_claims(tmp_path, run_id, card_i
     config = live.model_copy(update={"mode": "replay", "worker": live.worker.model_copy(
         update={"provider": "replay", "cassette": str(cassette.relative_to(ROOT))})})
     store = LocalStore(tmp_path / "store")
-    provider = ReplayProvider(Cassette(cassette))
+    recorded = {(row["role"], row["trial_index"], row["turn"]): row["request"]
+                for row in (json.loads(line) for line in cassette.read_bytes().splitlines())}
+
+    class ByteExactReplay(ReplayProvider):
+        async def complete(self, req, *, role, trial_index, turn):
+            assert pixel_free_json(req) == canonical_json(recorded[role, trial_index, turn]).encode()
+            return await super().complete(req, role=role, trial_index=trial_index, turn=turn)
+
+    provider = ByteExactReplay(Cassette(cassette))
 
     run_investigation(store, card, config, provider, run_id=run_id)
 
