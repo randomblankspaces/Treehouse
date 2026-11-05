@@ -1,6 +1,8 @@
 """Thinking is opt-in and its Converse fields come from the model registry."""
 
-from treehouse.providers.bedrock import build_converse_kwargs
+import pytest
+
+from treehouse.providers.bedrock import BedrockValidationError, build_converse_kwargs
 from treehouse.providers.registry import ModelRegistry
 from treehouse.schemas.config import InferenceParams
 from treehouse.schemas.model_io import Message, ModelRequest, Text
@@ -42,3 +44,13 @@ def test_thinking_is_off_by_default_and_leaves_existing_request_shape_unchanged(
 
     assert "additionalModelRequestFields" not in kwargs
     assert kwargs["inferenceConfig"] == {"maxTokens": 64, "temperature": 0.2}
+
+
+def test_thinking_without_model_configuration_fails_cleanly():
+    entry = ModelRegistry.load().get("nova-pro")
+    request = ModelRequest(
+        model_id=entry.key, system="", messages=[Message(role="user", content=[Text(text="hi")])],
+        params=InferenceParams(max_tokens=64),
+    )
+    with pytest.raises(BedrockValidationError, match="no thinking request_fields configured"):
+        build_converse_kwargs(request, entry, thinking=True)

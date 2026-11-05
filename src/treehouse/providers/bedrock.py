@@ -268,9 +268,10 @@ def build_converse_kwargs(req: ModelRequest, entry: ModelEntry, *, delivery: str
                                                      "inputSchema": {"json": t.input_schema}}}
                                        for t in req.tools]}
     if thinking:
-        if not entry.request_fields.get("thinking"):
+        request_fields = getattr(entry, "request_fields", {})
+        if not request_fields.get("thinking"):
             raise BedrockValidationError(f"{entry.key}: no thinking request_fields configured")
-        kw["additionalModelRequestFields"] = deepcopy(entry.request_fields)
+        kw["additionalModelRequestFields"] = deepcopy(request_fields)
     if (not thinking and entry.family == "anthropic-claude" and req.params.temperature is not None
             and req.params.top_p is not None):
         raise BedrockValidationError(f"{entry.key}: recent Claude models reject temperature and top_p together")

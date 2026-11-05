@@ -128,7 +128,7 @@ def evaluate_investigation(store, run_id, *, reference=None):
             if d["action"]:
                 action = next((a for a in trial_actions if a["span_id"] == d["action"]["span_id"]), None)
                 if (not action or action["sequence"] <= d["sequence"]
-                        or action["action_id"] != d["action_id"] or action["tool"] != d["tool"]
+                        or action["decision_id"] != d["decision_id"] or action["tool"] != d["tool"]
                         or sha256_json(action["parameters"]) != sha256_json(d["parameters"])):
                     d["flags"].append("invalid_action_link")
                     d["action"] = None
