@@ -32,7 +32,6 @@ from treehouse.tools.sources.embedding_source import BBox, CellIndex, EmbeddingS
 
 TOOL_NAMES = ("list_embedding_sources", "build_index", "get_examples", "retrieve", "classify", "aggregate")
 SEED = 20261104
-HIGH_CONFIDENCE = 0.8
 FORBIDDEN_VENDORS = ("maxar", "vantor")  # RV2: commercial VHR imagery is never a permitted source
 SOURCE_INFO: dict[str, dict[str, Any]] = {
     "aef-10m-annual": {"model": "AlphaEarth Foundations annual embedding (64-d per 10 m pixel)",
@@ -138,17 +137,42 @@ class RetrievalTools:
                                                      "call build_index first")
 
     def _example_cells(self, idx: CellIndex, example_ids: list[str] | None,
-                       query_lonlat: tuple[float, float] | None = None) -> list[int] | ToolError:
+                       query_lonlat: tuple[float, float] | None = None
+                       ) -> tuple[list[int], list[str]] | ToolError:
         pool = {e["example_id"]: e for e in self.examples.train_examples()}
         ids = list(pool) if example_ids is None else list(example_ids)
         bad = [i for i in ids if i not in pool]
         if bad:
             return ToolError(code="bad_args", message=f"not training-split example ids: {bad[:5]}")
-        pts = [(pool[i]["lon"], pool[i]["lat"]) for i in ids] + ([tuple(query_lonlat)] if query_lonlat else [])
-        if not pts:
-            return ToolError(code="no_examples", message="no example ids or query_lonlat (and no training "
-                             "examples are available for this area)")
-        return sorted({int(np.argmin((idx.lon - x) ** 2 + (idx.lat - y) ** 2)) for x, y in pts})
+
+        def containing_cell(x: float, y: float) -> int | None:
+            if not len(idx.cell_ids):
+                return None
+            j = int(np.argmin((idx.lon - x) ** 2 + (idx.lat - y) ** 2))
+            half = idx.cell_deg / 2
+            # Centroids are rounded to 8 decimal places when indexes are built.
+            tolerance = 1e-8
+            if abs(float(idx.lon[j]) - x) <= half + tolerance and abs(float(idx.lat[j]) - y) <= half + tolerance:
+                return j
+            return None
+
+        cells: set[int] = set()
+        dropped: list[str] = []
+        for example_id in ids:
+            e = pool[example_id]
+            cell = containing_cell(e["lon"], e["lat"])
+            if cell is None:
+                dropped.append(example_id)
+            else:
+                cells.add(cell)
+        if query_lonlat is not None:
+            cell = containing_cell(*query_lonlat)
+            if cell is not None:
+                cells.add(cell)
+        if not cells:
+            detail = f"; dropped out-of-index example ids: {dropped[:5]}" if dropped else ""
+            return ToolError(code="no_examples", message="no examples fall inside a cell of this index" + detail)
+        return sorted(cells), dropped
 
     def _train(self, idx: CellIndex, pos: list[int], method: str) -> tuple[np.ndarray, float, dict]:
         rng = np.random.default_rng(SEED)
@@ -222,9 +246,10 @@ class RetrievalTools:
         idx = self._index(index_id)
         if isinstance(idx, ToolError):
             return idx
-        pos = self._example_cells(idx, example_ids, query_lonlat)
-        if isinstance(pos, ToolError):
-            return pos
+        example_cells = self._example_cells(idx, example_ids, query_lonlat)
+        if isinstance(example_cells, ToolError):
+            return example_cells
+        pos, dropped = example_cells
         if method == "few_shot":
             q = idx.emb[pos].astype(np.float64).mean(0)
             scores = idx.emb.astype(np.float64) @ (q / max(np.linalg.norm(q), 1e-12))
@@ -236,7 +261,8 @@ class RetrievalTools:
         r = np.round(scores, 6)
         order = sorted(range(len(r)), key=lambda j: (-r[j], idx.cell_ids[j]))[: max(1, min(int(k), 1000))]
         return {"index_id": index_id, "method": method, "cells": self._cells(idx, order, scores),
-                "example_cells": len(pos), "details": extra, "provenance": idx.describe()}
+                "example_cells": len(pos), "dropped_example_ids": dropped, "details": extra,
+                "provenance": idx.describe()}
 
     def classify(self, index_id: str, method: str, cell_ids: list[str] | None = None,
                  example_ids: list[str] | None = None) -> dict | ToolError:
@@ -248,9 +274,10 @@ class RetrievalTools:
         idx = self._index(index_id)
         if isinstance(idx, ToolError):
             return idx
-        pos = self._example_cells(idx, example_ids)
-        if isinstance(pos, ToolError):
-            return pos
+        example_cells = self._example_cells(idx, example_ids)
+        if isinstance(example_cells, ToolError):
+            return example_cells
+        pos, dropped = example_cells
         where = {c: j for j, c in enumerate(idx.cell_ids.tolist())}
         if cell_ids is None:
             rows = list(range(len(idx.cell_ids)))
@@ -263,21 +290,37 @@ class RetrievalTools:
         scores = _sigmoid(idx.emb.astype(np.float64) @ w + b)
         info["score"] = "probe probability" if method == "linear_probe" else "sigmoid of the SVM margin"
         return {"index_id": index_id, "method": method, "scores": self._cells(idx, rows, scores),
-                "training": info, "provenance": idx.describe()}
+                "dropped_example_ids": dropped, "training": info, "provenance": idx.describe()}
 
     def aggregate(self, index_id: str, scored_cells: list[dict], threshold: float,
                   merge_rule: Literal["8-neighbour", "4-neighbour"] = "8-neighbour") -> dict | ToolError:
         idx = self._index(index_id)
         if isinstance(idx, ToolError):
             return idx
+
+        def finite_number(value: object) -> float | None:
+            if isinstance(value, bool) or not isinstance(value, (int, float, np.integer, np.floating)):
+                return None
+            number = float(value)
+            return number if np.isfinite(number) else None
+
+        threshold_value = finite_number(threshold)
+        if threshold_value is None:
+            return ToolError(code="bad_args", message="threshold must be a finite number")
         where = {c: j for j, c in enumerate(idx.cell_ids.tolist())}
         score: dict[str, float] = {}
         for sc in scored_cells:
+            if not isinstance(sc, dict):
+                return ToolError(code="bad_args", message="each scored_cells entry must be an object")
             cid = str(sc.get("cell_id", ""))
             if cid not in where or _CELL.match(cid) is None:
                 return ToolError(code="bad_args", message=f"unknown cell id {cid!r} for {index_id}")
-            score[cid] = max(score.get(cid, 0.0), float(sc.get("score", 0.0)))
-        kept = {tuple(int(v) for v in _CELL.match(c).groups()): c for c, s in score.items() if s >= threshold}
+            value = finite_number(sc.get("score"))
+            if value is None:
+                return ToolError(code="bad_args", message=f"score for cell {cid!r} must be a finite number")
+            score[cid] = max(score[cid], value) if cid in score else value
+        kept = {tuple(int(v) for v in _CELL.match(c).groups()): c
+                for c, s in score.items() if s >= threshold_value}
         steps = [(dy, dx) for dy in (-1, 0, 1) for dx in (-1, 0, 1) if (dy, dx) != (0, 0)
                  and (merge_rule == "8-neighbour" or dy == 0 or dx == 0)]
         seen: set = set()
@@ -303,12 +346,19 @@ class RetrievalTools:
             sites.append({"site_id": f"s-{i:03d}", "lon": round(float(idx.lon[j].mean()), 8),
                           "lat": round(float(idx.lat[j].mean()), 8), "member_cell_ids": m,
                           "max_score": round(max(score[c] for c in m), 6)})
-        unreviewed = sorted(set(where) - set(score))
-        return {"index_id": index_id, "threshold": threshold, "merge_rule": merge_rule, "sites": sites,
-                "count": {"low": sum(s["max_score"] >= HIGH_CONFIDENCE for s in sites), "high": len(sites),
-                          "high_confidence_threshold": HIGH_CONFIDENCE},
-                "unreviewed_cell_count": len(unreviewed), "unreviewed_cells": unreviewed[:200],
-                "unreviewed_cells_truncated": len(unreviewed) > 200, "provenance": idx.describe()}
+        kept_scores = [s for s in score.values() if s >= threshold_value]
+        low_threshold = max(threshold_value, float(np.percentile(kept_scores, 75))) if kept_scores else threshold_value
+        grid_cells = {f"r{y:03d}c{x:03d}" for y in range(idx.ny) for x in range(idx.nx)}
+        unreviewed = sorted(grid_cells - set(score))
+        return {"index_id": index_id, "threshold": threshold_value, "merge_rule": merge_rule, "sites": sites,
+                "count": {"low": sum(max(score[c] for c in comp) >= low_threshold for comp in comps),
+                          "high": len(sites), "low_score_threshold": round(low_threshold, 6)},
+                "count_rule": ("low = sites with max_score at or above the higher of threshold and the 75th "
+                               "percentile of threshold-kept cell scores; high = all sites"),
+                "unreviewed_cell_count": len(unreviewed),
+                "unreviewed_area_km2": round(len(unreviewed) * idx.cell_size_m ** 2 / 1_000_000, 6),
+                "unreviewed_cells": unreviewed[:200], "unreviewed_cells_truncated": len(unreviewed) > 200,
+                "provenance": idx.describe()}
 
 
 def _card_bbox(card: TaskCard) -> BBox:
@@ -322,7 +372,8 @@ def _card_bbox(card: TaskCard) -> BBox:
 def retrieval_for_card(card: TaskCard, *, examples: ExampleProvider | None = None) -> RetrievalTools:
     aoi = next((v for k, v in AOI_FIXTURES.items() if k in card.id), None)
     if examples is None:
-        examples = SplitExamples("nagoya") if aoi == "nagoya" else NoExamples()
+        nagoya_key = any(step.keying.key_path == "keys/plateau/nagoya-warehouses.geojson" for step in card.steps)
+        examples = SplitExamples("nagoya") if card.id == "t1-nagoya-warehouses" or nagoya_key else NoExamples()
     allowed = [d.source_id for d in card.data_allowlist if d.kind == "embeddings"]
     return RetrievalTools(allowed_source_ids=allowed, aoi=aoi, aoi_bbox=_card_bbox(card),
                           date_range=tuple(str(d) for d in card.time_window), examples=examples)
@@ -334,7 +385,7 @@ def make_retrieval_server(tools: RetrievalTools) -> MCPServer:
     @srv.tool(description=(
         "List the embedding sources this task permits, with model, input resolution, native cell size, dates,\n"
         "licence and estimated cost. Choose a source and a cell size that can resolve the target objects."))
-    def list_embedding_sources(aoi_bbox: tuple[float, float, float, float] | None = None) -> dict:
+    def list_embedding_sources(aoi_bbox: tuple[float, float, float, float] | None = None) -> dict | ToolError:
         return tools.list_embedding_sources(aoi_bbox)
 
     @srv.tool(description=(
@@ -369,8 +420,8 @@ def make_retrieval_server(tools: RetrievalTools) -> MCPServer:
 
     @srv.tool(description=(
         "Keep scored cells with score >= threshold and merge touching kept cells (8- or 4-neighbour) into sites.\n"
-        "Returns sites (centroid, member cells, max score), a count range (low: sites with max score >= 0.8,\n"
-        "high: all sites) and the cells never scored (unreviewed). scored_cells: [{cell_id, score}]."))
+        "Returns sites, unreviewed grid area, and a count range. low counts sites at or above the higher of the\n"
+        "threshold and the 75th percentile of kept scores; high counts all sites. scored_cells: [{cell_id, score}]."))
     def aggregate(index_id: str, scored_cells: list[dict[str, Any]], threshold: float,
                   merge_rule: Literal["8-neighbour", "4-neighbour"] = "8-neighbour") -> dict | ToolError:
         return tools.aggregate(index_id, scored_cells, threshold, merge_rule)

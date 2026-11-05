@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import asyncio
 import json
+import sys
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -14,6 +16,7 @@ from treehouse.schemas.tools import ToolError
 from treehouse.tools.retrieval import NoExamples, RetrievalTools, make_retrieval_server, retrieval_for_card
 
 NAGOYA = (136.82, 35.05, 136.92, 35.12)
+SMOKE_AOI = (136.82, 35.05, 136.87, 35.085)
 TOOLS = {"list_embedding_sources", "build_index", "get_examples", "retrieve", "classify", "aggregate"}
 
 
@@ -83,6 +86,17 @@ def test_get_examples_train_only(rt):
         assert isinstance(bad, ToolError) and bad.code == "heldout_forbidden"
 
 
+def test_example_provider_is_selected_explicitly(card):
+    keyed_copy = card.model_copy(update={"id": "renamed-card"})
+    assert not isinstance(retrieval_for_card(keyed_copy).examples, NoExamples)
+
+    data = card.model_dump()
+    data["id"] = "nagoya-unrelated"
+    data["steps"][0]["keying"]["key_path"] = "keys/other/reference.geojson"
+    unrelated = type(card).model_validate(data)
+    assert isinstance(retrieval_for_card(unrelated).examples, NoExamples)
+
+
 def test_gifu_has_no_examples():
     rt = retrieval_for_card(load_card("tasks/t5-gifu-warehouses.yaml"))
     assert isinstance(rt.examples, NoExamples) and rt.get_examples(5)["examples"] == []
@@ -105,6 +119,31 @@ def test_few_shot_ranks_warehouse_cells_high(rt, idx_id):
     assert len(q["cells"]) == 5
     cv = rt.retrieve(idx_id, "concept_vector", 60, example_ids=train)
     assert len({c["cell_id"] for c in cv["cells"]} & held) >= 10
+
+
+def test_examples_outside_index_are_dropped(card):
+    tools = retrieval_for_card(card)
+    built = tools.build_index("aef-10m-annual", 160, 2024, SMOKE_AOI)
+    assert not isinstance(built, ToolError)
+    index_id = built["index_id"]
+    idx = tools.indexes[index_id]
+    examples = tools.examples.train_examples()
+    inside = {
+        e["example_id"]
+        for e in examples
+        if np.any(
+            (np.abs(idx.lon - e["lon"]) <= idx.cell_deg / 2 + 1e-8)
+            & (np.abs(idx.lat - e["lat"]) <= idx.cell_deg / 2 + 1e-8)
+        )
+    }
+    expected_dropped = [e["example_id"] for e in examples if e["example_id"] not in inside]
+    out = tools.retrieve(index_id, "few_shot", 5)
+    assert out["example_cells"] <= len(inside)
+    assert out["dropped_example_ids"] == expected_dropped
+
+    outside = next(e["example_id"] for e in examples if e["example_id"] not in inside)
+    none = tools.classify(index_id, "linear_probe", example_ids=[outside])
+    assert isinstance(none, ToolError) and none.code == "no_examples"
 
 
 def test_retrieve_rejects_heldout_and_unknown(rt, idx_id):
@@ -142,13 +181,100 @@ def test_aggregate_merges_neighbours(rt, idx_id):
     assert len(out["sites"]) == 2
     s1 = next(s for s in out["sites"] if a in s["member_cell_ids"])
     assert set(s1["member_cell_ids"]) == {a, b} and s1["max_score"] == 0.9
-    assert out["count"] == {"low": 1, "high": 2, "high_confidence_threshold": 0.8}
-    assert out["unreviewed_cell_count"] == len(ids) - 4 and PROV <= set(out["provenance"])
+    assert out["count"] == {"low": 1, "high": 2, "low_score_threshold": 0.8}
+    assert "75th percentile" in out["count_rule"]
+    assert out["unreviewed_cell_count"] == idx.nx * idx.ny - 4
+    assert out["unreviewed_area_km2"] == pytest.approx((idx.nx * idx.ny - 4) * 160**2 / 1_000_000)
+    assert PROV <= set(out["provenance"])
     diag = rt.aggregate(idx_id, [{"cell_id": "r010c010", "score": 1}, {"cell_id": "r011c011", "score": 1}], 0.5)
     four = rt.aggregate(idx_id, [{"cell_id": "r010c010", "score": 1}, {"cell_id": "r011c011", "score": 1}], 0.5,
                         merge_rule="4-neighbour")
     assert len(diag["sites"]) == 1 and len(four["sites"]) == 2
     assert rt.aggregate(idx_id, [{"cell_id": "nope", "score": 1}], 0.5).code == "bad_args"
+
+
+def test_aggregate_validates_scores_and_preserves_negative_max(rt, idx_id):
+    negative = rt.aggregate(
+        idx_id,
+        [{"cell_id": "r010c010", "score": -0.4}, {"cell_id": "r010c010", "score": -0.2}],
+        -0.3,
+    )
+    assert negative["sites"][0]["max_score"] == -0.2
+
+    for scored, threshold in [
+        ([{"cell_id": "r010c010"}], 0.5),
+        ([{"cell_id": "r010c010", "score": "0.7"}], 0.5),
+        ([{"cell_id": "r010c010", "score": float("nan")}], 0.5),
+        ([{"cell_id": "r010c010", "score": float("inf")}], 0.5),
+        ([{"cell_id": "r010c010", "score": 0.7}], float("nan")),
+        ([{"cell_id": "r010c010", "score": 0.7}], float("inf")),
+    ]:
+        bad = rt.aggregate(idx_id, scored, threshold)
+        assert isinstance(bad, ToolError) and bad.code == "bad_args"
+
+
+def test_aggregate_low_count_adapts_to_score_scale(rt, idx_id):
+    scored = [
+        {"cell_id": "r010c010", "score": 0.2},
+        {"cell_id": "r020c020", "score": 0.3},
+        {"cell_id": "r030c030", "score": 0.4},
+        {"cell_id": "r040c040", "score": 0.5},
+    ]
+    out = rt.aggregate(idx_id, scored, 0.1)
+    assert out["count"] == {"low": 1, "high": 4, "low_score_threshold": 0.425}
+    assert "75th percentile" in out["count_rule"]
+
+
+def test_every_retrieval_tool_succeeds_through_gateway(tmp_path, card):
+    sys.path.insert(0, str(Path(__file__).parents[1] / "integration"))
+    try:
+        from gwrig import make_rig
+    finally:
+        sys.path.pop(0)
+    rig = make_rig(tmp_path / "retrieval.trace.jsonl", task=card)
+
+    async def go():
+        async with rig.gateway as gateway:
+            outcomes = []
+            outcomes.append(await gateway.call(
+                "list_embedding_sources", {"aoi_bbox": list(SMOKE_AOI)}, call_id="retrieval-1"
+            ))
+            built = await gateway.call(
+                "build_index",
+                {"source_id": "aef-10m-annual", "cell_size_m": 160, "year": 2024,
+                 "aoi_bbox": list(SMOKE_AOI)},
+                call_id="retrieval-2",
+            )
+            outcomes.append(built)
+            index_id = built.content[0].json_["index_id"]
+            examples = await gateway.call("get_examples", {"n": 3}, call_id="retrieval-3")
+            outcomes.append(examples)
+            example_ids = [e["example_id"] for e in examples.content[0].json_["examples"]]
+            retrieved = await gateway.call(
+                "retrieve",
+                {"index_id": index_id, "method": "few_shot", "k": 5, "example_ids": example_ids},
+                call_id="retrieval-4",
+            )
+            outcomes.append(retrieved)
+            cell_ids = [c["cell_id"] for c in retrieved.content[0].json_["cells"]]
+            classified = await gateway.call(
+                "classify",
+                {"index_id": index_id, "method": "linear_probe", "cell_ids": cell_ids,
+                 "example_ids": example_ids},
+                call_id="retrieval-5",
+            )
+            outcomes.append(classified)
+            outcomes.append(await gateway.call(
+                "aggregate",
+                {"index_id": index_id, "scored_cells": classified.content[0].json_["scores"],
+                 "threshold": 0.5},
+                call_id="retrieval-6",
+            ))
+            return outcomes
+
+    outcomes = asyncio.run(go())
+    rig.tracer.close()
+    assert [out.status for out in outcomes] == ["success"] * len(TOOLS)
 
 
 def test_mcp_server_exposes_tools_with_descriptions(rt, idx_id):
