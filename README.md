@@ -12,6 +12,49 @@ minimal agent-evaluation sandbox. Strands is part of the workflow under evaluati
 embeddings, classification and red prediction markers provide inspectable actions/results.
 Use [the Kiro prompts](docs/KIRO-NEXT-PROMPTS.md) to continue that scope in the AWS environment.
 
+## Warehouse MVP: what ran live (2026-11-05)
+
+An ADB-style T1 task ("where are the warehouses in this AOI?") was run live by a **Strands agent on Amazon
+Bedrock** (`us.anthropic.claude-sonnet-5-5`, plus `us.amazon.nova-pro-v1:0` as the comparison model) for
+Nagoya (keyed), Gifu (transfer) and Chattogram (unkeyed). The agent recorded a decision before every tool
+action. Treehouse sealed each run and scored it in separate panels. Every claim below points to a committed
+artifact. **The embeddings and reference keys are synthetic fixtures**, because the real AEF and PLATEAU
+sources could not be read from the workshop; see [docs/KIRO-STATUS.md](docs/KIRO-STATUS.md). The numbers show
+the pipeline working, not real-world accuracy.
+
+| What | Evidence |
+|---|---|
+| 17 live agent runs (Strands, Bedrock), pixel-free cassettes | `fixtures/live/cassettes/`, sealed manifests + decision ledgers in `fixtures/live/runs/`, `fixtures/live/experiments/runs/` |
+| Experiment matrix (Sonnet × 3 cities × N=3, Nova Pro × Nagoya × N=3) with separate panels and bootstrap intervals | `fixtures/live/experiments/metrics.json` |
+| Reasoning rules RV1–RV10 on live runs | `fixtures/live/rules/` |
+| Reviewer model of a different family (Nova Pro) | `fixtures/live/review/` |
+| AgentCore Evaluations: 4 built-ins + 2 Treehouse Lambda evaluators | `fixtures/live/agentcore/` |
+| CDK deploy (Compliance Object Lock run store, KMS key bucket, Lambda evaluators, AgentCore evaluators) | `infra/cdk-outputs.json`, `aws-foundation.json` |
+| Run sealed to S3 with COMPLIANCE retention; a delete of that version **denied** | `fixtures/live/receipts/` |
+| Bedrock spend ledger ($10.97 at the end of the matrix) | `.spend/spend.jsonl` |
+
+Not done: the UI view of these runs (task 10, skipped by decision). The vision sub-agent is tested offline but
+was never called by a live agent. The predicted-accuracy panel has insufficient validation (2 configs).
+
+### Quickstart: replay a live run offline (fresh machine, no AWS)
+
+```sh
+uv sync --locked --all-extras
+uv run python scripts/replay_live.py exp-nagoya-sonnet-1 --store out/replay/store   # prints the sealed claims
+uv run python scripts/analyze_experiments.py --store <a store with sealed runs> --out out/metrics.json
+uv run pytest tests/journeys/test_live_replay.py   # replays 3 live runs, asserts identical claims
+```
+
+### Run it live (needs AWS credentials and the spend guard)
+
+```sh
+uv run treehouse budget status    # stop if it exits 2/3
+TREEHOUSE_SPEND_LEDGER=$PWD/.spend/spend.jsonl TREEHOUSE_CASSETTE_OUT=out/nagoya.model.jsonl \
+uv run treehouse sandbox run --task tasks/t1-nagoya-warehouses.yaml \
+  --config fixtures/live/configs/t1-nagoya-sonnet-strands.json \
+  --provider treehouse.providers.factories:bedrock_recording --run-id nagoya-1 --store out/live/store
+```
+
 ## Agent investigation MVP
 
 ```sh

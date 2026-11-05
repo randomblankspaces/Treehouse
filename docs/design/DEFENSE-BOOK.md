@@ -7,6 +7,40 @@ Ratings:
 - **PREP**: the answer holds if Suhas rehearses a specific wording.
 - **HARD**: the alternative is better or the answer is weak. A switch is named.
 
+## What actually ran (Kiro build, 2026-11-05 UTC). Claims elsewhere in this book are only valid if listed here.
+| Claim | Status | Evidence |
+|---|---|---|
+| Strands agent on Bedrock (Sonnet 5.5; Nova Pro comparison) ran T1 Nagoya, T5 Gifu, T1 Chattogram | **RAN** (17 runs) | `fixtures/live/cassettes/`, `fixtures/live/experiments/` |
+| Decision recorded before every action | **RAN**, after a fix (live run 1 showed decisions could not bind to Bedrock-assigned ids) | `fixtures/live/runs/*/t-0.investigation.json` |
+| Separate panels: output (grade-lgnd-v1), RV1–RV10, calibration, predicted accuracy, cost | **RAN** on synthetic fixtures. Predicted accuracy has **insufficient validation** | `fixtures/live/experiments/metrics.json` |
+| Reviewer model of a different family | **RAN** (Nova Pro, 1 run) | `fixtures/live/review/` |
+| AgentCore Evaluations, built-in + code-based Lambda | **RAN** (1 run; 4 built-ins + 2 Lambda) | `fixtures/live/agentcore/` |
+| Compliance Object Lock store + denied delete | **RAN** | `fixtures/live/receipts/denied-delete.json`, `infra/cdk-outputs.json` |
+| Vision sub-agent on GSI chips | **Designed + tested offline**. No live agent called it | `tests/unit/test_vision_subagent.py` |
+| Real AEF / LGND / PLATEAU data | **NOT USED**. Synthetic fixtures (access blocked) | `docs/KIRO-STATUS.md` |
+| AgentCore Observability / Transaction Search | Enabled (destination CloudWatchLogs). No AgentCore Runtime hosted, so **roadmap** | `aws-foundation.json` |
+| UI for the warehouse runs (task 10) | **NOT BUILT** (skipped) | — |
+| Step Functions fan-out, Clay compute on GPU | **Roadmap** | — |
+
+## 0. What actually ran (updated 2026-11-05 by Kiro; every line has a committed artifact)
+
+| Claim | Status | Evidence |
+|---|---|---|
+| Strands agent on Bedrock (Sonnet 5.5; Nova Pro comparison) ran the warehouse T1 task live | **Ran** (17 runs) | `fixtures/live/cassettes/`, `fixtures/live/runs/`, `fixtures/live/experiments/runs/` |
+| Decision recorded before every action, bound before dispatch | **Ran** (binds on exact tool and parameters, contract v2) | `t-0.investigation.json` in each run dir |
+| Nagoya / Gifu / Bangladesh scenarios, N=3 each, plus a model comparison | **Ran** | `fixtures/live/experiments/metrics.json` |
+| Output grader (report Table 7/11 protocol) | **Ran** on synthetic fixture references only | same metrics JSON |
+| RV1–RV10 rules on live runs | **Ran** | `fixtures/live/rules/` |
+| Reviewer model of a different family (Nova Pro) | **Ran** (1 run) | `fixtures/live/review/` |
+| AgentCore Evaluations (4 built-ins + 2 Lambda code-based evaluators) | **Ran** (1 run) | `fixtures/live/agentcore/` |
+| CDK deploy, Compliance Object Lock store, denied delete | **Ran** | `infra/cdk-outputs.json`, `fixtures/live/receipts/` |
+| Offline replay of live runs | **Ran** | `tests/journeys/test_live_replay.py`, `scripts/replay_live.py` |
+| Real AEF / LGND embeddings, real PLATEAU / OSM references | **Not run**: synthetic fixtures | `docs/KIRO-STATUS.md` (tasks 1–2) |
+| Vision sub-agent on GSI chips used by a live agent | **Designed and tested offline**; no live agent called it | task 5 in KIRO-STATUS |
+| Classifier comparison probe vs SVM | **Offline only** (fixture embeddings) | metrics JSON `comparisons.classifier` |
+| Predicted accuracy from reasoning | **Ran, insufficient validation** (2 configs) | metrics JSON `predicted_accuracy` |
+| Clay computed on 160 m chips, Step Functions fan-out, online AgentCore eval, UI for these runs | **Roadmap** | — |
+
 ## Three rules for every answer
 
 1. **Claim only what ran.** Label everything else "designed" or "roadmap". AWS judges punish the gap between design and delivery more than a smaller scope.

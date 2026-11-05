@@ -1,0 +1,26 @@
+{
+ "schema": "treehouse.denied-delete/1",
+ "at": "2026-11-05T02:06:01.476508+00:00",
+ "principal_role": "WSParticipantRole",
+ "bucket": "treehouserunstore-runstoreaf8b1064-wapqrtvd7vel",
+ "key": "runs/t1-nagoya-sonnet-strands-3/SEALED",
+ "version_id": "y0VfBAXpdSNv1iejt5v7WNd68Nt9P251",
+ "before": {
+  "ObjectLockMode": "COMPLIANCE",
+  "RetainUntil": "2026-11-06 01:07:36.839000+00:00"
+ },
+ "delete_object_version": {
+  "result": "DENIED",
+  "code": "AccessDenied",
+  "message": "Access Denied because object protected by object lock."
+ },
+ "delete_object_version_bypass_governance": {
+  "result": "DENIED",
+  "code": "AccessDenied",
+  "message": "Access Denied because object protected by object lock."
+ },
+ "after": {
+  "still_present": true,
+  "ObjectLockMode": "COMPLIANCE"
+ }
+}

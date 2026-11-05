@@ -53,5 +53,5 @@ run `uv run treehouse budget status` (stop at exit 2/3). If a task hits a hard A
 - [ ] 10. UI and report
   - Red sites linked to evidence; decision tree with rationales and RV results; five separate panels; raw-statistics download. Screens checked at 1440 and 390 px. _Req: 3.2_
 
-- [ ] 11. Demo, README and evidence
+- [x] 11. Demo, README and evidence
   - Offline replay of the live runs (`treehouse demo` or a new `treehouse demo --scenario warehouses`), README quickstart for a fresh machine, denied-delete demo against the Compliance bucket (as admin, specific versionId), CDK outputs and AgentCore results committed, `docs/KIRO-STATUS.md` final. Update `docs/design/DEFENSE-BOOK.md` claims to match what actually ran. _Req: 9.1, 10.1–10.4_
