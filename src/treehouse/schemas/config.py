@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import Field, model_validator
+from pydantic import Field, model_serializer, model_validator
 
 from treehouse.schemas.base import Frozen
 
@@ -66,6 +66,14 @@ class RunConfig(Frozen):
     backends: Backends = Backends()
     allow_same_family: bool = False
     tool_mode: Literal["live", "verify"] = "live"
+    thinking: bool = False
+
+    @model_serializer(mode="wrap")
+    def _serialize(self, handler):
+        data = handler(self)
+        if not self.thinking:
+            data.pop("thinking", None)  # Preserve existing config hashes and replay traces.
+        return data
 
     @model_validator(mode="after")
     def _rules(self) -> RunConfig:

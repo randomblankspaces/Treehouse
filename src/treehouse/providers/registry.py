@@ -8,7 +8,7 @@ max_image_px, price_ref and quota_note. Defaults are worker ``claude-sonnet-5-5`
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import yaml
 
@@ -43,6 +43,7 @@ class ModelEntry(Frozen):
     price_ref: str
     quota_note: str = ""
     verified: bool = False
+    request_fields: dict[str, Any] = {}
 
     @property
     def invoke_id(self) -> str:

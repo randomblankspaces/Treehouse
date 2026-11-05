@@ -530,6 +530,11 @@
           "title": "Task Ref",
           "type": "string"
         },
+        "thinking": {
+          "default": false,
+          "title": "Thinking",
+          "type": "boolean"
+        },
         "tool_executor": {
           "const": "sequential",
           "default": "sequential",

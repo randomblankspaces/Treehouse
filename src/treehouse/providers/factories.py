@@ -24,14 +24,15 @@ def _required_path(name: str) -> Path:
 
 def bedrock_recording(*, card, config) -> RecordingProvider:
     """Build the live us-east-1 Bedrock provider and record a new pixel-free cassette."""
-    del card, config
+    del card
     path = _required_path("TREEHOUSE_CASSETTE_OUT")
     if path.exists():
         raise ValueError(f"TREEHOUSE_CASSETTE_OUT already exists: {path}")
     registry = ModelRegistry.load()
     prices = load_default()
     ledger = SpendLedger(prices=prices, registry=registry)
-    provider = BedrockConverseProvider(None, registry, prices, ledger, region="us-east-1")
+    provider = BedrockConverseProvider(None, registry, prices, ledger, region="us-east-1",
+                                      thinking=config.thinking if config is not None else False)
     return RecordingProvider(provider, Cassette(path))
 
 

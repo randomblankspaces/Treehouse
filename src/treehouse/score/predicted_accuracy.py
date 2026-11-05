@@ -290,3 +290,10 @@ def validate_transfer(
         "verdict": verdict,
         "reason": None,
     }
+
+
+def deliberation_features(result):
+    """Available deterministic observations only; absent thinking is never a measured zero."""
+    return {f"deliberation.{name}": metric["value"]
+            for name, metric in result["metrics"].items()
+            if metric["status"] == "available" and metric["denominator"] > 0}

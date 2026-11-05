@@ -8,10 +8,11 @@ from typing import Annotated, Any, TypedDict
 from mcp.server import MCPServer
 from pydantic import Field
 
-from treehouse.canon import canonical_json, sha256_json
+from treehouse.canon import canonical_json, sha256_bytes, sha256_json
 from treehouse.gateway.policy import Decision
+from treehouse.providers.base import pixel_free_json
 from treehouse.schemas.base import Frozen
-from treehouse.schemas.model_io import Image, Json
+from treehouse.schemas.model_io import Image, Json, Reasoning, ToolUse
 from treehouse.schemas.tools import ToolError, WindowResult
 
 
@@ -51,10 +52,12 @@ class InvestigationSession:
               "Explain uncertainty, data scale, gaps, revisions and stopping with note_limitation. "
               "Decision explanations are self-reports, not proof of hidden internal reasoning.")
 
-    def __init__(self, card, ledger, pixels, budget, tracer, *, classifier=None, server_factory=None):
+    def __init__(self, card, ledger, pixels, budget, tracer, *, classifier=None, server_factory=None,
+                 model_turns=None):
         self.card, self.ledger, self.pixels = card, ledger, pixels
         self.budget, self.tracer, self.classifier = budget, tracer, classifier
         self.server_factory = server_factory
+        self.model_turns = model_turns if model_turns is not None else {}
         self.decisions: list[dict] = []
         self.actions: list[dict] = []
         self.results: dict[str, dict] = {}
@@ -173,11 +176,20 @@ class InvestigationSession:
                 span_id = self.current_span.span_id
             else:
                 span_id = self.ledger.span_id
+            response = self.model_turns.get(self.ledger.trial_id)
+            reasoning = []
+            if response is not None and self.current_span and any(
+                    isinstance(b, ToolUse) and b.id == self.current_span.attributes["gen_ai.tool.call.id"]
+                    for b in response.message.content):
+                reasoning = [b.text for b in response.message.content if isinstance(b, Reasoning) and b.text.strip()]
             d = {"decision_id": f"{self.ledger.trial_id}:d-{len(self.decisions) + 1:04d}",
                  "trial_id": self.ledger.trial_id, "action_id": action_id, "tool": tool,
                  "parameters": parameters, "rationale": rationale, "alternatives": alternatives,
                  "confidence": confidence, "parent_id": parent_id, "evidence_refs": refs,
                  "sequence": self.sequence, "span_id": span_id, "flags": flags, "action": None}
+            if reasoning:
+                d.update(thinking_ref=sha256_bytes(pixel_free_json(response)),
+                         thinking_text="\n".join(reasoning))
             self.decisions.append(d)
             if flags:
                 return ToolError(code="invalid_decision", message=", ".join(flags))
@@ -225,5 +237,9 @@ class InvestigationSession:
         return {**servers, "investigation": srv}
 
     def snapshot(self, result):
+        if any(d.get("thinking_ref") for d in self.decisions):
+            for d in self.decisions:
+                d.setdefault("thinking_ref", None)
+                d.setdefault("thinking_text", "")
         return {"schema_version": "treehouse.investigation-ledger/1", "decisions": self.decisions,
                 "actions": self.actions, "stop": result.stop, "stop_detail": result.detail}
