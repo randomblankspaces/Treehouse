@@ -52,12 +52,13 @@ class VisionSubagent:
         self.registry, self.cls = registry or AssetClasses.load(), cls
         self.definition = self.registry.get(cls)
         self.params = InferenceParams(max_tokens=512, temperature=0)
+        self._request_index = 0
 
     async def classify_cells(self, cells: list[dict], chip_fn: ChipFn) -> list[dict]:
         if len(cells) > MAX_CELLS:
             raise ValueError(f"vision_subagent accepts at most {MAX_CELLS} cells per call")
         results = []
-        for index, cell in enumerate(cells):
+        for cell in cells:
             jpeg, imagery = chip_fn(float(cell["lon"]), float(cell["lat"]), self.definition.cell_size_m)
             prompt = canonical_json(
                 {
@@ -72,9 +73,15 @@ class VisionSubagent:
                     ),
                 }
             )
-            # JPEG decoding is intentionally left to Bedrock; the encoded-byte digest gives this transient image
-            # a stable request identity without adding an image-codec dependency.
-            image = Image(format="jpeg", sha256="sha256:" + hashlib.sha256(jpeg).hexdigest(), bytes_=jpeg)
+            # Replay chips intentionally carry no bytes. Their recorded encoded-byte digest keeps the replay
+            # request identity equal to the live request without persisting pixels.
+            recorded_sha = imagery.get("sha256")
+            if recorded_sha is None:
+                recorded_sha = hashlib.sha256(jpeg).hexdigest()
+            image_sha = str(recorded_sha)
+            if not image_sha.startswith("sha256:"):
+                image_sha = "sha256:" + image_sha
+            image = Image(format="jpeg", sha256=image_sha, bytes_=jpeg)
             request = ModelRequest(
                 model_id=self.model_id,
                 params=self.params,
@@ -84,7 +91,9 @@ class VisionSubagent:
                 ),
                 messages=[Message(role="user", content=[Text(text=prompt), image])],
             )
-            response = await self.provider.complete(request, role="classifier", trial_index=index, turn=0)
+            request_index = self._request_index
+            self._request_index += 1
+            response = await self.provider.complete(request, role="classifier", trial_index=request_index, turn=0)
             text = "".join(block.text for block in response.message.content if isinstance(block, Text))
             parsed = _parse(text)
             common = {

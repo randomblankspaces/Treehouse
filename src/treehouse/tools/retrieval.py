@@ -313,13 +313,13 @@ class RetrievalTools:
                 "provenance": provenance}
 
     async def classify_async(self, index_id: str, method: str, cell_ids: list[str] | None = None,
-                             example_ids: list[str] | None = None) -> dict | ToolError:
+                             example_ids: list[str] | None = None, k: int = 200) -> dict | ToolError:
         if method == "vision_subagent":
             return await self._classify_vision(index_id, cell_ids)
-        return self.classify(index_id, method, cell_ids, example_ids)
+        return self.classify(index_id, method, cell_ids, example_ids, k)
 
     def classify(self, index_id: str, method: str, cell_ids: list[str] | None = None,
-                 example_ids: list[str] | None = None) -> dict | ToolError:
+                 example_ids: list[str] | None = None, k: int = 200) -> dict | ToolError:
         if method == "vision_subagent":
             import asyncio
             try:
@@ -347,7 +347,16 @@ class RetrievalTools:
         w, b, info = self._train(idx, pos, method)
         scores = _sigmoid(idx.emb.astype(np.float64) @ w + b)
         info["score"] = "probe probability" if method == "linear_probe" else "sigmoid of the SVM margin"
-        return {"index_id": index_id, "method": method, "scores": self._cells(idx, rows, scores),
+        ranked = sorted(rows, key=lambda j: (-round(float(scores[j]), 6), str(idx.cell_ids[j])))
+        selected = ranked[: max(1, min(int(k), 1000))]
+        considered = scores[rows]
+        summary = {
+            "min": round(float(np.min(considered)), 6) if len(considered) else None,
+            "median": round(float(np.median(considered)), 6) if len(considered) else None,
+            "max": round(float(np.max(considered)), 6) if len(considered) else None,
+        }
+        return {"index_id": index_id, "method": method, "scores": self._cells(idx, selected, scores),
+                "n_scored": len(rows), "score_summary": summary,
                 "dropped_example_ids": dropped, "training": info, "provenance": idx.describe()}
 
     def aggregate(self, index_id: str, scored_cells: list[dict], threshold: float,
@@ -474,12 +483,13 @@ def make_retrieval_server(tools: RetrievalTools) -> MCPServer:
 
     @srv.tool(description=(
         "Score cells in [0, 1] with a classifier trained on example cells vs random cells (fixed seed).\n"
-        "method linear_probe (logistic regression), linear_svm (sigmoid of the margin) or vision_subagent (may be\n"
-        "not configured). Vision requires explicit cell_ids (maximum 20); other methods default to every cell."))
+        "method linear_probe or linear_svm returns at most k cells (default 200, maximum 1000), ranked by score\n"
+        "descending then cell_id, plus total cells scored and min/median/max. Explicit cell_ids limit the scored\n"
+        "set. method vision_subagent (may be unconfigured) requires explicit cell_ids (maximum 20)."))
     async def classify(index_id: str, method: Literal["linear_probe", "linear_svm", "vision_subagent"],
                        cell_ids: list[str] | None = None,
-                       example_ids: list[str] | None = None) -> dict | ToolError:
-        return await tools.classify_async(index_id, method, cell_ids, example_ids)
+                       example_ids: list[str] | None = None, k: int = 200) -> dict | ToolError:
+        return await tools.classify_async(index_id, method, cell_ids, example_ids, k)
 
     @srv.tool(description=(
         "Keep scored cells with score >= threshold and merge touching kept cells (8- or 4-neighbour) into sites.\n"
