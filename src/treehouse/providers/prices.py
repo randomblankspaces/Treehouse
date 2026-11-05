@@ -52,6 +52,7 @@ class Price(Frozen):
     output: float | None = Field(default=None, gt=0)
     cache_read: float | None = Field(default=None, gt=0)
     cache_write: float | None = Field(default=None, gt=0)
+    price_basis: Literal["ceiling"] | None = Field(default=None, exclude_if=lambda v: v is None)
 
     def implausible(self) -> list[str]:
         """Reasons this row is outside the plausibility band (empty if fine or unpriced)."""
@@ -66,7 +67,7 @@ class Price(Frozen):
         return out
 
     def scaled(self, k: float) -> Price:
-        return Price(**{f: (None if getattr(self, f) is None else getattr(self, f) * k)
+        return Price(price_basis=self.price_basis, **{f: (None if getattr(self, f) is None else getattr(self, f) * k)
                         for f in ("input", "output", "cache_read", "cache_write")})
 
     @property

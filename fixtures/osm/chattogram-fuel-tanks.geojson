@@ -1,0 +1,26 @@
+{
+  "type": "FeatureCollection",
+  "snapshot_date": "2026-11-05",
+  "synthetic_fixture": true,
+  "notice": "Synthetic offline geometry, not observed OSM; never use as a live reference.",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "synthetic:chattogram-fuel-tanks:1",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.82,
+          22.31
+        ]
+      },
+      "properties": {
+        "cls": "oil_fuel_tank",
+        "tags": {
+          "man_made": "storage_tank",
+          "content": "diesel"
+        }
+      }
+    }
+  ]
+}

@@ -71,10 +71,13 @@ def test_plateau_builder_is_deterministic(tmp_path, monkeypatch):
     assert all(f["footprint_area_m2"] >= mod.MIN_AREA_M2 for f in a)  # every fixture >= 1,600 m2
 
 
-def test_osm_builder_is_deterministic():
+def test_legacy_osm_script_accepts_registry_fetcher_arguments(tmp_path):
     mod = _load("fetch_osm_warehouses.py")
-    assert mod._fixture_pool("chattogram") == mod._fixture_pool("chattogram")
-    assert mod.CHOSEN == "chattogram"
+    output = tmp_path / "pool.geojson"
+    assert mod.main(["--class", "oil_fuel_tank", "--bbox", "91.78", "22.28", "91.88", "22.37",
+                     "--extract", str(ROOT / "fixtures/osm/chattogram-fuel-tanks.geojson"),
+                     "--out", str(output)]) == 0
+    _geojson_ok(json.loads(output.read_text()), "oil_fuel_tank")
 
 
 def test_sha256sums_cover_the_keys():

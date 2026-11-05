@@ -1,0 +1,149 @@
+# Designed real-data card; fetch and pin the OSM pool before live grading.
+# Offline-only synthetic pool: fixtures/osm/chattogram-fuel-tanks.geojson
+schema_version: treehouse.task/1
+id: t1-chattogram-fuel-tanks
+version: 1.0.0
+title: Chattogram oil/fuel tanks for disaster risk finance (incomplete OSM pool)
+family: asset-retrieval
+synthetic: false
+goal: 'For disaster risk finance: exposure inventory before cyclone season, find above-ground
+  oil/fuel tanks in the Chattogram port and industrial AOI exposed to cyclones and
+  storm surge. Include fixed and floating roof tanks. Exclude water and chemical tanks,
+  LNG/LPG spheres and demolished bases. Return each candidate as a point with confidence
+  and evidence. Explain resolution and cell size, unreviewed areas, and a count with
+  a range. No imagery is permitted; declare where embeddings cannot distinguish tanks
+  or contents.'
+aoi:
+  type: Polygon
+  coordinates:
+  - - - 91.78
+      - 22.28
+    - - 91.88
+      - 22.28
+    - - 91.88
+      - 22.37
+    - - 91.78
+      - 22.37
+    - - 91.78
+      - 22.28
+smoke_aoi:
+- 91.78
+- 22.28
+- 91.83
+- 22.325
+time_window:
+- 2024-01-01
+- 2024-12-31
+as_of: 2024-12-31 23:59:00+00:00
+data_allowlist:
+- source_id: lgnd-clay-embeddings
+  kind: embeddings
+  access: real
+  license: CC-BY-4.0
+  status: unpinned
+tools_allowed:
+- record_decision
+- list_embedding_sources
+- build_index
+- retrieve
+- classify
+- aggregate
+- record_claim
+- note_limitation
+- submit_understanding
+needs_vision: false
+classes:
+  oil_fuel_tank:
+    min_size_m: 10
+    max_effective_gsd_for_existence_m: 10
+    max_effective_gsd_for_status_m: 0.5
+    match_tolerance_m: 80
+    key_geometry: point
+windows:
+  max_side_m: 5000
+  max_out_px: 512
+  max_bytes_per_run: 500000000
+steps:
+- step_id: inventory
+  question_id: exists
+  statuses_allowed:
+  - present
+  - absent
+  - cannot_assess
+  keying:
+    mode: keyed
+    key_source: OpenStreetMap candidate pool (incomplete; never report recall)
+    key_path: keys/osm/chattogram-fuel-tanks.geojson
+    license: ODbL-1.0
+    reference_quality: incomplete
+    match_rule:
+      tolerance_m:
+        oil_fuel_tank: 80
+      one_to_one: true
+    status: pending_fetch
+    completeness_caveat: Sparse OSM candidate pool, not a complete inventory. Precision
+      within the pool only; never recall.
+forbidden_sources:
+- kind: path
+  pattern: keys/
+- kind: tool
+  pattern: key_lookup
+- kind: host
+  pattern: securewatch.maxar.com
+- kind: host
+  pattern: '*.maxar.com'
+- kind: dataset_id
+  pattern: maxar
+- kind: dataset_id
+  pattern: vantor
+must_notice:
+- id: resolution
+  kind: mentions_any
+  terms:
+  - 10 m
+  - resolution
+  - gsd
+  - cell size
+  - 160 m
+- id: cell-merge
+  kind: mentions_any
+  terms:
+  - merge
+  - aggregate
+  - site
+  - cell
+- id: count-range
+  kind: mentions_any
+  terms:
+  - range
+  - count
+  - approximately
+  - about
+- id: incomplete
+  kind: declares_limit
+  terms:
+  - incomplete
+  - pool
+  - cannot claim recall
+known_limits:
+- 'OSM oil/fuel content tagging is sparse: precision within the pool only; never recall.'
+- No imagery is permitted. Coarse LGND embeddings cannot establish tank contents or
+  resolve small tanks.
+- "Lead reports LGND geohash w5 partitions present for 2024\u20132026; not independently\
+  \ measured here."
+- This is an exposure inventory, not a cyclone forecast or asset valuation.
+sampling_plan:
+  strata_keys:
+  - conf_tercile
+  n_total: 40
+  seed: 20261104
+thresholds:
+  rely_lo: 0.8
+budget:
+  enabled: true
+  usd: 15
+  tool_calls: 200
+  bytes: 500000000
+  wall_s: 1800
+  tokens: 3000000
+minutes_per_cell: 2.0

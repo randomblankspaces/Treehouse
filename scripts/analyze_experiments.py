@@ -227,7 +227,7 @@ def _features(ledger: dict, claims: list[PredictedClaim], rv_pass_rate: float) -
 def _trial_panels(store: LocalStore, run, trial, assets, completeness, keyed, aoi_bbox):
     examples = _examples(run.card)
     claims = exclude_example_claims(_claims(trial), examples, aoi_bbox, assets=assets, cell_size_m=CELL_SIZE_M)
-    output_report = grade(claims, assets, aoi_bbox, completeness=completeness, cell_size_m=CELL_SIZE_M, excluded_assets=examples)
+    output_report = grade(claims, assets, aoi_bbox, completeness=completeness, cell_size_m=CELL_SIZE_M, excluded_assets=examples, minutes_per_cell=run.card.minutes_per_cell)
     ledger_path = store.run_dir(run.run_id) / "trials" / f"{trial.trial_id}.investigation.json"
     ledger = json.loads(ledger_path.read_text())
     claim_rows = [claim.model_dump(mode="json") for claim in trial.claims]
@@ -460,7 +460,7 @@ def _classifier_comparison() -> dict:
                 PredictedClaim(lon=site["lon"], lat=site["lat"], score=site["max_score"])
                 for site in aggregated["sites"]
             ]
-            report = grade(claims, assets, aoi_bbox, completeness="complete", cell_size_m=CELL_SIZE_M, excluded_assets=_examples(card))
+            report = grade(claims, assets, aoi_bbox, completeness="complete", cell_size_m=CELL_SIZE_M, excluded_assets=_examples(card), minutes_per_cell=card.minutes_per_cell)
             methods[method] = report.model_dump(mode="json")
         trials.append({"seed": seed, "training_example_ids": subset, "methods": methods})
 
