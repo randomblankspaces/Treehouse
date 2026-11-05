@@ -9,7 +9,7 @@ import re
 import urllib.request
 from collections import defaultdict, deque
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from treehouse.canon import canonical_json
@@ -111,7 +111,7 @@ class RecordingGsiSeamlessPhotoSource(GsiSeamlessPhotoSource):
 
     def chip(self, lon: float, lat: float, side_m: float) -> tuple[bytes, dict]:
         data, provenance = super().chip(lon, lat, side_m)
-        retrieved_at = datetime.now(timezone.utc).isoformat()
+        retrieved_at = datetime.now(UTC).isoformat()
         tile = provenance["tile"]
         entry = {
             "url": provenance["url"],

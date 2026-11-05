@@ -4,15 +4,21 @@ from __future__ import annotations
 
 import asyncio
 import json
+from pathlib import Path
 
 import pytest
 
 from treehouse.cards import load_card
 from treehouse.providers.base import iter_images
+from treehouse.providers.cassette import Cassette, RecordingProvider, ReplayProvider
 from treehouse.schemas.model_io import Message, ModelResponse, Text, Usage
 from treehouse.schemas.tools import ToolError
 from treehouse.tools.retrieval import retrieval_for_card
-from treehouse.tools.sources.gsi import GsiSeamlessPhotoSource
+from treehouse.tools.sources.gsi import (
+    GsiSeamlessPhotoSource,
+    RecordingGsiSeamlessPhotoSource,
+    ReplayGsiSeamlessPhotoSource,
+)
 from treehouse.verifier.vision_classifier_agent import MAX_CELLS, VisionSubagent
 
 JPEG = b"jpeg-bytes-for-test"
@@ -87,6 +93,58 @@ def test_subagent_sends_image_and_registry_definitions_and_scores_labels():
     assert out[0]["usage"]["input_tokens"] == 13
     assert out[0]["cost_usd"] == 0.004
     assert out[0]["imagery"] == PROVENANCE
+
+
+def test_subagent_uses_unique_cassette_keys_across_classify_calls():
+    provider = FakeProvider(
+        [
+            '{"label":"present","confidence":0.8,"explanation":"roof"}',
+            '{"label":"absent","confidence":0.8,"explanation":"factory"}',
+        ]
+    )
+    agent = VisionSubagent(provider, "requested-model")
+    cell = [{"cell_id": "a", "lon": 136.8, "lat": 35.1}]
+
+    asyncio.run(agent.classify_cells(cell, chip))
+    asyncio.run(agent.classify_cells(cell, chip))
+
+    assert [(role, trial_index, turn) for _, role, trial_index, turn in provider.requests] == [
+        ("classifier", 0, 0),
+        ("classifier", 1, 0),
+    ]
+
+
+def test_recorded_gsi_and_cassette_replay_without_pixels_or_fetches(tmp_path: Path):
+    cassette_path = tmp_path / "vision.jsonl"
+    gsi_log_path = tmp_path / "gsi.jsonl"
+    fetches = []
+
+    def fetch(url):
+        fetches.append(url)
+        return JPEG
+
+    answer = '{"label":"present","confidence":0.73,"explanation":"storage roof"}'
+    live_inner = FakeProvider([answer])
+    live_agent = VisionSubagent(RecordingProvider(live_inner, Cassette(cassette_path)), "requested-model")
+    live_source = RecordingGsiSeamlessPhotoSource(gsi_log_path, fetcher=fetch)
+    cells = [{"cell_id": "a", "lon": 136.8, "lat": 35.1}]
+
+    live = asyncio.run(live_agent.classify_cells(cells, live_source.chip))
+    assert len(fetches) == 1
+    assert JPEG not in cassette_path.read_bytes() and JPEG not in gsi_log_path.read_bytes()
+    log_entry = json.loads(gsi_log_path.read_text())
+    assert set(log_entry) == {"url", "z", "x", "y", "sha256", "bytes", "retrieved_at"}
+
+    replay_provider = ReplayProvider(Cassette(cassette_path))
+    replay_agent = VisionSubagent(replay_provider, "requested-model")
+    replay_source = ReplayGsiSeamlessPhotoSource(gsi_log_path)
+    replayed = asyncio.run(replay_agent.classify_cells(cells, replay_source.chip))
+
+    assert replayed == live
+    assert len(fetches) == 1
+    assert replay_provider.unused_keys() == []
+    replay_request = replay_provider.cassette.get(("classifier", 0, 0)).request
+    assert [image.bytes_ for _, image in iter_images(replay_request.messages)] == [None]
 
 
 def test_malformed_reply_returns_none_score_instead_of_crashing():

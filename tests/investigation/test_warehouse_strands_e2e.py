@@ -11,7 +11,7 @@ from treehouse.cards import load_card
 from treehouse.investigation import run_investigation
 from treehouse.investigation.reasoning_rules import evaluate
 from treehouse.paths import repo_root
-from treehouse.providers.factories import bedrock_recording, replay
+from treehouse.providers.factories import bedrock_recording, replay, vision_servers
 from treehouse.schemas.config import RunConfig
 from treehouse.schemas.model_io import Json, Message, ModelResponse, Text, ToolResult, ToolUse, Usage
 from treehouse.store.local import LocalStore
@@ -167,6 +167,45 @@ def test_provider_factories_require_new_explicit_cassette_paths(tmp_path: Path, 
     monkeypatch.setenv("TREEHOUSE_CASSETTE_OUT", str(existing))
     with pytest.raises(ValueError, match="already exists"):
         bedrock_recording(card=None, config=None)
+
+
+def test_vision_servers_only_replaces_japan_retrieval_and_validates_env(tmp_path: Path, monkeypatch) -> None:
+    defaults = {"retrieval": object(), "claims": object()}
+    bangladesh = load_card(ROOT / "tasks/t1-bangladesh-warehouses.yaml")
+    assert vision_servers(card=bangladesh, ledger=None, pixels=None, default_servers=defaults) is defaults
+
+    nagoya = load_card(ROOT / "tasks/t1-nagoya-warehouses.yaml")
+    for name in ("TREEHOUSE_VISION_MODE", "TREEHOUSE_VISION_MODEL", "TREEHOUSE_VISION_CASSETTE", "TREEHOUSE_GSI_LOG"):
+        monkeypatch.delenv(name, raising=False)
+    with pytest.raises(ValueError, match="TREEHOUSE_VISION_MODE is required"):
+        vision_servers(card=nagoya, ledger=None, pixels=None, default_servers=defaults)
+
+    monkeypatch.setenv("TREEHOUSE_VISION_MODE", "invalid")
+    with pytest.raises(ValueError, match="must be record or replay"):
+        vision_servers(card=nagoya, ledger=None, pixels=None, default_servers=defaults)
+
+    cassette = tmp_path / "vision-record.jsonl"
+    gsi_log = tmp_path / "gsi-record.jsonl"
+    monkeypatch.setenv("TREEHOUSE_VISION_MODE", "record")
+    monkeypatch.setenv("TREEHOUSE_VISION_CASSETTE", str(cassette))
+    monkeypatch.setenv("TREEHOUSE_GSI_LOG", str(gsi_log))
+    recorded = vision_servers(card=nagoya, ledger=None, pixels=None, default_servers=defaults)
+    assert recorded["retrieval"] is not defaults["retrieval"] and recorded["claims"] is defaults["claims"]
+    assert gsi_log.is_file() and not cassette.exists()
+    with pytest.raises(ValueError, match="TREEHOUSE_GSI_LOG already exists"):
+        vision_servers(card=nagoya, ledger=None, pixels=None, default_servers=defaults)
+
+    replay_cassette = tmp_path / "vision-replay.jsonl"
+    replay_log = tmp_path / "gsi-replay.jsonl"
+    replay_cassette.write_text("")
+    monkeypatch.setenv("TREEHOUSE_VISION_MODE", "replay")
+    monkeypatch.setenv("TREEHOUSE_VISION_CASSETTE", str(replay_cassette))
+    monkeypatch.setenv("TREEHOUSE_GSI_LOG", str(replay_log))
+    with pytest.raises(ValueError, match="TREEHOUSE_GSI_LOG is not a file"):
+        vision_servers(card=nagoya, ledger=None, pixels=None, default_servers=defaults)
+    replay_log.write_text("")
+    replayed = vision_servers(card=nagoya, ledger=None, pixels=None, default_servers=defaults)
+    assert replayed["retrieval"] is not defaults["retrieval"] and replayed["claims"] is defaults["claims"]
 
 
 def test_provider_factories_construct_record_and_replay_without_network(tmp_path: Path, monkeypatch) -> None:

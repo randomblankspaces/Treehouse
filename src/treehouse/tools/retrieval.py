@@ -348,7 +348,7 @@ class RetrievalTools:
         scores = _sigmoid(idx.emb.astype(np.float64) @ w + b)
         info["score"] = "probe probability" if method == "linear_probe" else "sigmoid of the SVM margin"
         ranked = sorted(rows, key=lambda j: (-round(float(scores[j]), 6), str(idx.cell_ids[j])))
-        selected = ranked[: max(1, min(int(k), 1000))]
+        selected = ranked[: min(max(int(k), 0), 1000)]
         considered = scores[rows]
         summary = {
             "min": round(float(np.min(considered)), 6) if len(considered) else None,
