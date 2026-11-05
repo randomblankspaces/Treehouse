@@ -7,7 +7,9 @@ import { pick, pickMarker, renderMap, TILE_CREDIT } from './mapart.ts';
 import { useNarration, usePrefs, useSnapshot } from './hooks.ts';
 import { EvaluationPanels, PredictionEvidence, money, tokenTotal } from './report.tsx';
 import { Settings } from './settings.tsx';
+import { DecisionTree, PlainRunSummary } from './tree.tsx';
 import './shell.css';
+import './tree.css';
 
 const clock = (ms: number | null) => { if (ms === null) return 'unavailable'; const t = Math.max(0, ms) / 1000; return `${String(Math.floor(t / 60)).padStart(2, '0')}:${(t % 60).toFixed(1).padStart(4, '0')}`; };
 const usd = money;
@@ -40,6 +42,7 @@ function DevApp() {
   const [stepId, setStepId] = useState<string | null>(readUrl().step);
   const [follow, setFollow] = useState(!readUrl().step);
   const [filter, setFilter] = useState<Filter>('all');
+  const [selectedClaim, setSelectedClaim] = useState<string | null>(null);   // shared by the tree and the map
   const [tick, setTick] = useState(0);   // bumps to restart polling after a replay
   const [now, setNow] = useState(Date.now());
   const settings = useRef<HTMLDialogElement>(null);
@@ -148,6 +151,7 @@ function DevApp() {
         <p aria-live="polite">{lines[0]?.text ?? 'Waiting for the first key decision…'}</p>
         {lines.length > 1 && <details><summary>Earlier lines</summary><ol>{lines.slice(1).map((l, i) => <li key={i}>{l.text}</li>)}</ol></details>}
       </section>}
+      <DecisionTree snap={snap} selectedClaim={selectedClaim} onSelectClaim={setSelectedClaim} />
       <main className="work">
         <section className="trace" aria-labelledby="trace-h">
           <div className="trace-head">
@@ -176,22 +180,24 @@ function DevApp() {
           </ol>
         </section>
         <div className="side">
-          <DevMap snap={snap} step={follow ? null : selected} night={prefs.theme !== 'light'} reduce={reduce} colorSafe={prefs.colorSafe} />
+          <DevMap snap={snap} step={follow ? null : selected} night={prefs.theme !== 'light'} reduce={reduce} colorSafe={prefs.colorSafe} selectedClaim={selectedClaim} onSelectClaim={setSelectedClaim} />
           <section className="inspector" aria-labelledby="insp-h">
             {selected ? <Inspector step={selected} byId={byId} steps={steps} choose={choose} /> : <p className="empty" id="insp-h">No step selected.</p>}
           </section>
         </div>
       </main>
+      <PlainRunSummary snap={snap} />
     </>}
     <Settings ref={settings} prefs={prefs} setPrefs={setPrefs} />
   </div>;
 }
 
 /** The map beside the trace: the run as it stood at the selected step (or live), drawn technically. */
-function DevMap({snap, step, night, reduce, colorSafe}: {snap: RunSnapshot; step: TraceStep | null; night: boolean; reduce: boolean; colorSafe: boolean}) {
+function DevMap({snap, step, night, reduce, colorSafe, selectedClaim, onSelectClaim}: {snap: RunSnapshot; step: TraceStep | null; night: boolean; reduce: boolean; colorSafe: boolean; selectedClaim: string | null; onSelectClaim: (id: string | null) => void}) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [scrub, setScrub] = useState<number | null>(null);
-  const [selectedPrediction, setSelectedPrediction] = useState<string | null>(null);
+  const selectedPrediction = selectedClaim;
+  const setSelectedPrediction = onSelectClaim;
   const [hover, setHover] = useState<ReturnType<typeof pick>>(null);
   useEffect(() => setScrub(null), [step?.span_id]);
   const t = scrub ?? (step ? step.end_ms ?? snap.elapsed_ms : snap.elapsed_ms) ?? 0;

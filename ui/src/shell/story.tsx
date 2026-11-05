@@ -10,6 +10,8 @@ import { pickMarker, renderMap, TILE_CREDIT } from './mapart.ts';
 import type { Prefs } from './prefs.ts';
 import { EvaluationPanels, PredictionEvidence, money, tokenTotal } from './report.tsx';
 import { Settings } from './settings.tsx';
+import { DecisionTree, PlainRunSummary } from './tree.tsx';
+import './tree.css';
 import '@fontsource/pixelify-sans/latin-400.css';   // latin only: files, not data: URIs (the API's CSP blocks those)
 import '@fontsource/pixelify-sans/latin-700.css';
 import './shell.css';
@@ -341,6 +343,7 @@ function MapStage({snap, error, lines, prefs, reduce, mode, onNewTask}: {snap: R
 
 function Summary({ref, snap, lines, count}: {ref: Ref<HTMLDialogElement>; snap: RunSnapshot; lines: Narration[]; count: (s: string) => number}) {
   const keys = snap.steps.filter(isKey), errors = snap.steps.filter(s => s.error), thoughts = snap.steps.filter(s => s.model?.thinking);
+  const [selectedClaim, setSelectedClaim] = useState<string | null>(null);
   const labeller = snap.steps.find(s => s.tool?.name === 'strands_label');
   const tools = snap.steps.flatMap(s => s.tool ? [s.tool] : []);
   const bytes = tools.length && tools.every(t => t.bytes_read !== null) ? tools.reduce((b, t) => b + t.bytes_read!, 0) : null;
@@ -354,6 +357,7 @@ function Summary({ref, snap, lines, count}: {ref: Ref<HTMLDialogElement>; snap: 
       <section><h3>What it was given</h3>
         <dl className="kv"><dt>Model</dt><dd>{snap.context.model_id}</dd><dt>Harness</dt><dd>{snap.context.harness}</dd>
           {snap.context.items.map(i => <Fragment key={i.label}><dt>{i.label}</dt><dd>{i.detail}{i.tokens ? ` · ${kilo(i.tokens)} tokens` : ''}</dd></Fragment>)}</dl></section>
+      <DecisionTree snap={snap} selectedClaim={selectedClaim} onSelectClaim={setSelectedClaim} />
       <section><h3>How it worked: key decisions</h3>
         <ol className="decisions">{keys.map(k => <li key={k.span_id}>
           <p><span className={`tag f-${focusOf(k)}`}>{FOCUS_LABEL[focusOf(k)]}</span> <code>{k.tool?.name}</code> <span className={`st st-${k.status}`}>{k.status}</span></p>
@@ -372,6 +376,7 @@ function Summary({ref, snap, lines, count}: {ref: Ref<HTMLDialogElement>; snap: 
         <dl className="kv"><dt>Time</dt><dd>{snap.elapsed_ms === null ? 'unavailable' : `${(snap.elapsed_ms / 1000).toFixed(1)} s (${snap.timing_basis ?? 'recorded trace'})`}</dd><dt>Cost</dt><dd>{money(snap.cost_usd)}</dd>
           <dt>Steps</dt><dd>{snap.steps.length}</dd><dt>Data read</dt><dd>{bytes === null ? 'unavailable' : `${(bytes / 1e6).toFixed(1)} MB`}</dd></dl></section>
       {lines.length > 0 && <section><h3>Narration</h3><ol>{[...lines].reverse().map((l, i) => <li key={i}>{l.text}</li>)}</ol></section>}
+      <PlainRunSummary snap={snap} />
       <p><a href={`/dev?run=${encodeURIComponent(snap.run_id)}`}>Open every span in the dev view</a></p>
     </div>
   </dialog>;
