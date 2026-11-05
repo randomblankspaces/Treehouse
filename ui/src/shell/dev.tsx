@@ -9,6 +9,7 @@ import { isColorSafe, type Prefs } from './prefs.ts';
 import { EvaluationPanels, PredictionEvidence, money, tokenTotal } from './report.tsx';
 import { Settings } from './settings.tsx';
 import { DecisionTree, PlainRunSummary } from './tree.tsx';
+import { ExecutionMap } from './execmap.tsx';
 import './shell.css';
 import './tree.css';
 
@@ -154,6 +155,7 @@ function DevApp() {
         {lines.length > 1 && <details><summary>Earlier lines</summary><ol>{lines.slice(1).map((l, i) => <li key={i}>{l.text}</li>)}</ol></details>}
         {runNarr && <p className="narr-summary"><span className="voice-label">{runNarr.source === 'polly' ? 'Voice: Amazon Polly' : 'Voice: browser speech'}</span> {runNarr.text}</p>}
       </section>}
+      <ExecutionMap snap={snap} selectedClaim={selectedClaim} onSelectClaim={setSelectedClaim} />
       <DecisionTree snap={snap} selectedClaim={selectedClaim} onSelectClaim={setSelectedClaim} />
       <main className="work">
         <section className="trace" aria-labelledby="trace-h">

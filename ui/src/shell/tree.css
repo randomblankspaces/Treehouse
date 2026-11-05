@@ -105,3 +105,33 @@
 .shell .voice-label{display:inline-block;font:600 .64rem var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--ink);background:var(--da);border-radius:3px;padding:.05rem .4rem;margin-inline-end:.4rem;vertical-align:1px}
 .story .narr-summary{display:block;margin-top:.3rem}
 .story .narr-summary .voice-label{background:rgba(0,0,0,.6);color:#fff}
+
+/* Execution map: lanes by kind of work, nodes left to right in time. Uses shell tokens only. */
+.shell .execmap{padding:.8rem 1rem;border-bottom:1px solid var(--line);background:var(--panel)}
+.shell .execmap h2{margin:0 0 .4rem}
+.shell .execmap-kpis{display:flex;flex-wrap:wrap;gap:.4rem 1.2rem;margin:0 0 .6rem;font:.85rem var(--mono);color:var(--muted)}
+.shell .execmap-kpis b{color:var(--text);font-size:1.05rem}
+.shell .execmap-kpis .bad b{color:var(--err)}
+.shell .execmap-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--raised)}
+.shell .execmap svg{display:block}
+.shell .execmap .lane-band{fill:transparent}
+.shell .execmap .lane-band.alt{fill:var(--line);opacity:.35}
+.shell .execmap .lane-label{fill:var(--muted);font:600 10px var(--mono);letter-spacing:.04em;text-transform:uppercase}
+.shell .execmap .flow{fill:none;stroke:var(--muted);stroke-width:1.5;opacity:.55}
+.shell .execmap .node-label{fill:var(--muted);font:9px var(--mono);text-anchor:middle}
+.shell .execmap .node-count{fill:var(--err);font:700 10px var(--mono)}
+.shell .execmap .n-sound{fill:var(--ok);stroke:var(--ok)}
+.shell .execmap .n-invalid{fill:var(--err);stroke:var(--err)}
+.shell .execmap .n-ne{fill:var(--muted);stroke:var(--muted)}
+.shell .execmap .n-dec circle{fill-opacity:.85;stroke-width:2}
+.shell .execmap .n-claim polygon{stroke-width:2;fill-opacity:.85}
+.shell .execmap .n-claim{cursor:pointer}
+.shell .execmap .n-claim.on polygon{stroke:var(--text);stroke-width:3}
+.shell .execmap .n-claim:focus-visible{outline:2px solid var(--focus)}
+.shell .execmap .n-fail line{stroke:var(--err);stroke-width:3;stroke-linecap:round}
+.shell .execmap .alt line,.shell .execmap .alt circle{fill:none;stroke:var(--muted);stroke-dasharray:2 2}
+.shell .execmap-legend{display:flex;flex-wrap:wrap;gap:.3rem 1rem;list-style:none;margin:.5rem 0 0;padding:0;font-size:.78rem;color:var(--muted)}
+.shell .execmap-legend li{display:flex;align-items:center;gap:.3rem}
+.shell .execmap-legend svg{overflow:visible}
+.shell .execmap-legend .n-sound{fill:var(--ok)}
+.shell .execmap-legend .n-invalid{fill:var(--err)}
