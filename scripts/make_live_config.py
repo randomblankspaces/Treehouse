@@ -25,6 +25,9 @@ def make_live_config(card_path: Path, model_key: str, harness: str) -> RunConfig
             tools=list(card.tools_allowed),
         ),
         harness=harness,
+        servers=("treehouse.providers.factories:vision_servers"
+                 if any(source.source_id == "gsi-seamless-aerial-japan" for source in card.data_allowlist)
+                 else None),
         max_turns=40,
         trials=1,
         seed=1,

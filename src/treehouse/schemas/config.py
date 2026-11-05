@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import model_validator
+from pydantic import Field, model_validator
 
 from treehouse.schemas.base import Frozen
 
@@ -55,6 +55,8 @@ class RunConfig(Frozen):
     verifier: RoleConfig | None = None
     summarizer: RoleConfig | None = None
     harness: Literal["plain_loop", "strands"] = "plain_loop"
+    # Omit the unset field to preserve existing sealed config hashes.
+    servers: str | None = Field(default=None, exclude_if=lambda value: value is None)
     max_turns: int = 40
     tool_executor: Literal["sequential"] = "sequential"
     trials: int = 1
