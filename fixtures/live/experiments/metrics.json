@@ -1,0 +1,3938 @@
+{
+  "comparisons": {
+    "classifier": {
+      "difference": {
+        "direction": "linear_probe mean minus linear_svm mean",
+        "metrics": {
+          "precision": {
+            "bootstrap": {
+              "resamples": 2000,
+              "seed": 20261105
+            },
+            "difference_of_means": -0.0165821162324227,
+            "interval_95": [
+              -0.036517433463998356,
+              0.007036163522012584
+            ],
+            "interval_reason": null,
+            "n_left": 3,
+            "n_right": 3
+          },
+          "recall": {
+            "bootstrap": {
+              "resamples": 2000,
+              "seed": 20261105
+            },
+            "difference_of_means": -0.011111111111111183,
+            "interval_95": [
+              -0.033333333333333326,
+              0.033333333333333326
+            ],
+            "interval_reason": null,
+            "n_left": 3,
+            "n_right": 3
+          }
+        }
+      },
+      "gifu_transfer": {
+        "status": "not applicable: no training examples (transfer requires a cross-index classifier, not built)"
+      },
+      "label": "offline, synthetic fixture embeddings, not a live agent run",
+      "methods": {
+        "linear_probe": {
+          "precision": {
+            "bootstrap": {
+              "resamples": 2000,
+              "seed": 20261105
+            },
+            "interval_95": [
+              0.11842105263157894,
+              0.15267175572519084
+            ],
+            "interval_reason": null,
+            "mean": 0.1322929906262608,
+            "n": 3
+          },
+          "recall": {
+            "bootstrap": {
+              "resamples": 2000,
+              "seed": 20261105
+            },
+            "interval_95": [
+              0.6,
+              0.6666666666666666
+            ],
+            "interval_reason": null,
+            "mean": 0.6444444444444444,
+            "n": 3
+          }
+        },
+        "linear_svm": {
+          "precision": {
+            "bootstrap": {
+              "resamples": 2000,
+              "seed": 20261105
+            },
+            "interval_95": [
+              0.11874999999999998,
+              0.18918918918918917
+            ],
+            "interval_reason": null,
+            "mean": 0.1488751068586835,
+            "n": 3
+          },
+          "recall": {
+            "bootstrap": {
+              "resamples": 2000,
+              "seed": 20261105
+            },
+            "interval_95": [
+              0.6333333333333333,
+              0.6999999999999998
+            ],
+            "interval_reason": null,
+            "mean": 0.6555555555555556,
+            "n": 3
+          }
+        }
+      },
+      "setup": {
+        "cell_size_m": 160.0,
+        "classifier_k": 1000,
+        "reference": "reference: keys/plateau/nagoya-warehouses.geojson; held-out IDs only from keys/plateau/nagoya-split.json",
+        "source_id": "aef-10m-annual",
+        "threshold": 0.5,
+        "training_subset": "random 12 of 16 Nagoya training examples per seed",
+        "year": 2024
+      },
+      "trials": [
+        {
+          "methods": {
+            "linear_probe": {
+              "ap": 0.2330892864756181,
+              "auroc": 0.821836168415973,
+              "cell_size_m": 160.0,
+              "completeness": "complete",
+              "count_ratio": 4.2,
+              "edge_tol_m": 1.0,
+              "grader_version": "grade-lgnd-v1",
+              "lift": 14.213740458015268,
+              "n_asset_cells": 30,
+              "n_assets": 30,
+              "n_assets_outside_aoi": 0,
+              "n_claims": 131,
+              "n_flagged_cells": 131,
+              "n_found": 20,
+              "n_grid_cells": 2793,
+              "n_predicted_sites": 126,
+              "null_reasons": {},
+              "precision": 0.15267175572519084,
+              "precision_is_lower_bound": false,
+              "recall": 0.6666666666666666,
+              "recall_at_k": {
+                "10": 0.06666666666666667,
+                "20": 0.26666666666666666,
+                "50": 0.6
+              },
+              "review_effort": {
+                "50": 42,
+                "80": null,
+                "90": null
+              },
+              "units": {
+                "ap": "over all 160 m cells intersecting the AOI",
+                "auroc": "over all 160 m cells intersecting the AOI",
+                "claim_score": "finite, non-negative confidence; maximum claim score per flagged cell",
+                "count_ratio": "8-neighbour connected flagged-cell sites / known assets",
+                "lift": "precision / share of AOI-intersecting cells holding an asset",
+                "n_claims": "claims with points inside the AOI",
+                "n_predicted_sites": "8-neighbour connected components of flagged cells",
+                "precision": "share of flagged 160 m cells holding an asset",
+                "recall": "share of assets",
+                "recall_at_k": "share of assets in the top k flagged cells",
+                "review_effort": "top-ranked flagged cells to inspect"
+              }
+            },
+            "linear_svm": {
+              "ap": 0.25629377642093903,
+              "auroc": 0.8400108577633008,
+              "cell_size_m": 160.0,
+              "completeness": "complete",
+              "count_ratio": 3.566666666666667,
+              "edge_tol_m": 1.0,
+              "grader_version": "grade-lgnd-v1",
+              "lift": 17.613513513513514,
+              "n_asset_cells": 30,
+              "n_assets": 30,
+              "n_assets_outside_aoi": 0,
+              "n_claims": 111,
+              "n_flagged_cells": 111,
+              "n_found": 21,
+              "n_grid_cells": 2793,
+              "n_predicted_sites": 107,
+              "null_reasons": {},
+              "precision": 0.1891891891891892,
+              "precision_is_lower_bound": false,
+              "recall": 0.7,
+              "recall_at_k": {
+                "10": 0.1,
+                "20": 0.26666666666666666,
+                "50": 0.6
+              },
+              "review_effort": {
+                "50": 38,
+                "80": null,
+                "90": null
+              },
+              "units": {
+                "ap": "over all 160 m cells intersecting the AOI",
+                "auroc": "over all 160 m cells intersecting the AOI",
+                "claim_score": "finite, non-negative confidence; maximum claim score per flagged cell",
+                "count_ratio": "8-neighbour connected flagged-cell sites / known assets",
+                "lift": "precision / share of AOI-intersecting cells holding an asset",
+                "n_claims": "claims with points inside the AOI",
+                "n_predicted_sites": "8-neighbour connected components of flagged cells",
+                "precision": "share of flagged 160 m cells holding an asset",
+                "recall": "share of assets",
+                "recall_at_k": "share of assets in the top k flagged cells",
+                "review_effort": "top-ranked flagged cells to inspect"
+              }
+            }
+          },
+          "seed": 20261105,
+          "training_example_ids": [
+            "plateau-fixture:nagoya:000",
+            "plateau-fixture:nagoya:002",
+            "plateau-fixture:nagoya:003",
+            "plateau-fixture:nagoya:004",
+            "plateau-fixture:nagoya:006",
+            "plateau-fixture:nagoya:007",
+            "plateau-fixture:nagoya:008",
+            "plateau-fixture:nagoya:009",
+            "plateau-fixture:nagoya:010",
+            "plateau-fixture:nagoya:011",
+            "plateau-fixture:nagoya:013",
+            "plateau-fixture:nagoya:015"
+          ]
+        },
+        {
+          "methods": {
+            "linear_probe": {
+              "ap": 0.22181244787735752,
+              "auroc": 0.8196163590300398,
+              "cell_size_m": 160.0,
+              "completeness": "complete",
+              "count_ratio": 4.966666666666667,
+              "edge_tol_m": 1.0,
+              "grader_version": "grade-lgnd-v1",
+              "lift": 11.71069182389937,
+              "n_asset_cells": 30,
+              "n_assets": 30,
+              "n_assets_outside_aoi": 0,
+              "n_claims": 159,
+              "n_flagged_cells": 159,
+              "n_found": 20,
+              "n_grid_cells": 2793,
+              "n_predicted_sites": 149,
+              "null_reasons": {},
+              "precision": 0.12578616352201258,
+              "precision_is_lower_bound": false,
+              "recall": 0.6666666666666666,
+              "recall_at_k": {
+                "10": 0.06666666666666667,
+                "20": 0.23333333333333334,
+                "50": 0.5333333333333333
+              },
+              "review_effort": {
+                "50": 44,
+                "80": null,
+                "90": null
+              },
+              "units": {
+                "ap": "over all 160 m cells intersecting the AOI",
+                "auroc": "over all 160 m cells intersecting the AOI",
+                "claim_score": "finite, non-negative confidence; maximum claim score per flagged cell",
+                "count_ratio": "8-neighbour connected flagged-cell sites / known assets",
+                "lift": "precision / share of AOI-intersecting cells holding an asset",
+                "n_claims": "claims with points inside the AOI",
+                "n_predicted_sites": "8-neighbour connected components of flagged cells",
+                "precision": "share of flagged 160 m cells holding an asset",
+                "recall": "share of assets",
+                "recall_at_k": "share of assets in the top k flagged cells",
+                "review_effort": "top-ranked flagged cells to inspect"
+              }
+            },
+            "linear_svm": {
+              "ap": 0.20347393346730386,
+              "auroc": 0.8022921944746049,
+              "cell_size_m": 160.0,
+              "completeness": "complete",
+              "count_ratio": 4.966666666666667,
+              "edge_tol_m": 1.0,
+              "grader_version": "grade-lgnd-v1",
+              "lift": 11.055625,
+              "n_asset_cells": 30,
+              "n_assets": 30,
+              "n_assets_outside_aoi": 0,
+              "n_claims": 160,
+              "n_flagged_cells": 160,
+              "n_found": 19,
+              "n_grid_cells": 2793,
+              "n_predicted_sites": 149,
+              "null_reasons": {},
+              "precision": 0.11875,
+              "precision_is_lower_bound": false,
+              "recall": 0.6333333333333333,
+              "recall_at_k": {
+                "10": 0.06666666666666667,
+                "20": 0.23333333333333334,
+                "50": 0.5666666666666667
+              },
+              "review_effort": {
+                "50": 47,
+                "80": null,
+                "90": null
+              },
+              "units": {
+                "ap": "over all 160 m cells intersecting the AOI",
+                "auroc": "over all 160 m cells intersecting the AOI",
+                "claim_score": "finite, non-negative confidence; maximum claim score per flagged cell",
+                "count_ratio": "8-neighbour connected flagged-cell sites / known assets",
+                "lift": "precision / share of AOI-intersecting cells holding an asset",
+                "n_claims": "claims with points inside the AOI",
+                "n_predicted_sites": "8-neighbour connected components of flagged cells",
+                "precision": "share of flagged 160 m cells holding an asset",
+                "recall": "share of assets",
+                "recall_at_k": "share of assets in the top k flagged cells",
+                "review_effort": "top-ranked flagged cells to inspect"
+              }
+            }
+          },
+          "seed": 20261106,
+          "training_example_ids": [
+            "plateau-fixture:nagoya:000",
+            "plateau-fixture:nagoya:001",
+            "plateau-fixture:nagoya:002",
+            "plateau-fixture:nagoya:003",
+            "plateau-fixture:nagoya:004",
+            "plateau-fixture:nagoya:007",
+            "plateau-fixture:nagoya:008",
+            "plateau-fixture:nagoya:009",
+            "plateau-fixture:nagoya:010",
+            "plateau-fixture:nagoya:012",
+            "plateau-fixture:nagoya:013",
+            "plateau-fixture:nagoya:014"
+          ]
+        },
+        {
+          "methods": {
+            "linear_probe": {
+              "ap": 0.1872263885812463,
+              "auroc": 0.7856556882615514,
+              "cell_size_m": 160.0,
+              "completeness": "complete",
+              "count_ratio": 4.8,
+              "edge_tol_m": 1.0,
+              "grader_version": "grade-lgnd-v1",
+              "lift": 11.024999999999999,
+              "n_asset_cells": 30,
+              "n_assets": 30,
+              "n_assets_outside_aoi": 0,
+              "n_claims": 152,
+              "n_flagged_cells": 152,
+              "n_found": 18,
+              "n_grid_cells": 2793,
+              "n_predicted_sites": 144,
+              "null_reasons": {},
+              "precision": 0.11842105263157894,
+              "precision_is_lower_bound": false,
+              "recall": 0.6,
+              "recall_at_k": {
+                "10": 0.06666666666666667,
+                "20": 0.23333333333333334,
+                "50": 0.5
+              },
+              "review_effort": {
+                "50": 50,
+                "80": null,
+                "90": null
+              },
+              "units": {
+                "ap": "over all 160 m cells intersecting the AOI",
+                "auroc": "over all 160 m cells intersecting the AOI",
+                "claim_score": "finite, non-negative confidence; maximum claim score per flagged cell",
+                "count_ratio": "8-neighbour connected flagged-cell sites / known assets",
+                "lift": "precision / share of AOI-intersecting cells holding an asset",
+                "n_claims": "claims with points inside the AOI",
+                "n_predicted_sites": "8-neighbour connected components of flagged cells",
+                "precision": "share of flagged 160 m cells holding an asset",
+                "recall": "share of assets",
+                "recall_at_k": "share of assets in the top k flagged cells",
+                "review_effort": "top-ranked flagged cells to inspect"
+              }
+            },
+            "linear_svm": {
+              "ap": 0.21329624623485594,
+              "auroc": 0.8040113403305585,
+              "cell_size_m": 160.0,
+              "completeness": "complete",
+              "count_ratio": 4.366666666666666,
+              "edge_tol_m": 1.0,
+              "grader_version": "grade-lgnd-v1",
+              "lift": 12.911678832116788,
+              "n_asset_cells": 30,
+              "n_assets": 30,
+              "n_assets_outside_aoi": 0,
+              "n_claims": 137,
+              "n_flagged_cells": 137,
+              "n_found": 19,
+              "n_grid_cells": 2793,
+              "n_predicted_sites": 131,
+              "null_reasons": {},
+              "precision": 0.1386861313868613,
+              "precision_is_lower_bound": false,
+              "recall": 0.6333333333333333,
+              "recall_at_k": {
+                "10": 0.1,
+                "20": 0.26666666666666666,
+                "50": 0.5666666666666667
+              },
+              "review_effort": {
+                "50": 42,
+                "80": null,
+                "90": null
+              },
+              "units": {
+                "ap": "over all 160 m cells intersecting the AOI",
+                "auroc": "over all 160 m cells intersecting the AOI",
+                "claim_score": "finite, non-negative confidence; maximum claim score per flagged cell",
+                "count_ratio": "8-neighbour connected flagged-cell sites / known assets",
+                "lift": "precision / share of AOI-intersecting cells holding an asset",
+                "n_claims": "claims with points inside the AOI",
+                "n_predicted_sites": "8-neighbour connected components of flagged cells",
+                "precision": "share of flagged 160 m cells holding an asset",
+                "recall": "share of assets",
+                "recall_at_k": "share of assets in the top k flagged cells",
+                "review_effort": "top-ranked flagged cells to inspect"
+              }
+            }
+          },
+          "seed": 20261107,
+          "training_example_ids": [
+            "plateau-fixture:nagoya:000",
+            "plateau-fixture:nagoya:001",
+            "plateau-fixture:nagoya:002",
+            "plateau-fixture:nagoya:003",
+            "plateau-fixture:nagoya:004",
+            "plateau-fixture:nagoya:005",
+            "plateau-fixture:nagoya:006",
+            "plateau-fixture:nagoya:009",
+            "plateau-fixture:nagoya:010",
+            "plateau-fixture:nagoya:012",
+            "plateau-fixture:nagoya:013",
+            "plateau-fixture:nagoya:015"
+          ]
+        }
+      ]
+    },
+    "model": {
+      "difference": "left mean minus right mean",
+      "factor": "model",
+      "held_constant": {
+        "card_id": "t1-nagoya-warehouses",
+        "harness": "strands"
+      },
+      "left": "claude-sonnet-5-5",
+      "metrics": {
+        "calibration.brier": {
+          "difference_of_means": -0.35057278391080005,
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "n_left": 1,
+          "n_right": 1
+        },
+        "calibration.ece": {
+          "difference_of_means": -0.5884148,
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "n_left": 1,
+          "n_right": 1
+        },
+        "cost.input_tokens": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "difference_of_means": -52024.333333333314,
+          "interval_95": [
+            -524750.3333333333,
+            284659.0
+          ],
+          "interval_reason": null,
+          "n_left": 3,
+          "n_right": 3
+        },
+        "cost.model_calls": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "difference_of_means": -0.3333333333333357,
+          "interval_95": [
+            -16.333333333333332,
+            16.0
+          ],
+          "interval_reason": null,
+          "n_left": 3,
+          "n_right": 3
+        },
+        "cost.output_tokens": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "difference_of_means": 861.3333333333339,
+          "interval_95": [
+            -6951.0,
+            9652.333333333334
+          ],
+          "interval_reason": null,
+          "n_left": 3,
+          "n_right": 3
+        },
+        "cost.tool_calls": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "difference_of_means": -13.0,
+          "interval_95": [
+            -53.666666666666664,
+            33.333333333333336
+          ],
+          "interval_reason": null,
+          "n_left": 3,
+          "n_right": 3
+        },
+        "cost.usd": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "difference_of_means": 0.4717527333333333,
+          "interval_95": [
+            0.07777673333333335,
+            0.7993851216666655
+          ],
+          "interval_reason": null,
+          "n_left": 3,
+          "n_right": 3
+        },
+        "cost.wall_seconds": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "difference_of_means": -32.57759755366668,
+          "interval_95": [
+            -121.96872398733333,
+            67.411822642
+          ],
+          "interval_reason": null,
+          "n_left": 3,
+          "n_right": 3
+        },
+        "output.ap": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "difference_of_means": 0.0020370370370370386,
+          "interval_95": [
+            -0.0152098500218801,
+            0.019283924095954176
+          ],
+          "interval_reason": null,
+          "n_left": 3,
+          "n_right": 3
+        },
+        "output.auroc": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "difference_of_means": 3.0160453613259364e-05,
+          "interval_95": [
+            -0.032428519724936655,
+            0.032488840632163174
+          ],
+          "interval_reason": null,
+          "n_left": 3,
+          "n_right": 3
+        },
+        "output.count_ratio": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "difference_of_means": 0.0,
+          "interval_95": [
+            -0.2222222222222222,
+            0.2222222222222222
+          ],
+          "interval_reason": null,
+          "n_left": 3,
+          "n_right": 3
+        },
+        "output.lift": {
+          "difference_of_means": 0.0,
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "n_left": 1,
+          "n_right": 1
+        },
+        "output.n_asset_cells": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "difference_of_means": 0.0,
+          "interval_95": [
+            0.0,
+            0.0
+          ],
+          "interval_reason": null,
+          "n_left": 3,
+          "n_right": 3
+        },
+        "output.n_assets": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "difference_of_means": 0.0,
+          "interval_95": [
+            0.0,
+            0.0
+          ],
+          "interval_reason": null,
+          "n_left": 3,
+          "n_right": 3
+        },
+        "output.n_claims": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "difference_of_means": 0.0,
+          "interval_95": [
+            -6.666666666666667,
+            6.666666666666667
+          ],
+          "interval_reason": null,
+          "n_left": 3,
+          "n_right": 3
+        },
+        "output.n_flagged_cells": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "difference_of_means": 0.0,
+          "interval_95": [
+            -6.666666666666667,
+            6.666666666666667
+          ],
+          "interval_reason": null,
+          "n_left": 3,
+          "n_right": 3
+        },
+        "output.n_found": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "difference_of_means": 0.0,
+          "interval_95": [
+            -2.0,
+            2.0
+          ],
+          "interval_reason": null,
+          "n_left": 3,
+          "n_right": 3
+        },
+        "output.n_grid_cells": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "difference_of_means": 0.0,
+          "interval_95": [
+            0.0,
+            0.0
+          ],
+          "interval_reason": null,
+          "n_left": 3,
+          "n_right": 3
+        },
+        "output.n_predicted_sites": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "difference_of_means": 0.0,
+          "interval_95": [
+            -6.666666666666667,
+            6.666666666666667
+          ],
+          "interval_reason": null,
+          "n_left": 3,
+          "n_right": 3
+        },
+        "output.precision": {
+          "difference_of_means": 0.0,
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "n_left": 1,
+          "n_right": 1
+        },
+        "output.recall": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "difference_of_means": 0.0,
+          "interval_95": [
+            -0.06666666666666668,
+            0.06666666666666667
+          ],
+          "interval_reason": null,
+          "n_left": 3,
+          "n_right": 3
+        },
+        "output.recall_at_10": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "difference_of_means": 0.0,
+          "interval_95": [
+            -0.06666666666666668,
+            0.06666666666666667
+          ],
+          "interval_reason": null,
+          "n_left": 3,
+          "n_right": 3
+        },
+        "output.recall_at_20": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "difference_of_means": 0.0,
+          "interval_95": [
+            -0.06666666666666668,
+            0.06666666666666667
+          ],
+          "interval_reason": null,
+          "n_left": 3,
+          "n_right": 3
+        },
+        "output.recall_at_50": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "difference_of_means": 0.0,
+          "interval_95": [
+            -0.06666666666666668,
+            0.06666666666666667
+          ],
+          "interval_reason": null,
+          "n_left": 3,
+          "n_right": 3
+        },
+        "output.review_effort_50": {
+          "difference_of_means": null,
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "n_left": 0,
+          "n_right": 0
+        },
+        "output.review_effort_80": {
+          "difference_of_means": null,
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "n_left": 0,
+          "n_right": 0
+        },
+        "output.review_effort_90": {
+          "difference_of_means": null,
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "n_left": 0,
+          "n_right": 0
+        },
+        "reasoning.rv_pass_rate": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "difference_of_means": 0.007936507936507908,
+          "interval_95": [
+            -0.11111111111111105,
+            0.15079365079365092
+          ],
+          "interval_reason": null,
+          "n_left": 3,
+          "n_right": 3
+        }
+      },
+      "right": "nova-pro"
+    },
+    "transfer_gap": {
+      "direction": "Nagoya mean minus Gifu mean",
+      "factor": "city transfer",
+      "harness": "strands",
+      "metrics": {
+        "ap": 0.016086645184389545,
+        "auroc": 0.01624442031608153,
+        "count_ratio": 0.1111111111111111,
+        "recall": 0.03333333333333333,
+        "recall@10": 0.1,
+        "recall@20": 0.1,
+        "recall@50": 0.1
+      },
+      "model_key": "claude-sonnet-5-5",
+      "reason": null
+    }
+  },
+  "configs": {
+    "t1-bangladesh-warehouses|claude-sonnet-5-5|strands": {
+      "metrics": {
+        "calibration.brier": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "calibration.ece": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "cost.input_tokens": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            97775.0,
+            136138.0
+          ],
+          "interval_reason": null,
+          "mean": 116235.0,
+          "n": 3
+        },
+        "cost.model_calls": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            11.0,
+            15.0
+          ],
+          "interval_reason": null,
+          "mean": 13.0,
+          "n": 3
+        },
+        "cost.output_tokens": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            5108.0,
+            5733.0
+          ],
+          "interval_reason": null,
+          "mean": 5473.333333333333,
+          "n": 3
+        },
+        "cost.tool_calls": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            21.0,
+            23.0
+          ],
+          "interval_reason": null,
+          "mean": 21.666666666666668,
+          "n": 3
+        },
+        "cost.usd": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.271293,
+            0.3625666
+          ],
+          "interval_reason": null,
+          "mean": 0.3159236666666667,
+          "n": 3
+        },
+        "cost.wall_seconds": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            39.814205752,
+            47.774089463
+          ],
+          "interval_reason": null,
+          "mean": 44.623138493666666,
+          "n": 3
+        },
+        "output.ap": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "output.auroc": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "output.count_ratio": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "output.lift": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "output.n_asset_cells": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            19.0,
+            19.0
+          ],
+          "interval_reason": null,
+          "mean": 19.0,
+          "n": 3
+        },
+        "output.n_assets": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            18.0,
+            18.0
+          ],
+          "interval_reason": null,
+          "mean": 18.0,
+          "n": 3
+        },
+        "output.n_claims": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            0.0
+          ],
+          "interval_reason": null,
+          "mean": 0.0,
+          "n": 3
+        },
+        "output.n_flagged_cells": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            0.0
+          ],
+          "interval_reason": null,
+          "mean": 0.0,
+          "n": 3
+        },
+        "output.n_found": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "output.n_grid_cells": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            3640.0,
+            3640.0
+          ],
+          "interval_reason": null,
+          "mean": 3640.0,
+          "n": 3
+        },
+        "output.n_predicted_sites": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            0.0
+          ],
+          "interval_reason": null,
+          "mean": 0.0,
+          "n": 3
+        },
+        "output.precision": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "output.recall": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "output.recall_at_10": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "output.recall_at_20": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "output.recall_at_50": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "output.review_effort_50": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "output.review_effort_80": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "output.review_effort_90": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "reasoning.rv_pass_rate": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.5,
+            0.5
+          ],
+          "interval_reason": null,
+          "mean": 0.5,
+          "n": 3
+        }
+      },
+      "n": 3,
+      "n_trials": 3,
+      "pooled_calibration": {
+        "no_grade_reason": "unkeyed"
+      },
+      "trial_refs": [
+        "exp-bangladesh-sonnet-1/t-0",
+        "exp-bangladesh-sonnet-2/t-0",
+        "exp-bangladesh-sonnet-3/t-0"
+      ]
+    },
+    "t1-nagoya-warehouses|claude-sonnet-5-5|strands": {
+      "metrics": {
+        "calibration.brier": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": 0.20999999999999996,
+          "n": 1
+        },
+        "calibration.ece": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": 0.0,
+          "n": 1
+        },
+        "cost.input_tokens": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            266783.0,
+            361697.0
+          ],
+          "interval_reason": null,
+          "mean": 299738.6666666667,
+          "n": 3
+        },
+        "cost.model_calls": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            19.0,
+            22.0
+          ],
+          "interval_reason": null,
+          "mean": 20.333333333333332,
+          "n": 3
+        },
+        "cost.output_tokens": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            7907.0,
+            17617.0
+          ],
+          "interval_reason": null,
+          "mean": 11664.333333333334,
+          "n": 3
+        },
+        "cost.tool_calls": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            25.0,
+            59.0
+          ],
+          "interval_reason": null,
+          "mean": 37.0,
+          "n": 3
+        },
+        "cost.usd": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.6738996,
+            0.9895204
+          ],
+          "interval_reason": null,
+          "mean": 0.7877327333333333,
+          "n": 3
+        },
+        "cost.wall_seconds": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            69.81968392,
+            117.43292320899998
+          ],
+          "interval_reason": null,
+          "mean": 88.42891635566667,
+          "n": 3
+        },
+        "output.ap": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.010741138560687433,
+            0.03966702470461869
+          ],
+          "interval_reason": null,
+          "mean": 0.02038310060866452,
+          "n": 3
+        },
+        "output.auroc": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.5,
+            0.5487332609482447
+          ],
+          "interval_reason": null,
+          "mean": 0.5162444203160815,
+          "n": 3
+        },
+        "output.count_ratio": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            0.3333333333333333
+          ],
+          "interval_reason": null,
+          "mean": 0.1111111111111111,
+          "n": 3
+        },
+        "output.lift": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": 27.93,
+          "n": 1
+        },
+        "output.n_asset_cells": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            30.0,
+            30.0
+          ],
+          "interval_reason": null,
+          "mean": 30.0,
+          "n": 3
+        },
+        "output.n_assets": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            30.0,
+            30.0
+          ],
+          "interval_reason": null,
+          "mean": 30.0,
+          "n": 3
+        },
+        "output.n_claims": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            10.0
+          ],
+          "interval_reason": null,
+          "mean": 3.3333333333333335,
+          "n": 3
+        },
+        "output.n_flagged_cells": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            10.0
+          ],
+          "interval_reason": null,
+          "mean": 3.3333333333333335,
+          "n": 3
+        },
+        "output.n_found": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            3.0
+          ],
+          "interval_reason": null,
+          "mean": 1.0,
+          "n": 3
+        },
+        "output.n_grid_cells": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            2793.0,
+            2793.0
+          ],
+          "interval_reason": null,
+          "mean": 2793.0,
+          "n": 3
+        },
+        "output.n_predicted_sites": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            10.0
+          ],
+          "interval_reason": null,
+          "mean": 3.3333333333333335,
+          "n": 3
+        },
+        "output.precision": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": 0.3,
+          "n": 1
+        },
+        "output.recall": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            0.10000000000000002
+          ],
+          "interval_reason": null,
+          "mean": 0.03333333333333333,
+          "n": 3
+        },
+        "output.recall_at_10": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            0.10000000000000002
+          ],
+          "interval_reason": null,
+          "mean": 0.03333333333333333,
+          "n": 3
+        },
+        "output.recall_at_20": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            0.10000000000000002
+          ],
+          "interval_reason": null,
+          "mean": 0.03333333333333333,
+          "n": 3
+        },
+        "output.recall_at_50": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            0.10000000000000002
+          ],
+          "interval_reason": null,
+          "mean": 0.03333333333333333,
+          "n": 3
+        },
+        "output.review_effort_50": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "output.review_effort_80": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "output.review_effort_90": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "reasoning.rv_pass_rate": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.5714285714285714,
+            0.8333333333333334
+          ],
+          "interval_reason": null,
+          "mean": 0.6904761904761904,
+          "n": 3
+        }
+      },
+      "n": 3,
+      "n_trials": 3,
+      "pooled_calibration": {
+        "bins": [
+          {
+            "accuracy": null,
+            "hi": 0.2,
+            "lo": 0.0,
+            "mean_confidence": null,
+            "n": 0
+          },
+          {
+            "accuracy": 0.3,
+            "hi": 0.4,
+            "lo": 0.2,
+            "mean_confidence": 0.3,
+            "n": 10
+          },
+          {
+            "accuracy": null,
+            "hi": 0.6,
+            "lo": 0.4,
+            "mean_confidence": null,
+            "n": 0
+          },
+          {
+            "accuracy": null,
+            "hi": 0.8,
+            "lo": 0.6,
+            "mean_confidence": null,
+            "n": 0
+          },
+          {
+            "accuracy": null,
+            "hi": 1.0,
+            "lo": 0.8,
+            "mean_confidence": null,
+            "n": 0
+          }
+        ],
+        "brier": 0.20999999999999996,
+        "correctness_method": "Each claim is graded alone with the public protocol grader; correct means its 160 m flagged cell touches a held-out reference asset under the grader's any-touch rule.",
+        "ece": 0.0,
+        "keyed_only": "keyed runs only: correctness comes from the grader, so unkeyed runs have no calibration",
+        "n": 10,
+        "n_bins": 5,
+        "reason": null,
+        "version": "calib-v1"
+      },
+      "trial_refs": [
+        "exp-nagoya-sonnet-1/t-0",
+        "exp-nagoya-sonnet-2/t-0",
+        "exp-nagoya-sonnet-3/t-0"
+      ]
+    },
+    "t1-nagoya-warehouses|nova-pro|strands": {
+      "metrics": {
+        "calibration.brier": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": 0.5605727839108,
+          "n": 1
+        },
+        "calibration.ece": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": 0.5884148,
+          "n": 1
+        },
+        "cost.input_tokens": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            13762.0,
+            824489.0
+          ],
+          "interval_reason": null,
+          "mean": 351763.0,
+          "n": 3
+        },
+        "cost.model_calls": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            4.0,
+            37.0
+          ],
+          "interval_reason": null,
+          "mean": 20.666666666666668,
+          "n": 3
+        },
+        "cost.output_tokens": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            2012.0,
+            15739.0
+          ],
+          "interval_reason": null,
+          "mean": 10803.0,
+          "n": 3
+        },
+        "cost.tool_calls": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            3.0,
+            90.0
+          ],
+          "interval_reason": null,
+          "mean": 50.0,
+          "n": 3
+        },
+        "cost.usd": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.017448,
+            0.709956
+          ],
+          "interval_reason": null,
+          "mean": 0.31598,
+          "n": 3
+        },
+        "cost.wall_seconds": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            18.278941041,
+            210.397640343
+          ],
+          "interval_reason": null,
+          "mean": 121.00651390933335,
+          "n": 3
+        },
+        "output.ap": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.010741138560687433,
+            0.03355591359350758
+          ],
+          "interval_reason": null,
+          "mean": 0.01834606357162748,
+          "n": 3
+        },
+        "output.auroc": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.5,
+            0.548642779587405
+          ],
+          "interval_reason": null,
+          "mean": 0.5162142598624683,
+          "n": 3
+        },
+        "output.count_ratio": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            0.3333333333333333
+          ],
+          "interval_reason": null,
+          "mean": 0.1111111111111111,
+          "n": 3
+        },
+        "output.lift": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": 27.93,
+          "n": 1
+        },
+        "output.n_asset_cells": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            30.0,
+            30.0
+          ],
+          "interval_reason": null,
+          "mean": 30.0,
+          "n": 3
+        },
+        "output.n_assets": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            30.0,
+            30.0
+          ],
+          "interval_reason": null,
+          "mean": 30.0,
+          "n": 3
+        },
+        "output.n_claims": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            10.0
+          ],
+          "interval_reason": null,
+          "mean": 3.3333333333333335,
+          "n": 3
+        },
+        "output.n_flagged_cells": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            10.0
+          ],
+          "interval_reason": null,
+          "mean": 3.3333333333333335,
+          "n": 3
+        },
+        "output.n_found": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            3.0
+          ],
+          "interval_reason": null,
+          "mean": 1.0,
+          "n": 3
+        },
+        "output.n_grid_cells": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            2793.0,
+            2793.0
+          ],
+          "interval_reason": null,
+          "mean": 2793.0,
+          "n": 3
+        },
+        "output.n_predicted_sites": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            10.0
+          ],
+          "interval_reason": null,
+          "mean": 3.3333333333333335,
+          "n": 3
+        },
+        "output.precision": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": 0.3,
+          "n": 1
+        },
+        "output.recall": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            0.10000000000000002
+          ],
+          "interval_reason": null,
+          "mean": 0.03333333333333333,
+          "n": 3
+        },
+        "output.recall_at_10": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            0.10000000000000002
+          ],
+          "interval_reason": null,
+          "mean": 0.03333333333333333,
+          "n": 3
+        },
+        "output.recall_at_20": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            0.10000000000000002
+          ],
+          "interval_reason": null,
+          "mean": 0.03333333333333333,
+          "n": 3
+        },
+        "output.recall_at_50": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            0.10000000000000002
+          ],
+          "interval_reason": null,
+          "mean": 0.03333333333333333,
+          "n": 3
+        },
+        "output.review_effort_50": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "output.review_effort_80": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "output.review_effort_90": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "reasoning.rv_pass_rate": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.6666666666666666,
+            0.7142857142857143
+          ],
+          "interval_reason": null,
+          "mean": 0.6825396825396824,
+          "n": 3
+        }
+      },
+      "n": 3,
+      "n_trials": 3,
+      "pooled_calibration": {
+        "bins": [
+          {
+            "accuracy": null,
+            "hi": 0.2,
+            "lo": 0.0,
+            "mean_confidence": null,
+            "n": 0
+          },
+          {
+            "accuracy": null,
+            "hi": 0.4,
+            "lo": 0.2,
+            "mean_confidence": null,
+            "n": 0
+          },
+          {
+            "accuracy": null,
+            "hi": 0.6,
+            "lo": 0.4,
+            "mean_confidence": null,
+            "n": 0
+          },
+          {
+            "accuracy": null,
+            "hi": 0.8,
+            "lo": 0.6,
+            "mean_confidence": null,
+            "n": 0
+          },
+          {
+            "accuracy": 0.3,
+            "hi": 1.0,
+            "lo": 0.8,
+            "mean_confidence": 0.8884148,
+            "n": 10
+          }
+        ],
+        "brier": 0.5605727839108,
+        "correctness_method": "Each claim is graded alone with the public protocol grader; correct means its 160 m flagged cell touches a held-out reference asset under the grader's any-touch rule.",
+        "ece": 0.5884148,
+        "keyed_only": "keyed runs only: correctness comes from the grader, so unkeyed runs have no calibration",
+        "n": 10,
+        "n_bins": 5,
+        "reason": null,
+        "version": "calib-v1"
+      },
+      "trial_refs": [
+        "exp-nagoya-nova-1/t-0",
+        "exp-nagoya-nova-2/t-0",
+        "exp-nagoya-nova-3/t-0"
+      ]
+    },
+    "t5-gifu-warehouses|claude-sonnet-5-5|strands": {
+      "metrics": {
+        "calibration.brier": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "calibration.ece": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "cost.input_tokens": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            160691.0,
+            190244.0
+          ],
+          "interval_reason": null,
+          "mean": 171536.0,
+          "n": 3
+        },
+        "cost.model_calls": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            17.0,
+            20.0
+          ],
+          "interval_reason": null,
+          "mean": 18.0,
+          "n": 3
+        },
+        "cost.output_tokens": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            5956.0,
+            6889.0
+          ],
+          "interval_reason": null,
+          "mean": 6513.0,
+          "n": 3
+        },
+        "cost.tool_calls": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            24.0,
+            25.0
+          ],
+          "interval_reason": null,
+          "mean": 24.666666666666668,
+          "n": 3
+        },
+        "cost.usd": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.4190362,
+            0.4921708
+          ],
+          "interval_reason": null,
+          "mean": 0.4490222,
+          "n": 3
+        },
+        "cost.wall_seconds": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            54.771407401,
+            60.262930915999995
+          ],
+          "interval_reason": null,
+          "mean": 57.75010133166666,
+          "n": 3
+        },
+        "output.ap": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.004296455424274973,
+            0.004296455424274973
+          ],
+          "interval_reason": null,
+          "mean": 0.004296455424274973,
+          "n": 3
+        },
+        "output.auroc": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.5,
+            0.5
+          ],
+          "interval_reason": null,
+          "mean": 0.5,
+          "n": 3
+        },
+        "output.count_ratio": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            0.0
+          ],
+          "interval_reason": null,
+          "mean": 0.0,
+          "n": 3
+        },
+        "output.lift": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "output.n_asset_cells": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            12.0,
+            12.0
+          ],
+          "interval_reason": null,
+          "mean": 12.0,
+          "n": 3
+        },
+        "output.n_assets": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            12.0,
+            12.0
+          ],
+          "interval_reason": null,
+          "mean": 12.0,
+          "n": 3
+        },
+        "output.n_claims": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            0.0
+          ],
+          "interval_reason": null,
+          "mean": 0.0,
+          "n": 3
+        },
+        "output.n_flagged_cells": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            0.0
+          ],
+          "interval_reason": null,
+          "mean": 0.0,
+          "n": 3
+        },
+        "output.n_found": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            0.0
+          ],
+          "interval_reason": null,
+          "mean": 0.0,
+          "n": 3
+        },
+        "output.n_grid_cells": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            2793.0,
+            2793.0
+          ],
+          "interval_reason": null,
+          "mean": 2793.0,
+          "n": 3
+        },
+        "output.n_predicted_sites": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            0.0
+          ],
+          "interval_reason": null,
+          "mean": 0.0,
+          "n": 3
+        },
+        "output.precision": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "output.recall": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            0.0
+          ],
+          "interval_reason": null,
+          "mean": 0.0,
+          "n": 3
+        },
+        "output.recall_at_10": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            0.0
+          ],
+          "interval_reason": null,
+          "mean": 0.0,
+          "n": 3
+        },
+        "output.recall_at_20": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            0.0
+          ],
+          "interval_reason": null,
+          "mean": 0.0,
+          "n": 3
+        },
+        "output.recall_at_50": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.0,
+            0.0
+          ],
+          "interval_reason": null,
+          "mean": 0.0,
+          "n": 3
+        },
+        "output.review_effort_50": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "output.review_effort_80": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "output.review_effort_90": {
+          "interval_95": null,
+          "interval_reason": "95% bootstrap interval requires at least 2 trials",
+          "mean": null,
+          "n": 0
+        },
+        "reasoning.rv_pass_rate": {
+          "bootstrap": {
+            "resamples": 2000,
+            "seed": 20261105
+          },
+          "interval_95": [
+            0.5,
+            0.6666666666666666
+          ],
+          "interval_reason": null,
+          "mean": 0.5555555555555555,
+          "n": 3
+        }
+      },
+      "n": 3,
+      "n_trials": 3,
+      "pooled_calibration": {
+        "bins": [
+          {
+            "accuracy": null,
+            "hi": 0.2,
+            "lo": 0.0,
+            "mean_confidence": null,
+            "n": 0
+          },
+          {
+            "accuracy": null,
+            "hi": 0.4,
+            "lo": 0.2,
+            "mean_confidence": null,
+            "n": 0
+          },
+          {
+            "accuracy": null,
+            "hi": 0.6,
+            "lo": 0.4,
+            "mean_confidence": null,
+            "n": 0
+          },
+          {
+            "accuracy": null,
+            "hi": 0.8,
+            "lo": 0.6,
+            "mean_confidence": null,
+            "n": 0
+          },
+          {
+            "accuracy": null,
+            "hi": 1.0,
+            "lo": 0.8,
+            "mean_confidence": null,
+            "n": 0
+          }
+        ],
+        "brier": null,
+        "correctness_method": "Each claim is graded alone with the public protocol grader; correct means its 160 m flagged cell touches a held-out reference asset under the grader's any-touch rule.",
+        "ece": null,
+        "keyed_only": "keyed runs only: correctness comes from the grader, so unkeyed runs have no calibration",
+        "n": 0,
+        "n_bins": 5,
+        "reason": "no graded claims with stated confidence",
+        "version": "calib-v1"
+      },
+      "trial_refs": [
+        "exp-gifu-sonnet-1/t-0",
+        "exp-gifu-sonnet-2/t-0",
+        "exp-gifu-sonnet-3/t-0"
+      ]
+    }
+  },
+  "metadata": {
+    "bootstrap": {
+      "confidence": 0.95,
+      "resamples": 2000,
+      "seed": 20261105
+    },
+    "generated_at": "2026-11-05T01:59:49.405802+00:00",
+    "git_commit": "d02e84671d4fd2c634d89e42a21377fbfd675937",
+    "grading_split_note": "Keyed grading uses only the held-out split where a split file exists; training examples may have been shown to the agent.",
+    "note": "Embeddings and references are committed synthetic fixtures (see docs/KIRO-STATUS.md); metrics measure the pipeline, not real-world accuracy.",
+    "run_ids": [
+      "exp-bangladesh-sonnet-1",
+      "exp-bangladesh-sonnet-2",
+      "exp-bangladesh-sonnet-3",
+      "exp-gifu-sonnet-1",
+      "exp-gifu-sonnet-2",
+      "exp-gifu-sonnet-3",
+      "exp-nagoya-nova-1",
+      "exp-nagoya-nova-2",
+      "exp-nagoya-nova-3",
+      "exp-nagoya-sonnet-1",
+      "exp-nagoya-sonnet-2",
+      "exp-nagoya-sonnet-3"
+    ],
+    "store": "out/exp/store"
+  },
+  "predicted_accuracy": {
+    "label": "MODEL-ESTIMATED",
+    "targets": {
+      "cell_precision": {
+        "bangladesh_predictions": [
+          {
+            "hi": null,
+            "interval": null,
+            "lo": null,
+            "point": 0.3,
+            "reason": "insufficient data for an interval",
+            "run_id": "exp-bangladesh-sonnet-1",
+            "target": "cell_precision",
+            "tier": "MODEL-ESTIMATED",
+            "trial_id": "t-0",
+            "version": "predacc-v1"
+          },
+          {
+            "hi": null,
+            "interval": null,
+            "lo": null,
+            "point": 0.3,
+            "reason": "insufficient data for an interval",
+            "run_id": "exp-bangladesh-sonnet-2",
+            "target": "cell_precision",
+            "tier": "MODEL-ESTIMATED",
+            "trial_id": "t-0",
+            "version": "predacc-v1"
+          },
+          {
+            "hi": null,
+            "interval": null,
+            "lo": null,
+            "point": 0.3,
+            "reason": "insufficient data for an interval",
+            "run_id": "exp-bangladesh-sonnet-3",
+            "target": "cell_precision",
+            "tier": "MODEL-ESTIMATED",
+            "trial_id": "t-0",
+            "version": "predacc-v1"
+          }
+        ],
+        "gifu_transfer": {
+          "baseline": "mean target of the training runs",
+          "baseline_mae": null,
+          "beats_baseline": false,
+          "mae": null,
+          "method": "transfer",
+          "n": 0,
+          "reason": "insufficient validation: empty transfer set",
+          "sufficient": false,
+          "target": "cell_precision",
+          "verdict": "insufficient validation",
+          "version": "predacc-v1"
+        },
+        "leave_one_config_out": {
+          "baseline": "mean target of the training configs",
+          "baseline_mae": null,
+          "beats_baseline": false,
+          "mae": null,
+          "method": "leave-one-config-out",
+          "n": 2,
+          "n_configs": 2,
+          "per_config": {},
+          "reason": "insufficient validation: need >= 3 configs, got 2",
+          "sufficient": false,
+          "verdict": "insufficient validation",
+          "version": "predacc-v1"
+        },
+        "model": {
+          "alpha": 0.1,
+          "coef": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "configs": [
+            "t1-nagoya-warehouses|claude-sonnet-5-5|strands",
+            "t1-nagoya-warehouses|nova-pro|strands"
+          ],
+          "feature_names": [
+            "cell_size_m",
+            "mean_confidence",
+            "n_present_claims",
+            "rv_pass_rate",
+            "used_vision"
+          ],
+          "intercept": 0.3,
+          "interval_half_width": null,
+          "interval_reason": "insufficient data for an interval",
+          "mean": [
+            160.0,
+            0.5942073999999999,
+            10.0,
+            0.6428571428571428,
+            0.5
+          ],
+          "n": 2,
+          "residual_sd": null,
+          "scale": [
+            1.0,
+            0.2942074,
+            1.0,
+            0.07142857142857145,
+            0.5
+          ],
+          "target": "cell_precision",
+          "version": "predacc-v1"
+        }
+      },
+      "site_recall": {
+        "bangladesh_predictions": [
+          {
+            "hi": null,
+            "interval": null,
+            "lo": null,
+            "point": 0.004813866644011355,
+            "reason": "insufficient data for an interval",
+            "run_id": "exp-bangladesh-sonnet-1",
+            "target": "site_recall",
+            "tier": "MODEL-ESTIMATED",
+            "trial_id": "t-0",
+            "version": "predacc-v1"
+          },
+          {
+            "hi": null,
+            "interval": null,
+            "lo": null,
+            "point": 0.004813866644011355,
+            "reason": "insufficient data for an interval",
+            "run_id": "exp-bangladesh-sonnet-2",
+            "target": "site_recall",
+            "tier": "MODEL-ESTIMATED",
+            "trial_id": "t-0",
+            "version": "predacc-v1"
+          },
+          {
+            "hi": null,
+            "interval": null,
+            "lo": null,
+            "point": 0.004813866644011355,
+            "reason": "insufficient data for an interval",
+            "run_id": "exp-bangladesh-sonnet-3",
+            "target": "site_recall",
+            "tier": "MODEL-ESTIMATED",
+            "trial_id": "t-0",
+            "version": "predacc-v1"
+          }
+        ],
+        "gifu_transfer": {
+          "baseline": "mean target of the training runs",
+          "baseline_mae": 0.03333333333333333,
+          "beats_baseline": true,
+          "mae": 0.0046432843376485525,
+          "method": "transfer",
+          "n": 3,
+          "reason": null,
+          "sufficient": true,
+          "target": "site_recall",
+          "verdict": "beats baseline",
+          "version": "predacc-v1"
+        },
+        "leave_one_config_out": {
+          "baseline": "mean target of the training configs",
+          "baseline_mae": null,
+          "beats_baseline": false,
+          "mae": null,
+          "method": "leave-one-config-out",
+          "n": 6,
+          "n_configs": 2,
+          "per_config": {},
+          "reason": "insufficient validation: need >= 3 configs, got 2",
+          "sufficient": false,
+          "verdict": "insufficient validation",
+          "version": "predacc-v1"
+        },
+        "model": {
+          "alpha": 0.1,
+          "coef": [
+            -0.00017491973608292375,
+            0.0066231423773196185,
+            0.03988809475064166,
+            -0.002484049235324011,
+            0.0021510598624614728
+          ],
+          "configs": [
+            "t1-nagoya-warehouses|claude-sonnet-5-5|strands",
+            "t1-nagoya-warehouses|nova-pro|strands"
+          ],
+          "feature_names": [
+            "cell_size_m",
+            "mean_confidence",
+            "n_present_claims",
+            "rv_pass_rate",
+            "used_vision"
+          ],
+          "intercept": 0.03333333333333333,
+          "interval_half_width": null,
+          "interval_reason": "insufficient data for an interval",
+          "mean": [
+            135.0,
+            0.1980691333333333,
+            3.3333333333333335,
+            0.6865079365079364,
+            0.5
+          ],
+          "n": 6,
+          "residual_sd": null,
+          "scale": [
+            55.90169943749474,
+            0.327590335475711,
+            4.714045207910316,
+            0.0782662020766509,
+            0.5
+          ],
+          "target": "site_recall",
+          "version": "predacc-v1"
+        }
+      }
+    },
+    "training_scope": "keyed Nagoya runs; None targets are skipped",
+    "validation_scope": "leave-one-config-out on Nagoya and transfer to Gifu"
+  },
+  "runs": {
+    "exp-bangladesh-sonnet-1": {
+      "card_id": "t1-bangladesh-warehouses",
+      "config_label": "t1-bangladesh-warehouses|claude-sonnet-5-5|strands",
+      "grading_split_note": "Keyed grading uses only the held-out split where a split file exists; training examples may have been shown to the agent.",
+      "harness": "strands",
+      "model_key": "claude-sonnet-5-5",
+      "panels_by_trial": {
+        "t-0": {
+          "calibration": {
+            "no_grade_reason": "unkeyed"
+          },
+          "cost": {
+            "input_tokens": 97775,
+            "model_calls": 11,
+            "output_tokens": 5108,
+            "tool_calls": 21,
+            "usd": 0.271293,
+            "wall_seconds": 39.814205752
+          },
+          "output": {
+            "ap": null,
+            "auroc": null,
+            "cell_size_m": 160.0,
+            "completeness": "incomplete",
+            "count_ratio": null,
+            "edge_tol_m": 1.0,
+            "grader_version": "grade-lgnd-v1",
+            "lift": null,
+            "n_asset_cells": 19,
+            "n_assets": 18,
+            "n_assets_outside_aoi": 0,
+            "n_claims": 0,
+            "n_flagged_cells": 0,
+            "n_found": null,
+            "n_grid_cells": 3640,
+            "n_predicted_sites": 0,
+            "null_reasons": {
+              "ap": "incomplete_reference",
+              "auroc": "incomplete_reference",
+              "count_ratio": "incomplete_reference",
+              "lift": "incomplete_reference",
+              "precision": "no_flagged_cells",
+              "recall": "incomplete_reference",
+              "recall_at_k": "incomplete_reference",
+              "review_effort": "incomplete_reference"
+            },
+            "precision": null,
+            "precision_is_lower_bound": true,
+            "recall": null,
+            "recall_at_k": null,
+            "review_effort": null,
+            "units": {
+              "ap": "over all 160 m cells intersecting the AOI",
+              "auroc": "over all 160 m cells intersecting the AOI",
+              "claim_score": "finite, non-negative confidence; maximum claim score per flagged cell",
+              "count_ratio": "8-neighbour connected flagged-cell sites / known assets",
+              "lift": "precision / share of AOI-intersecting cells holding an asset",
+              "n_claims": "claims with points inside the AOI",
+              "n_predicted_sites": "8-neighbour connected components of flagged cells",
+              "precision": "share of flagged 160 m cells holding a pool asset (lower bound)",
+              "recall": "share of assets",
+              "recall_at_k": "share of assets in the top k flagged cells",
+              "review_effort": "top-ranked flagged cells to inspect"
+            }
+          },
+          "reasoning": {
+            "failed_rules": [
+              "RV4",
+              "RV7",
+              "RV8"
+            ],
+            "rules_version": "rv-v1",
+            "rv_pass_rate": 0.5,
+            "verdict_by_rule": {
+              "RV1": "pass",
+              "RV10": "not_applicable",
+              "RV2": "pass",
+              "RV3": "not_applicable",
+              "RV4": "fail",
+              "RV5": "not_applicable",
+              "RV6": "pass",
+              "RV7": "fail",
+              "RV8": "fail",
+              "RV9": "not_applicable"
+            }
+          }
+        }
+      },
+      "reference": "precision pool: keys/osm/chattogram-warehouses.geojson"
+    },
+    "exp-bangladesh-sonnet-2": {
+      "card_id": "t1-bangladesh-warehouses",
+      "config_label": "t1-bangladesh-warehouses|claude-sonnet-5-5|strands",
+      "grading_split_note": "Keyed grading uses only the held-out split where a split file exists; training examples may have been shown to the agent.",
+      "harness": "strands",
+      "model_key": "claude-sonnet-5-5",
+      "panels_by_trial": {
+        "t-0": {
+          "calibration": {
+            "no_grade_reason": "unkeyed"
+          },
+          "cost": {
+            "input_tokens": 136138,
+            "model_calls": 15,
+            "output_tokens": 5733,
+            "tool_calls": 23,
+            "usd": 0.3625666,
+            "wall_seconds": 47.774089463
+          },
+          "output": {
+            "ap": null,
+            "auroc": null,
+            "cell_size_m": 160.0,
+            "completeness": "incomplete",
+            "count_ratio": null,
+            "edge_tol_m": 1.0,
+            "grader_version": "grade-lgnd-v1",
+            "lift": null,
+            "n_asset_cells": 19,
+            "n_assets": 18,
+            "n_assets_outside_aoi": 0,
+            "n_claims": 0,
+            "n_flagged_cells": 0,
+            "n_found": null,
+            "n_grid_cells": 3640,
+            "n_predicted_sites": 0,
+            "null_reasons": {
+              "ap": "incomplete_reference",
+              "auroc": "incomplete_reference",
+              "count_ratio": "incomplete_reference",
+              "lift": "incomplete_reference",
+              "precision": "no_flagged_cells",
+              "recall": "incomplete_reference",
+              "recall_at_k": "incomplete_reference",
+              "review_effort": "incomplete_reference"
+            },
+            "precision": null,
+            "precision_is_lower_bound": true,
+            "recall": null,
+            "recall_at_k": null,
+            "review_effort": null,
+            "units": {
+              "ap": "over all 160 m cells intersecting the AOI",
+              "auroc": "over all 160 m cells intersecting the AOI",
+              "claim_score": "finite, non-negative confidence; maximum claim score per flagged cell",
+              "count_ratio": "8-neighbour connected flagged-cell sites / known assets",
+              "lift": "precision / share of AOI-intersecting cells holding an asset",
+              "n_claims": "claims with points inside the AOI",
+              "n_predicted_sites": "8-neighbour connected components of flagged cells",
+              "precision": "share of flagged 160 m cells holding a pool asset (lower bound)",
+              "recall": "share of assets",
+              "recall_at_k": "share of assets in the top k flagged cells",
+              "review_effort": "top-ranked flagged cells to inspect"
+            }
+          },
+          "reasoning": {
+            "failed_rules": [
+              "RV4",
+              "RV7",
+              "RV8"
+            ],
+            "rules_version": "rv-v1",
+            "rv_pass_rate": 0.5,
+            "verdict_by_rule": {
+              "RV1": "pass",
+              "RV10": "not_applicable",
+              "RV2": "pass",
+              "RV3": "not_applicable",
+              "RV4": "fail",
+              "RV5": "not_applicable",
+              "RV6": "pass",
+              "RV7": "fail",
+              "RV8": "fail",
+              "RV9": "not_applicable"
+            }
+          }
+        }
+      },
+      "reference": "precision pool: keys/osm/chattogram-warehouses.geojson"
+    },
+    "exp-bangladesh-sonnet-3": {
+      "card_id": "t1-bangladesh-warehouses",
+      "config_label": "t1-bangladesh-warehouses|claude-sonnet-5-5|strands",
+      "grading_split_note": "Keyed grading uses only the held-out split where a split file exists; training examples may have been shown to the agent.",
+      "harness": "strands",
+      "model_key": "claude-sonnet-5-5",
+      "panels_by_trial": {
+        "t-0": {
+          "calibration": {
+            "no_grade_reason": "unkeyed"
+          },
+          "cost": {
+            "input_tokens": 114792,
+            "model_calls": 13,
+            "output_tokens": 5579,
+            "tool_calls": 21,
+            "usd": 0.3139114,
+            "wall_seconds": 46.281120266
+          },
+          "output": {
+            "ap": null,
+            "auroc": null,
+            "cell_size_m": 160.0,
+            "completeness": "incomplete",
+            "count_ratio": null,
+            "edge_tol_m": 1.0,
+            "grader_version": "grade-lgnd-v1",
+            "lift": null,
+            "n_asset_cells": 19,
+            "n_assets": 18,
+            "n_assets_outside_aoi": 0,
+            "n_claims": 0,
+            "n_flagged_cells": 0,
+            "n_found": null,
+            "n_grid_cells": 3640,
+            "n_predicted_sites": 0,
+            "null_reasons": {
+              "ap": "incomplete_reference",
+              "auroc": "incomplete_reference",
+              "count_ratio": "incomplete_reference",
+              "lift": "incomplete_reference",
+              "precision": "no_flagged_cells",
+              "recall": "incomplete_reference",
+              "recall_at_k": "incomplete_reference",
+              "review_effort": "incomplete_reference"
+            },
+            "precision": null,
+            "precision_is_lower_bound": true,
+            "recall": null,
+            "recall_at_k": null,
+            "review_effort": null,
+            "units": {
+              "ap": "over all 160 m cells intersecting the AOI",
+              "auroc": "over all 160 m cells intersecting the AOI",
+              "claim_score": "finite, non-negative confidence; maximum claim score per flagged cell",
+              "count_ratio": "8-neighbour connected flagged-cell sites / known assets",
+              "lift": "precision / share of AOI-intersecting cells holding an asset",
+              "n_claims": "claims with points inside the AOI",
+              "n_predicted_sites": "8-neighbour connected components of flagged cells",
+              "precision": "share of flagged 160 m cells holding a pool asset (lower bound)",
+              "recall": "share of assets",
+              "recall_at_k": "share of assets in the top k flagged cells",
+              "review_effort": "top-ranked flagged cells to inspect"
+            }
+          },
+          "reasoning": {
+            "failed_rules": [
+              "RV4",
+              "RV7",
+              "RV8"
+            ],
+            "rules_version": "rv-v1",
+            "rv_pass_rate": 0.5,
+            "verdict_by_rule": {
+              "RV1": "pass",
+              "RV10": "not_applicable",
+              "RV2": "pass",
+              "RV3": "not_applicable",
+              "RV4": "fail",
+              "RV5": "not_applicable",
+              "RV6": "pass",
+              "RV7": "fail",
+              "RV8": "fail",
+              "RV9": "not_applicable"
+            }
+          }
+        }
+      },
+      "reference": "precision pool: keys/osm/chattogram-warehouses.geojson"
+    },
+    "exp-gifu-sonnet-1": {
+      "card_id": "t5-gifu-warehouses",
+      "config_label": "t5-gifu-warehouses|claude-sonnet-5-5|strands",
+      "grading_split_note": "Keyed grading uses only the held-out split where a split file exists; training examples may have been shown to the agent.",
+      "harness": "strands",
+      "model_key": "claude-sonnet-5-5",
+      "panels_by_trial": {
+        "t-0": {
+          "calibration": {
+            "bins": [
+              {
+                "accuracy": null,
+                "hi": 0.2,
+                "lo": 0.0,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.4,
+                "lo": 0.2,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.6,
+                "lo": 0.4,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.8,
+                "lo": 0.6,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 1.0,
+                "lo": 0.8,
+                "mean_confidence": null,
+                "n": 0
+              }
+            ],
+            "brier": null,
+            "correctness_method": "Each claim is graded alone with the public protocol grader; correct means its 160 m flagged cell touches a held-out reference asset under the grader's any-touch rule.",
+            "ece": null,
+            "keyed_only": "keyed runs only: correctness comes from the grader, so unkeyed runs have no calibration",
+            "n": 0,
+            "n_bins": 5,
+            "reason": "no graded claims with stated confidence",
+            "version": "calib-v1"
+          },
+          "cost": {
+            "input_tokens": 163673,
+            "model_calls": 17,
+            "output_tokens": 6889,
+            "tool_calls": 25,
+            "usd": 0.4358596,
+            "wall_seconds": 58.215965678
+          },
+          "output": {
+            "ap": 0.004296455424274973,
+            "auroc": 0.5,
+            "cell_size_m": 160.0,
+            "completeness": "complete",
+            "count_ratio": 0.0,
+            "edge_tol_m": 1.0,
+            "grader_version": "grade-lgnd-v1",
+            "lift": null,
+            "n_asset_cells": 12,
+            "n_assets": 12,
+            "n_assets_outside_aoi": 0,
+            "n_claims": 0,
+            "n_flagged_cells": 0,
+            "n_found": 0,
+            "n_grid_cells": 2793,
+            "n_predicted_sites": 0,
+            "null_reasons": {
+              "lift": "no_flagged_cells",
+              "precision": "no_flagged_cells"
+            },
+            "precision": null,
+            "precision_is_lower_bound": false,
+            "recall": 0.0,
+            "recall_at_k": {
+              "10": 0.0,
+              "20": 0.0,
+              "50": 0.0
+            },
+            "review_effort": {
+              "50": null,
+              "80": null,
+              "90": null
+            },
+            "units": {
+              "ap": "over all 160 m cells intersecting the AOI",
+              "auroc": "over all 160 m cells intersecting the AOI",
+              "claim_score": "finite, non-negative confidence; maximum claim score per flagged cell",
+              "count_ratio": "8-neighbour connected flagged-cell sites / known assets",
+              "lift": "precision / share of AOI-intersecting cells holding an asset",
+              "n_claims": "claims with points inside the AOI",
+              "n_predicted_sites": "8-neighbour connected components of flagged cells",
+              "precision": "share of flagged 160 m cells holding an asset",
+              "recall": "share of assets",
+              "recall_at_k": "share of assets in the top k flagged cells",
+              "review_effort": "top-ranked flagged cells to inspect"
+            }
+          },
+          "reasoning": {
+            "failed_rules": [
+              "RV7",
+              "RV8"
+            ],
+            "rules_version": "rv-v1",
+            "rv_pass_rate": 0.6666666666666666,
+            "verdict_by_rule": {
+              "RV1": "pass",
+              "RV10": "not_applicable",
+              "RV2": "pass",
+              "RV3": "not_applicable",
+              "RV4": "pass",
+              "RV5": "not_applicable",
+              "RV6": "pass",
+              "RV7": "fail",
+              "RV8": "fail",
+              "RV9": "not_applicable"
+            }
+          }
+        }
+      },
+      "reference": "reference: keys/plateau/gifu-warehouses.geojson; held-out IDs only from keys/plateau/gifu-split.json"
+    },
+    "exp-gifu-sonnet-2": {
+      "card_id": "t5-gifu-warehouses",
+      "config_label": "t5-gifu-warehouses|claude-sonnet-5-5|strands",
+      "grading_split_note": "Keyed grading uses only the held-out split where a split file exists; training examples may have been shown to the agent.",
+      "harness": "strands",
+      "model_key": "claude-sonnet-5-5",
+      "panels_by_trial": {
+        "t-0": {
+          "calibration": {
+            "bins": [
+              {
+                "accuracy": null,
+                "hi": 0.2,
+                "lo": 0.0,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.4,
+                "lo": 0.2,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.6,
+                "lo": 0.4,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.8,
+                "lo": 0.6,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 1.0,
+                "lo": 0.8,
+                "mean_confidence": null,
+                "n": 0
+              }
+            ],
+            "brier": null,
+            "correctness_method": "Each claim is graded alone with the public protocol grader; correct means its 160 m flagged cell touches a held-out reference asset under the grader's any-touch rule.",
+            "ece": null,
+            "keyed_only": "keyed runs only: correctness comes from the grader, so unkeyed runs have no calibration",
+            "n": 0,
+            "n_bins": 5,
+            "reason": "no graded claims with stated confidence",
+            "version": "calib-v1"
+          },
+          "cost": {
+            "input_tokens": 190244,
+            "model_calls": 20,
+            "output_tokens": 6694,
+            "tool_calls": 25,
+            "usd": 0.4921708,
+            "wall_seconds": 60.262930916
+          },
+          "output": {
+            "ap": 0.004296455424274973,
+            "auroc": 0.5,
+            "cell_size_m": 160.0,
+            "completeness": "complete",
+            "count_ratio": 0.0,
+            "edge_tol_m": 1.0,
+            "grader_version": "grade-lgnd-v1",
+            "lift": null,
+            "n_asset_cells": 12,
+            "n_assets": 12,
+            "n_assets_outside_aoi": 0,
+            "n_claims": 0,
+            "n_flagged_cells": 0,
+            "n_found": 0,
+            "n_grid_cells": 2793,
+            "n_predicted_sites": 0,
+            "null_reasons": {
+              "lift": "no_flagged_cells",
+              "precision": "no_flagged_cells"
+            },
+            "precision": null,
+            "precision_is_lower_bound": false,
+            "recall": 0.0,
+            "recall_at_k": {
+              "10": 0.0,
+              "20": 0.0,
+              "50": 0.0
+            },
+            "review_effort": {
+              "50": null,
+              "80": null,
+              "90": null
+            },
+            "units": {
+              "ap": "over all 160 m cells intersecting the AOI",
+              "auroc": "over all 160 m cells intersecting the AOI",
+              "claim_score": "finite, non-negative confidence; maximum claim score per flagged cell",
+              "count_ratio": "8-neighbour connected flagged-cell sites / known assets",
+              "lift": "precision / share of AOI-intersecting cells holding an asset",
+              "n_claims": "claims with points inside the AOI",
+              "n_predicted_sites": "8-neighbour connected components of flagged cells",
+              "precision": "share of flagged 160 m cells holding an asset",
+              "recall": "share of assets",
+              "recall_at_k": "share of assets in the top k flagged cells",
+              "review_effort": "top-ranked flagged cells to inspect"
+            }
+          },
+          "reasoning": {
+            "failed_rules": [
+              "RV4",
+              "RV7",
+              "RV8"
+            ],
+            "rules_version": "rv-v1",
+            "rv_pass_rate": 0.5,
+            "verdict_by_rule": {
+              "RV1": "pass",
+              "RV10": "not_applicable",
+              "RV2": "pass",
+              "RV3": "not_applicable",
+              "RV4": "fail",
+              "RV5": "not_applicable",
+              "RV6": "pass",
+              "RV7": "fail",
+              "RV8": "fail",
+              "RV9": "not_applicable"
+            }
+          }
+        }
+      },
+      "reference": "reference: keys/plateau/gifu-warehouses.geojson; held-out IDs only from keys/plateau/gifu-split.json"
+    },
+    "exp-gifu-sonnet-3": {
+      "card_id": "t5-gifu-warehouses",
+      "config_label": "t5-gifu-warehouses|claude-sonnet-5-5|strands",
+      "grading_split_note": "Keyed grading uses only the held-out split where a split file exists; training examples may have been shown to the agent.",
+      "harness": "strands",
+      "model_key": "claude-sonnet-5-5",
+      "panels_by_trial": {
+        "t-0": {
+          "calibration": {
+            "bins": [
+              {
+                "accuracy": null,
+                "hi": 0.2,
+                "lo": 0.0,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.4,
+                "lo": 0.2,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.6,
+                "lo": 0.4,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.8,
+                "lo": 0.6,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 1.0,
+                "lo": 0.8,
+                "mean_confidence": null,
+                "n": 0
+              }
+            ],
+            "brier": null,
+            "correctness_method": "Each claim is graded alone with the public protocol grader; correct means its 160 m flagged cell touches a held-out reference asset under the grader's any-touch rule.",
+            "ece": null,
+            "keyed_only": "keyed runs only: correctness comes from the grader, so unkeyed runs have no calibration",
+            "n": 0,
+            "n_bins": 5,
+            "reason": "no graded claims with stated confidence",
+            "version": "calib-v1"
+          },
+          "cost": {
+            "input_tokens": 160691,
+            "model_calls": 17,
+            "output_tokens": 5956,
+            "tool_calls": 24,
+            "usd": 0.4190362,
+            "wall_seconds": 54.771407401
+          },
+          "output": {
+            "ap": 0.004296455424274973,
+            "auroc": 0.5,
+            "cell_size_m": 160.0,
+            "completeness": "complete",
+            "count_ratio": 0.0,
+            "edge_tol_m": 1.0,
+            "grader_version": "grade-lgnd-v1",
+            "lift": null,
+            "n_asset_cells": 12,
+            "n_assets": 12,
+            "n_assets_outside_aoi": 0,
+            "n_claims": 0,
+            "n_flagged_cells": 0,
+            "n_found": 0,
+            "n_grid_cells": 2793,
+            "n_predicted_sites": 0,
+            "null_reasons": {
+              "lift": "no_flagged_cells",
+              "precision": "no_flagged_cells"
+            },
+            "precision": null,
+            "precision_is_lower_bound": false,
+            "recall": 0.0,
+            "recall_at_k": {
+              "10": 0.0,
+              "20": 0.0,
+              "50": 0.0
+            },
+            "review_effort": {
+              "50": null,
+              "80": null,
+              "90": null
+            },
+            "units": {
+              "ap": "over all 160 m cells intersecting the AOI",
+              "auroc": "over all 160 m cells intersecting the AOI",
+              "claim_score": "finite, non-negative confidence; maximum claim score per flagged cell",
+              "count_ratio": "8-neighbour connected flagged-cell sites / known assets",
+              "lift": "precision / share of AOI-intersecting cells holding an asset",
+              "n_claims": "claims with points inside the AOI",
+              "n_predicted_sites": "8-neighbour connected components of flagged cells",
+              "precision": "share of flagged 160 m cells holding an asset",
+              "recall": "share of assets",
+              "recall_at_k": "share of assets in the top k flagged cells",
+              "review_effort": "top-ranked flagged cells to inspect"
+            }
+          },
+          "reasoning": {
+            "failed_rules": [
+              "RV4",
+              "RV7",
+              "RV8"
+            ],
+            "rules_version": "rv-v1",
+            "rv_pass_rate": 0.5,
+            "verdict_by_rule": {
+              "RV1": "pass",
+              "RV10": "not_applicable",
+              "RV2": "pass",
+              "RV3": "not_applicable",
+              "RV4": "fail",
+              "RV5": "not_applicable",
+              "RV6": "pass",
+              "RV7": "fail",
+              "RV8": "fail",
+              "RV9": "not_applicable"
+            }
+          }
+        }
+      },
+      "reference": "reference: keys/plateau/gifu-warehouses.geojson; held-out IDs only from keys/plateau/gifu-split.json"
+    },
+    "exp-nagoya-nova-1": {
+      "card_id": "t1-nagoya-warehouses",
+      "config_label": "t1-nagoya-warehouses|nova-pro|strands",
+      "grading_split_note": "Keyed grading uses only the held-out split where a split file exists; training examples may have been shown to the agent.",
+      "harness": "strands",
+      "model_key": "nova-pro",
+      "panels_by_trial": {
+        "t-0": {
+          "calibration": {
+            "bins": [
+              {
+                "accuracy": null,
+                "hi": 0.2,
+                "lo": 0.0,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.4,
+                "lo": 0.2,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.6,
+                "lo": 0.4,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.8,
+                "lo": 0.6,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": 0.3,
+                "hi": 1.0,
+                "lo": 0.8,
+                "mean_confidence": 0.8884148,
+                "n": 10
+              }
+            ],
+            "brier": 0.5605727839108,
+            "correctness_method": "Each claim is graded alone with the public protocol grader; correct means its 160 m flagged cell touches a held-out reference asset under the grader's any-touch rule.",
+            "ece": 0.5884148,
+            "keyed_only": "keyed runs only: correctness comes from the grader, so unkeyed runs have no calibration",
+            "n": 10,
+            "n_bins": 5,
+            "reason": null,
+            "version": "calib-v1"
+          },
+          "cost": {
+            "input_tokens": 824489,
+            "model_calls": 37,
+            "output_tokens": 15739,
+            "tool_calls": 90,
+            "usd": 0.709956,
+            "wall_seconds": 210.397640343
+          },
+          "output": {
+            "ap": 0.03355591359350758,
+            "auroc": 0.548642779587405,
+            "cell_size_m": 160.0,
+            "completeness": "complete",
+            "count_ratio": 0.3333333333333333,
+            "edge_tol_m": 1.0,
+            "grader_version": "grade-lgnd-v1",
+            "lift": 27.93,
+            "n_asset_cells": 30,
+            "n_assets": 30,
+            "n_assets_outside_aoi": 0,
+            "n_claims": 10,
+            "n_flagged_cells": 10,
+            "n_found": 3,
+            "n_grid_cells": 2793,
+            "n_predicted_sites": 10,
+            "null_reasons": {},
+            "precision": 0.3,
+            "precision_is_lower_bound": false,
+            "recall": 0.1,
+            "recall_at_k": {
+              "10": 0.1,
+              "20": 0.1,
+              "50": 0.1
+            },
+            "review_effort": {
+              "50": null,
+              "80": null,
+              "90": null
+            },
+            "units": {
+              "ap": "over all 160 m cells intersecting the AOI",
+              "auroc": "over all 160 m cells intersecting the AOI",
+              "claim_score": "finite, non-negative confidence; maximum claim score per flagged cell",
+              "count_ratio": "8-neighbour connected flagged-cell sites / known assets",
+              "lift": "precision / share of AOI-intersecting cells holding an asset",
+              "n_claims": "claims with points inside the AOI",
+              "n_predicted_sites": "8-neighbour connected components of flagged cells",
+              "precision": "share of flagged 160 m cells holding an asset",
+              "recall": "share of assets",
+              "recall_at_k": "share of assets in the top k flagged cells",
+              "review_effort": "top-ranked flagged cells to inspect"
+            }
+          },
+          "reasoning": {
+            "failed_rules": [
+              "RV7",
+              "RV8"
+            ],
+            "rules_version": "rv-v1",
+            "rv_pass_rate": 0.7142857142857143,
+            "verdict_by_rule": {
+              "RV1": "pass",
+              "RV10": "pass",
+              "RV2": "pass",
+              "RV3": "not_applicable",
+              "RV4": "pass",
+              "RV5": "not_applicable",
+              "RV6": "pass",
+              "RV7": "fail",
+              "RV8": "fail",
+              "RV9": "not_applicable"
+            }
+          }
+        }
+      },
+      "reference": "reference: keys/plateau/nagoya-warehouses.geojson; held-out IDs only from keys/plateau/nagoya-split.json"
+    },
+    "exp-nagoya-nova-2": {
+      "card_id": "t1-nagoya-warehouses",
+      "config_label": "t1-nagoya-warehouses|nova-pro|strands",
+      "grading_split_note": "Keyed grading uses only the held-out split where a split file exists; training examples may have been shown to the agent.",
+      "harness": "strands",
+      "model_key": "nova-pro",
+      "panels_by_trial": {
+        "t-0": {
+          "calibration": {
+            "bins": [
+              {
+                "accuracy": null,
+                "hi": 0.2,
+                "lo": 0.0,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.4,
+                "lo": 0.2,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.6,
+                "lo": 0.4,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.8,
+                "lo": 0.6,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 1.0,
+                "lo": 0.8,
+                "mean_confidence": null,
+                "n": 0
+              }
+            ],
+            "brier": null,
+            "correctness_method": "Each claim is graded alone with the public protocol grader; correct means its 160 m flagged cell touches a held-out reference asset under the grader's any-touch rule.",
+            "ece": null,
+            "keyed_only": "keyed runs only: correctness comes from the grader, so unkeyed runs have no calibration",
+            "n": 0,
+            "n_bins": 5,
+            "reason": "no graded claims with stated confidence",
+            "version": "calib-v1"
+          },
+          "cost": {
+            "input_tokens": 13762,
+            "model_calls": 4,
+            "output_tokens": 2012,
+            "tool_calls": 3,
+            "usd": 0.017448,
+            "wall_seconds": 18.278941041
+          },
+          "output": {
+            "ap": 0.010741138560687433,
+            "auroc": 0.5,
+            "cell_size_m": 160.0,
+            "completeness": "complete",
+            "count_ratio": 0.0,
+            "edge_tol_m": 1.0,
+            "grader_version": "grade-lgnd-v1",
+            "lift": null,
+            "n_asset_cells": 30,
+            "n_assets": 30,
+            "n_assets_outside_aoi": 0,
+            "n_claims": 0,
+            "n_flagged_cells": 0,
+            "n_found": 0,
+            "n_grid_cells": 2793,
+            "n_predicted_sites": 0,
+            "null_reasons": {
+              "lift": "no_flagged_cells",
+              "precision": "no_flagged_cells"
+            },
+            "precision": null,
+            "precision_is_lower_bound": false,
+            "recall": 0.0,
+            "recall_at_k": {
+              "10": 0.0,
+              "20": 0.0,
+              "50": 0.0
+            },
+            "review_effort": {
+              "50": null,
+              "80": null,
+              "90": null
+            },
+            "units": {
+              "ap": "over all 160 m cells intersecting the AOI",
+              "auroc": "over all 160 m cells intersecting the AOI",
+              "claim_score": "finite, non-negative confidence; maximum claim score per flagged cell",
+              "count_ratio": "8-neighbour connected flagged-cell sites / known assets",
+              "lift": "precision / share of AOI-intersecting cells holding an asset",
+              "n_claims": "claims with points inside the AOI",
+              "n_predicted_sites": "8-neighbour connected components of flagged cells",
+              "precision": "share of flagged 160 m cells holding an asset",
+              "recall": "share of assets",
+              "recall_at_k": "share of assets in the top k flagged cells",
+              "review_effort": "top-ranked flagged cells to inspect"
+            }
+          },
+          "reasoning": {
+            "failed_rules": [
+              "RV7",
+              "RV8"
+            ],
+            "rules_version": "rv-v1",
+            "rv_pass_rate": 0.6666666666666666,
+            "verdict_by_rule": {
+              "RV1": "pass",
+              "RV10": "not_applicable",
+              "RV2": "pass",
+              "RV3": "not_applicable",
+              "RV4": "pass",
+              "RV5": "not_applicable",
+              "RV6": "pass",
+              "RV7": "fail",
+              "RV8": "fail",
+              "RV9": "not_applicable"
+            }
+          }
+        }
+      },
+      "reference": "reference: keys/plateau/nagoya-warehouses.geojson; held-out IDs only from keys/plateau/nagoya-split.json"
+    },
+    "exp-nagoya-nova-3": {
+      "card_id": "t1-nagoya-warehouses",
+      "config_label": "t1-nagoya-warehouses|nova-pro|strands",
+      "grading_split_note": "Keyed grading uses only the held-out split where a split file exists; training examples may have been shown to the agent.",
+      "harness": "strands",
+      "model_key": "nova-pro",
+      "panels_by_trial": {
+        "t-0": {
+          "calibration": {
+            "bins": [
+              {
+                "accuracy": null,
+                "hi": 0.2,
+                "lo": 0.0,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.4,
+                "lo": 0.2,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.6,
+                "lo": 0.4,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.8,
+                "lo": 0.6,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 1.0,
+                "lo": 0.8,
+                "mean_confidence": null,
+                "n": 0
+              }
+            ],
+            "brier": null,
+            "correctness_method": "Each claim is graded alone with the public protocol grader; correct means its 160 m flagged cell touches a held-out reference asset under the grader's any-touch rule.",
+            "ece": null,
+            "keyed_only": "keyed runs only: correctness comes from the grader, so unkeyed runs have no calibration",
+            "n": 0,
+            "n_bins": 5,
+            "reason": "no graded claims with stated confidence",
+            "version": "calib-v1"
+          },
+          "cost": {
+            "input_tokens": 217038,
+            "model_calls": 21,
+            "output_tokens": 14658,
+            "tool_calls": 57,
+            "usd": 0.220536,
+            "wall_seconds": 134.342960344
+          },
+          "output": {
+            "ap": 0.010741138560687433,
+            "auroc": 0.5,
+            "cell_size_m": 160.0,
+            "completeness": "complete",
+            "count_ratio": 0.0,
+            "edge_tol_m": 1.0,
+            "grader_version": "grade-lgnd-v1",
+            "lift": null,
+            "n_asset_cells": 30,
+            "n_assets": 30,
+            "n_assets_outside_aoi": 0,
+            "n_claims": 0,
+            "n_flagged_cells": 0,
+            "n_found": 0,
+            "n_grid_cells": 2793,
+            "n_predicted_sites": 0,
+            "null_reasons": {
+              "lift": "no_flagged_cells",
+              "precision": "no_flagged_cells"
+            },
+            "precision": null,
+            "precision_is_lower_bound": false,
+            "recall": 0.0,
+            "recall_at_k": {
+              "10": 0.0,
+              "20": 0.0,
+              "50": 0.0
+            },
+            "review_effort": {
+              "50": null,
+              "80": null,
+              "90": null
+            },
+            "units": {
+              "ap": "over all 160 m cells intersecting the AOI",
+              "auroc": "over all 160 m cells intersecting the AOI",
+              "claim_score": "finite, non-negative confidence; maximum claim score per flagged cell",
+              "count_ratio": "8-neighbour connected flagged-cell sites / known assets",
+              "lift": "precision / share of AOI-intersecting cells holding an asset",
+              "n_claims": "claims with points inside the AOI",
+              "n_predicted_sites": "8-neighbour connected components of flagged cells",
+              "precision": "share of flagged 160 m cells holding an asset",
+              "recall": "share of assets",
+              "recall_at_k": "share of assets in the top k flagged cells",
+              "review_effort": "top-ranked flagged cells to inspect"
+            }
+          },
+          "reasoning": {
+            "failed_rules": [
+              "RV7",
+              "RV8"
+            ],
+            "rules_version": "rv-v1",
+            "rv_pass_rate": 0.6666666666666666,
+            "verdict_by_rule": {
+              "RV1": "pass",
+              "RV10": "not_applicable",
+              "RV2": "pass",
+              "RV3": "not_applicable",
+              "RV4": "pass",
+              "RV5": "not_applicable",
+              "RV6": "pass",
+              "RV7": "fail",
+              "RV8": "fail",
+              "RV9": "not_applicable"
+            }
+          }
+        }
+      },
+      "reference": "reference: keys/plateau/nagoya-warehouses.geojson; held-out IDs only from keys/plateau/nagoya-split.json"
+    },
+    "exp-nagoya-sonnet-1": {
+      "card_id": "t1-nagoya-warehouses",
+      "config_label": "t1-nagoya-warehouses|claude-sonnet-5-5|strands",
+      "grading_split_note": "Keyed grading uses only the held-out split where a split file exists; training examples may have been shown to the agent.",
+      "harness": "strands",
+      "model_key": "claude-sonnet-5-5",
+      "panels_by_trial": {
+        "t-0": {
+          "calibration": {
+            "bins": [
+              {
+                "accuracy": null,
+                "hi": 0.2,
+                "lo": 0.0,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": 0.3,
+                "hi": 0.4,
+                "lo": 0.2,
+                "mean_confidence": 0.3,
+                "n": 10
+              },
+              {
+                "accuracy": null,
+                "hi": 0.6,
+                "lo": 0.4,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.8,
+                "lo": 0.6,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 1.0,
+                "lo": 0.8,
+                "mean_confidence": null,
+                "n": 0
+              }
+            ],
+            "brier": 0.20999999999999996,
+            "correctness_method": "Each claim is graded alone with the public protocol grader; correct means its 160 m flagged cell touches a held-out reference asset under the grader's any-touch rule.",
+            "ece": 0.0,
+            "keyed_only": "keyed runs only: correctness comes from the grader, so unkeyed runs have no calibration",
+            "n": 10,
+            "n_bins": 5,
+            "reason": null,
+            "version": "calib-v1"
+          },
+          "cost": {
+            "input_tokens": 361697,
+            "model_calls": 22,
+            "output_tokens": 17617,
+            "tool_calls": 59,
+            "usd": 0.9895204,
+            "wall_seconds": 117.432923209
+          },
+          "output": {
+            "ap": 0.03966702470461869,
+            "auroc": 0.5487332609482447,
+            "cell_size_m": 160.0,
+            "completeness": "complete",
+            "count_ratio": 0.3333333333333333,
+            "edge_tol_m": 1.0,
+            "grader_version": "grade-lgnd-v1",
+            "lift": 27.93,
+            "n_asset_cells": 30,
+            "n_assets": 30,
+            "n_assets_outside_aoi": 0,
+            "n_claims": 10,
+            "n_flagged_cells": 10,
+            "n_found": 3,
+            "n_grid_cells": 2793,
+            "n_predicted_sites": 10,
+            "null_reasons": {},
+            "precision": 0.3,
+            "precision_is_lower_bound": false,
+            "recall": 0.1,
+            "recall_at_k": {
+              "10": 0.1,
+              "20": 0.1,
+              "50": 0.1
+            },
+            "review_effort": {
+              "50": null,
+              "80": null,
+              "90": null
+            },
+            "units": {
+              "ap": "over all 160 m cells intersecting the AOI",
+              "auroc": "over all 160 m cells intersecting the AOI",
+              "claim_score": "finite, non-negative confidence; maximum claim score per flagged cell",
+              "count_ratio": "8-neighbour connected flagged-cell sites / known assets",
+              "lift": "precision / share of AOI-intersecting cells holding an asset",
+              "n_claims": "claims with points inside the AOI",
+              "n_predicted_sites": "8-neighbour connected components of flagged cells",
+              "precision": "share of flagged 160 m cells holding an asset",
+              "recall": "share of assets",
+              "recall_at_k": "share of assets in the top k flagged cells",
+              "review_effort": "top-ranked flagged cells to inspect"
+            }
+          },
+          "reasoning": {
+            "failed_rules": [
+              "RV4",
+              "RV7",
+              "RV10"
+            ],
+            "rules_version": "rv-v1",
+            "rv_pass_rate": 0.5714285714285714,
+            "verdict_by_rule": {
+              "RV1": "pass",
+              "RV10": "fail",
+              "RV2": "pass",
+              "RV3": "not_applicable",
+              "RV4": "fail",
+              "RV5": "not_applicable",
+              "RV6": "pass",
+              "RV7": "fail",
+              "RV8": "pass",
+              "RV9": "not_applicable"
+            }
+          }
+        }
+      },
+      "reference": "reference: keys/plateau/nagoya-warehouses.geojson; held-out IDs only from keys/plateau/nagoya-split.json"
+    },
+    "exp-nagoya-sonnet-2": {
+      "card_id": "t1-nagoya-warehouses",
+      "config_label": "t1-nagoya-warehouses|claude-sonnet-5-5|strands",
+      "grading_split_note": "Keyed grading uses only the held-out split where a split file exists; training examples may have been shown to the agent.",
+      "harness": "strands",
+      "model_key": "claude-sonnet-5-5",
+      "panels_by_trial": {
+        "t-0": {
+          "calibration": {
+            "bins": [
+              {
+                "accuracy": null,
+                "hi": 0.2,
+                "lo": 0.0,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.4,
+                "lo": 0.2,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.6,
+                "lo": 0.4,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.8,
+                "lo": 0.6,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 1.0,
+                "lo": 0.8,
+                "mean_confidence": null,
+                "n": 0
+              }
+            ],
+            "brier": null,
+            "correctness_method": "Each claim is graded alone with the public protocol grader; correct means its 160 m flagged cell touches a held-out reference asset under the grader's any-touch rule.",
+            "ece": null,
+            "keyed_only": "keyed runs only: correctness comes from the grader, so unkeyed runs have no calibration",
+            "n": 0,
+            "n_bins": 5,
+            "reason": "no graded claims with stated confidence",
+            "version": "calib-v1"
+          },
+          "cost": {
+            "input_tokens": 266783,
+            "model_calls": 20,
+            "output_tokens": 7907,
+            "tool_calls": 25,
+            "usd": 0.6738996,
+            "wall_seconds": 69.81968392
+          },
+          "output": {
+            "ap": 0.010741138560687433,
+            "auroc": 0.5,
+            "cell_size_m": 160.0,
+            "completeness": "complete",
+            "count_ratio": 0.0,
+            "edge_tol_m": 1.0,
+            "grader_version": "grade-lgnd-v1",
+            "lift": null,
+            "n_asset_cells": 30,
+            "n_assets": 30,
+            "n_assets_outside_aoi": 0,
+            "n_claims": 0,
+            "n_flagged_cells": 0,
+            "n_found": 0,
+            "n_grid_cells": 2793,
+            "n_predicted_sites": 0,
+            "null_reasons": {
+              "lift": "no_flagged_cells",
+              "precision": "no_flagged_cells"
+            },
+            "precision": null,
+            "precision_is_lower_bound": false,
+            "recall": 0.0,
+            "recall_at_k": {
+              "10": 0.0,
+              "20": 0.0,
+              "50": 0.0
+            },
+            "review_effort": {
+              "50": null,
+              "80": null,
+              "90": null
+            },
+            "units": {
+              "ap": "over all 160 m cells intersecting the AOI",
+              "auroc": "over all 160 m cells intersecting the AOI",
+              "claim_score": "finite, non-negative confidence; maximum claim score per flagged cell",
+              "count_ratio": "8-neighbour connected flagged-cell sites / known assets",
+              "lift": "precision / share of AOI-intersecting cells holding an asset",
+              "n_claims": "claims with points inside the AOI",
+              "n_predicted_sites": "8-neighbour connected components of flagged cells",
+              "precision": "share of flagged 160 m cells holding an asset",
+              "recall": "share of assets",
+              "recall_at_k": "share of assets in the top k flagged cells",
+              "review_effort": "top-ranked flagged cells to inspect"
+            }
+          },
+          "reasoning": {
+            "failed_rules": [
+              "RV7"
+            ],
+            "rules_version": "rv-v1",
+            "rv_pass_rate": 0.8333333333333334,
+            "verdict_by_rule": {
+              "RV1": "pass",
+              "RV10": "not_applicable",
+              "RV2": "pass",
+              "RV3": "not_applicable",
+              "RV4": "pass",
+              "RV5": "not_applicable",
+              "RV6": "pass",
+              "RV7": "fail",
+              "RV8": "pass",
+              "RV9": "not_applicable"
+            }
+          }
+        }
+      },
+      "reference": "reference: keys/plateau/nagoya-warehouses.geojson; held-out IDs only from keys/plateau/nagoya-split.json"
+    },
+    "exp-nagoya-sonnet-3": {
+      "card_id": "t1-nagoya-warehouses",
+      "config_label": "t1-nagoya-warehouses|claude-sonnet-5-5|strands",
+      "grading_split_note": "Keyed grading uses only the held-out split where a split file exists; training examples may have been shown to the agent.",
+      "harness": "strands",
+      "model_key": "claude-sonnet-5-5",
+      "panels_by_trial": {
+        "t-0": {
+          "calibration": {
+            "bins": [
+              {
+                "accuracy": null,
+                "hi": 0.2,
+                "lo": 0.0,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.4,
+                "lo": 0.2,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.6,
+                "lo": 0.4,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 0.8,
+                "lo": 0.6,
+                "mean_confidence": null,
+                "n": 0
+              },
+              {
+                "accuracy": null,
+                "hi": 1.0,
+                "lo": 0.8,
+                "mean_confidence": null,
+                "n": 0
+              }
+            ],
+            "brier": null,
+            "correctness_method": "Each claim is graded alone with the public protocol grader; correct means its 160 m flagged cell touches a held-out reference asset under the grader's any-touch rule.",
+            "ece": null,
+            "keyed_only": "keyed runs only: correctness comes from the grader, so unkeyed runs have no calibration",
+            "n": 0,
+            "n_bins": 5,
+            "reason": "no graded claims with stated confidence",
+            "version": "calib-v1"
+          },
+          "cost": {
+            "input_tokens": 270736,
+            "model_calls": 19,
+            "output_tokens": 9469,
+            "tool_calls": 27,
+            "usd": 0.6997782,
+            "wall_seconds": 78.034141938
+          },
+          "output": {
+            "ap": 0.010741138560687433,
+            "auroc": 0.5,
+            "cell_size_m": 160.0,
+            "completeness": "complete",
+            "count_ratio": 0.0,
+            "edge_tol_m": 1.0,
+            "grader_version": "grade-lgnd-v1",
+            "lift": null,
+            "n_asset_cells": 30,
+            "n_assets": 30,
+            "n_assets_outside_aoi": 0,
+            "n_claims": 0,
+            "n_flagged_cells": 0,
+            "n_found": 0,
+            "n_grid_cells": 2793,
+            "n_predicted_sites": 0,
+            "null_reasons": {
+              "lift": "no_flagged_cells",
+              "precision": "no_flagged_cells"
+            },
+            "precision": null,
+            "precision_is_lower_bound": false,
+            "recall": 0.0,
+            "recall_at_k": {
+              "10": 0.0,
+              "20": 0.0,
+              "50": 0.0
+            },
+            "review_effort": {
+              "50": null,
+              "80": null,
+              "90": null
+            },
+            "units": {
+              "ap": "over all 160 m cells intersecting the AOI",
+              "auroc": "over all 160 m cells intersecting the AOI",
+              "claim_score": "finite, non-negative confidence; maximum claim score per flagged cell",
+              "count_ratio": "8-neighbour connected flagged-cell sites / known assets",
+              "lift": "precision / share of AOI-intersecting cells holding an asset",
+              "n_claims": "claims with points inside the AOI",
+              "n_predicted_sites": "8-neighbour connected components of flagged cells",
+              "precision": "share of flagged 160 m cells holding an asset",
+              "recall": "share of assets",
+              "recall_at_k": "share of assets in the top k flagged cells",
+              "review_effort": "top-ranked flagged cells to inspect"
+            }
+          },
+          "reasoning": {
+            "failed_rules": [
+              "RV4",
+              "RV7"
+            ],
+            "rules_version": "rv-v1",
+            "rv_pass_rate": 0.6666666666666666,
+            "verdict_by_rule": {
+              "RV1": "pass",
+              "RV10": "not_applicable",
+              "RV2": "pass",
+              "RV3": "not_applicable",
+              "RV4": "fail",
+              "RV5": "not_applicable",
+              "RV6": "pass",
+              "RV7": "fail",
+              "RV8": "pass",
+              "RV9": "not_applicable"
+            }
+          }
+        }
+      },
+      "reference": "reference: keys/plateau/nagoya-warehouses.geojson; held-out IDs only from keys/plateau/nagoya-split.json"
+    }
+  }
+}
