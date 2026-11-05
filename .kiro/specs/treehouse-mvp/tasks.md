@@ -33,7 +33,7 @@ run `uv run treehouse budget status` (stop at exit 2/3). If a task hits a hard A
 - [ ] 5. Strands vision sub-agent classifier
   - `classify(method="vision_subagent")` → Strands agent with Bedrock vision on GSI chips; metered; switchable with probe/SVM. Live run once. _Req: 2.3_
 
-- [ ] 6. Output grader v2 (report protocol)
+- [x] 6. Output grader v2 (report protocol)
   - `checks/protocol_grader.py` (`grade-lgnd-v1`): 160 m grid, any-touch, one count per asset; site recall, recall@k, grid-cell precision, lift, count ratio, AUROC, AP, review effort 50/80/90 %, transfer gap; incomplete reference ⇒ precision-in-pool only. Hand-computed tests on a toy grid. _Req: 4.1–4.3_
 
 - [ ] 7. Reasoning validity (score a)
