@@ -89,3 +89,63 @@ def test_nagoya_discovers_only_xn_month_partition_and_lists_objects(monkeypatch)
     assert "geohash%3Dxn%2Fyear%3D2024%2Fmonth%3D04%2F" in calls[0]
     with pytest.raises(ValueError, match="byte cap"):
         real._objects((136.82, 35.05, 136.92, 35.12), 2024, 4, 1)
+
+
+@pytest.mark.parametrize("declared_length", [True, False])
+def test_listing_accepts_large_pages_and_exact_byte_cap(monkeypatch, declared_length):
+    from treehouse.tools.sources import clay_lgnd_real as real
+
+    data = (b"<ListBucketResult><Padding>" + b" " * (1024 * 1024)
+            + b"</Padding><IsTruncated>false</IsTruncated></ListBucketResult>")
+
+    class Response(BytesIO):
+        headers = {"Content-Length": str(len(data))} if declared_length else {}
+
+    monkeypatch.setattr(real, "urlopen", lambda *a, **kw: Response(data))
+    assert real._objects((136.82, 35.05, 136.92, 35.12), 2024, 4, len(data)) == ([], len(data))
+
+
+def test_listing_counts_bytes_across_pagination(monkeypatch):
+    from treehouse.tools.sources import clay_lgnd_real as real
+
+    first = (b"<ListBucketResult><IsTruncated>true</IsTruncated>"
+             b"<NextContinuationToken>next</NextContinuationToken></ListBucketResult>")
+    last = (b"<ListBucketResult><IsTruncated>false</IsTruncated>"
+            b"<Contents><Key>clay/test.parquet</Key></Contents></ListBucketResult>")
+    calls = []
+
+    class Response(BytesIO):
+        headers = {}
+
+    def respond(url, **kwargs):
+        calls.append(url)
+        return Response(last if "continuation-token=next" in url else first)
+
+    monkeypatch.setattr(real, "urlopen", respond)
+    assert real._objects((136.82, 35.05, 136.92, 35.12), 2024, 4, len(first + last)) == (
+        [f"s3://{real.BUCKET}/clay/test.parquet"], len(first + last))
+    assert len(calls) == 2
+    with pytest.raises(ValueError, match="byte cap"):
+        real._objects((136.82, 35.05, 136.92, 35.12), 2024, 4, len(first + last) - 1)
+
+
+@pytest.mark.parametrize("mismatch", ["etag", "content-range"])
+def test_http_reader_rejects_mismatched_identity_or_range(tmp_path, monkeypatch, mismatch):
+    from treehouse.tools.sources import clay_lgnd_real as real
+
+    class Response(BytesIO):
+        status = 206
+        headers = {"Content-Length": "10", "ETag": '"original"'}
+
+    def respond(request, **kwargs):
+        response = Response(b"012")
+        if request.get_method() != "HEAD":
+            response.headers = {"Content-Range": "bytes 0-2/10", "ETag": '"original"'}
+            response.headers["ETag" if mismatch == "etag" else "Content-Range"] = "mismatch"
+        return response
+
+    monkeypatch.setattr(real, "urlopen", respond)
+    with real._RangeReader("https://data.source.coop/clay/lgnd-embeddings/test.parquet",
+                           max_bytes=3, cache_dir=tmp_path) as reader:
+        with pytest.raises(ValueError, match="changed|range"):
+            reader.read(3)

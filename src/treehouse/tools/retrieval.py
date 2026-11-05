@@ -274,8 +274,17 @@ class RetrievalTools:
 
     def _vision_error(self, cell_ids: list[str] | None) -> ToolError | None:
         if self.vision is None or self.gsi is None or not self.vision_allowed:
-            return ToolError(code="not_configured", message="vision_subagent needs an injected vision model and "
-                             "the gsi-seamless-aerial-japan source on the task allow-list")
+            missing = []
+            if self.vision is None:
+                missing.append("vision model")
+            if self.gsi is None:
+                missing.append("GSI imagery source")
+            if not self.vision_allowed:
+                missing.append("gsi-seamless-aerial-japan on the task allow-list")
+            return ToolError(code="not_configured", message=f"vision_subagent missing: {', '.join(missing)}. "
+                             "For sandbox runs use --servers treehouse.providers.factories:vision_servers "
+                             "with TREEHOUSE_VISION_MODE=record|replay, TREEHOUSE_VISION_CASSETTE and "
+                             "TREEHOUSE_GSI_LOG configured")
         if not cell_ids:
             return ToolError(code="bad_args", message="vision_subagent requires explicit cell_ids")
         if len(cell_ids) > MAX_CELLS:

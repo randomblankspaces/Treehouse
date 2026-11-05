@@ -14,6 +14,7 @@ import os
 import struct
 import tempfile
 import xml.etree.ElementTree as ET
+from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlencode, urlsplit
 from urllib.request import Request, urlopen
@@ -152,11 +153,14 @@ def _objects(bbox, year, month, max_bytes):
                 length = int(response.headers.get("Content-Length", 0))
                 if remaining <= 0 or length > remaining:
                     raise ValueError("LGND byte cap exceeded during object listing")
-                data = response.read(min(remaining, 1024 * 1024))
+                data = response.read(remaining)
                 used += len(data)
-                if len(data) == min(remaining, 1024 * 1024):
-                    raise ValueError("LGND byte cap/listing limit reached")
-            root = ET.fromstring(data)
+            try:
+                root = ET.fromstring(data)
+            except ET.ParseError as exc:
+                if len(data) == remaining:
+                    raise ValueError("LGND byte cap exceeded during object listing") from exc
+                raise
             uris.extend(f"s3://{BUCKET}/{node.text}" for node in root.findall(".//{*}Contents/{*}Key")
                         if node.text and node.text.endswith(".parquet"))
             token = root.findtext("{*}NextContinuationToken")
@@ -236,15 +240,19 @@ class RealClayLgndSource:
                     for row in rows:
                         b = row["bbox"]
                         box = tuple(b[k] for k in ("xmin", "ymin", "xmax", "ymax"))
+                        if not _intersects(box, aoi_bbox):
+                            continue
                         date = row["datetime"]
-                        if not _intersects(box, aoi_bbox) or date.year != year or date.month != self.month:
+                        if not isinstance(date, datetime):
+                            raise ValueError("LGND datetime must be a non-null timestamp")
+                        if date.year != year or date.month != self.month:
                             continue
                         vector = np.asarray(row["embedding"], dtype=np.float32)
                         if vector.shape != (256,) or not np.isfinite(vector).all() or not np.linalg.norm(vector):
                             raise ValueError("LGND embedding must contain 256 finite, nonzero float32 values")
-                        # Pool the footprint/AOI intersection midpoint into the existing AOI grid.
-                        points.append(((max(box[0], aoi_bbox[0]) + min(box[2], aoi_bbox[2])) / 2,
-                                       (max(box[1], aoi_bbox[1]) + min(box[3], aoi_bbox[3])) / 2))
+                        # Keep footprint centres; clamp outside centres to retain intersecting edge cells.
+                        centre = ((box[0] + box[2]) / 2, (box[1] + box[3]) / 2)
+                        points.append(np.clip(centre, aoi_bbox[:2], np.nextafter(aoi_bbox[2:], aoi_bbox[:2])))
                         vectors.append(vector)
                         scenes.add(row["stac_item_id"])
                         dates.add(date.date().isoformat())

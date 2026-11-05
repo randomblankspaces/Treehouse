@@ -118,3 +118,33 @@ def test_real_source_rejects_invalid_schema_and_vectors(tmp_path, invalid):
 
     with pytest.raises(ValueError, match={"dimensions": "256", "statistics": "statistics", "columns": "columns"}[invalid]):
         RealClayLgndSource(path).index((0.0, 0.0, 0.04, 0.03), 1280, 2024)
+
+
+@pytest.mark.parametrize("bbox, expected_cell", [((-0.005, 0.0, 0.01, 0.015), "r000c001"),
+                                                ((0.01, 0.0, 0.025, 0.015), "r000c000")])
+def test_clipped_footprint_keeps_its_centre_assignment(tmp_path, bbox, expected_cell):
+    pa = pytest.importorskip("pyarrow")
+    path = tmp_path / "edge.parquet"
+    pq = _geoparquet(path)
+    table = pq.read_table(path).slice(0, 1)
+    table = table.set_column(table.schema.get_field_index("bbox"), "bbox", pa.array([
+        {"xmin": 0.0, "ymin": 0.0, "xmax": 0.014, "ymax": 0.01}]))
+    pq.write_table(table, path)
+    from treehouse.tools.sources.clay_lgnd_real import RealClayLgndSource
+
+    index = RealClayLgndSource(path).index(bbox, 1280, 2024)
+    assert list(index.cell_ids) == [expected_cell]
+
+
+def test_real_source_rejects_null_datetime_clearly(tmp_path):
+    pa = pytest.importorskip("pyarrow")
+    path = tmp_path / "null-date.parquet"
+    pq = _geoparquet(path)
+    table = pq.read_table(path)
+    field = table.schema.field("datetime")
+    table = table.set_column(table.schema.get_field_index("datetime"), field, pa.array([None] * 3, type=field.type))
+    pq.write_table(table, path)
+    from treehouse.tools.sources.clay_lgnd_real import RealClayLgndSource
+
+    with pytest.raises(ValueError, match="datetime"):
+        RealClayLgndSource(path).index((0.0, 0.0, 0.04, 0.03), 1280, 2024)
