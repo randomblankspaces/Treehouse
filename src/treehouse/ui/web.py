@@ -335,7 +335,8 @@ class Controller:
 def create_app(
     store_root: Path, *, origin="http://127.0.0.1:8765", frontend_dist: Path | None = None, judge_app=None, server_reference: Path | None = None
 ):
-    """Serve verified public data. Only POST /api/runs starts a pinned offline replay."""
+    """Serve verified public data. POST /api/runs starts a pinned offline replay; POST /api/pitch/live starts a
+    pinned live run only when the operator set TREEHOUSE_PITCH_LIVE=1 (see pitch_live)."""
     from fastapi import FastAPI, HTTPException, Request
     from fastapi.exceptions import RequestValidationError
     from fastapi.responses import FileResponse, JSONResponse
@@ -388,9 +389,10 @@ def create_app(
         response.headers["Referrer-Policy"] = "no-referrer"
         response.headers["Cache-Control"] = "no-store"
         # img-src also allows GSI's public aerial tiles (Japan) for the storybook and dev-view maps.
+        # frame-ancestors 'self': the /pitch page embeds the story and dev views (demo mode B); no other origin may.
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https://cyberjapandata.gsi.go.jp; "
-            "connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'"
+            "connect-src 'self'; object-src 'none'; frame-ancestors 'self'; base-uri 'self'"
         )
         return response
 
@@ -704,6 +706,11 @@ def create_app(
                 "problems": ["Store failed integrity or safety checks."],
                 "bundle_source": "reconstructed_from_verified_records",
             }
+
+    # Pitch page demo mode C (live Bedrock run); off unless TREEHOUSE_PITCH_LIVE=1. Delete to strip it.
+    from treehouse.ui import pitch_live
+
+    pitch_live.register(app, controller)
 
     if judge_app is not None:
         app.mount("/judge", judge_app)

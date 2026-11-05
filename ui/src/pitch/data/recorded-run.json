@@ -1,0 +1,859 @@
+{
+ "run_id": "exp-nagoya-sonnet-1",
+ "title": "Warehouses in a Nagoya port/logistics district (T1 retrieval, keyed)",
+ "mode": "replay",
+ "source": "live Amazon Bedrock run (Strands), replayed offline from its recorded cassette",
+ "model_id": "claude-sonnet-5-5",
+ "harness": "strands",
+ "goal": "Find every warehouse in the area of interest. A warehouse is a warehouse or large logistics/storage building (roughly 1,600 m2 of floor area or more). Do NOT count factories, markets, aircraft hangars or other large roofs that are not warehouses. Return each warehouse as a point inside the building, with the resources and image windows you used and your confidence. State the resolution and cell size you chose and why, the area you searched, any area you could not review, and a count with a range.",
+ "aoi_bbox": [
+  136.82,
+  35.05,
+  136.92,
+  35.12
+ ],
+ "cost_usd": 0.9895204,
+ "cost_basis": "historical_recorded",
+ "provenance": {
+  "embeddings": "synthetic_reference_derived",
+  "reference": "synthetic",
+  "vision": "not_used",
+  "limitations": [
+   "Rationale and confidence are agent self-reports; hidden reasoning quality is not assessed.",
+   "Tool counts measure activity, not reasoning quality or real-world accuracy.",
+   "No independent semantic reasoning rubric or measured human baseline is available.",
+   "t-0: agent ended the investigation; completion does not establish exhaustive coverage.",
+   "t-0: blocked, failed or budget-limited actions are not successful evidence.",
+   "Coverage is an approximate 30×30 AOI grid intersected with successful image footprints; it does not measure visibility or correct interpretation.",
+   "Reported image coverage is the union of successful footprints across trials, not coverage achieved by each individual trial.",
+   "Image coverage gaps remain; unseen locations have not been verified absent.",
+   "No vision model was used.",
+   "Reference-derived synthetic inputs demonstrate the method; they do not validate operational accuracy or generalization.",
+   "Replay uses recorded model responses. Recorded model costs are historical, not a new replay charge.",
+   "Elapsed trace time measures this replay; original model latency, when recorded, is separate trace metadata."
+  ]
+ },
+ "trace": {
+  "spans": 82,
+  "model_calls": 22,
+  "input_tokens": 361697,
+  "output_tokens": 17617,
+  "errors": 18,
+  "blocked": {
+   "missing_decision": 15,
+   "not_allowed": 2,
+   "not_configured": 1
+  },
+  "tools": {
+   "chat": 22,
+   "record_decision": 22,
+   "record_claim": 20,
+   "get_examples": 4,
+   "submit_understanding": 2,
+   "list_embedding_sources": 2,
+   "classify": 2,
+   "imagery_window": 2,
+   "note_limitation": 2,
+   "invoke_agent": 1,
+   "build_index": 1,
+   "retrieve": 1,
+   "aggregate": 1
+  }
+ },
+ "decisions": [
+  {
+   "decision_id": "t-0:d-0001",
+   "parent_id": null,
+   "tool": "submit_understanding",
+   "rationale": "State understanding first",
+   "alternatives": [
+    {
+     "option": "skip",
+     "reason": "required"
+    }
+   ],
+   "confidence": 0.9,
+   "verdict": "sound",
+   "claim_ids": [],
+   "rv": [
+    {
+     "rule_id": "RV4",
+     "verdict": "pass",
+     "reason": "the decision does not access held-out grading data"
+    }
+   ]
+  },
+  {
+   "decision_id": "t-0:d-0002",
+   "parent_id": "t-0:d-0001",
+   "tool": "list_embedding_sources",
+   "rationale": "See sources and cell sizes",
+   "alternatives": [
+    {
+     "option": "build_index directly",
+     "reason": "need source ids/cell sizes"
+    }
+   ],
+   "confidence": 0.9,
+   "verdict": "sound",
+   "claim_ids": [],
+   "rv": [
+    {
+     "rule_id": "RV4",
+     "verdict": "pass",
+     "reason": "the decision does not access held-out grading data"
+    }
+   ]
+  },
+  {
+   "decision_id": "t-0:d-0003",
+   "parent_id": "t-0:d-0002",
+   "tool": "get_examples",
+   "rationale": "Get positive training examples for few-shot retrieval",
+   "alternatives": [
+    {
+     "option": "zero_shot_text",
+     "reason": "may be unconfigured"
+    }
+   ],
+   "confidence": 0.8,
+   "verdict": "sound",
+   "claim_ids": [],
+   "rv": [
+    {
+     "rule_id": "RV4",
+     "verdict": "pass",
+     "reason": "the decision does not access held-out grading data"
+    }
+   ]
+  },
+  {
+   "decision_id": "t-0:d-0004",
+   "parent_id": "t-0:d-0003",
+   "tool": "get_examples",
+   "rationale": "Get all 16 examples",
+   "alternatives": [
+    {
+     "option": "use 10",
+     "reason": "fewer"
+    }
+   ],
+   "confidence": 0.8,
+   "verdict": "sound",
+   "claim_ids": [],
+   "rv": [
+    {
+     "rule_id": "RV4",
+     "verdict": "pass",
+     "reason": "the decision does not access held-out grading data"
+    }
+   ]
+  },
+  {
+   "decision_id": "t-0:d-0005",
+   "parent_id": "t-0:d-0004",
+   "tool": "build_index",
+   "rationale": "160 m cells (base grid) with 10m AEF embeddings are best match for ~40-100 m buildings",
+   "alternatives": [
+    {
+     "option": "Clay 1280m",
+     "reason": "too coarse for buildings"
+    }
+   ],
+   "confidence": 0.7,
+   "verdict": "sound",
+   "claim_ids": [],
+   "rv": [
+    {
+     "rule_id": "RV1",
+     "verdict": "pass",
+     "reason": "cell_size_m=160 m fits the registry scale"
+    },
+    {
+     "rule_id": "RV2",
+     "verdict": "pass",
+     "reason": "the recorded source and licence do not impose a non-commercial restriction"
+    },
+    {
+     "rule_id": "RV4",
+     "verdict": "pass",
+     "reason": "the decision does not access held-out grading data"
+    },
+    {
+     "rule_id": "RV6",
+     "verdict": "pass",
+     "reason": "recorded search bounds cover the card AOI"
+    }
+   ]
+  },
+  {
+   "decision_id": "t-0:d-0006",
+   "parent_id": "t-0:d-0005",
+   "tool": "retrieve",
+   "rationale": "Rank cells similar to training examples",
+   "alternatives": [
+    {
+     "option": "concept_vector",
+     "reason": "similar; try few_shot first"
+    }
+   ],
+   "confidence": 0.5,
+   "verdict": "sound",
+   "claim_ids": [],
+   "rv": [
+    {
+     "rule_id": "RV4",
+     "verdict": "pass",
+     "reason": "the decision does not access held-out grading data"
+    }
+   ]
+  },
+  {
+   "decision_id": "t-0:d-0007",
+   "parent_id": "t-0:d-0006",
+   "tool": "classify",
+   "rationale": "Visual check of top 20 candidates",
+   "alternatives": [
+    {
+     "option": "imagery windows only",
+     "reason": "more calls; try vision batch first"
+    }
+   ],
+   "confidence": 0.5,
+   "verdict": "sound",
+   "claim_ids": [],
+   "rv": [
+    {
+     "rule_id": "RV4",
+     "verdict": "pass",
+     "reason": "the decision does not access held-out grading data"
+    }
+   ]
+  },
+  {
+   "decision_id": "t-0:d-0008",
+   "parent_id": "t-0:d-0007",
+   "tool": "imagery_window",
+   "rationale": "Overview of AOI center in GSI aerial",
+   "alternatives": [
+    {
+     "option": "sentinel-2",
+     "reason": "10 m is coarser"
+    }
+   ],
+   "confidence": 0.5,
+   "verdict": "sound",
+   "claim_ids": [],
+   "rv": [
+    {
+     "rule_id": "RV4",
+     "verdict": "pass",
+     "reason": "the decision does not access held-out grading data"
+    }
+   ]
+  },
+  {
+   "decision_id": "t-0:d-0009",
+   "parent_id": "t-0:d-0008",
+   "tool": "imagery_window",
+   "rationale": "Check whether Sentinel-2 is accessible",
+   "alternatives": [
+    {
+     "option": "give up imagery",
+     "reason": "try once"
+    }
+   ],
+   "confidence": 0.3,
+   "verdict": "sound",
+   "claim_ids": [],
+   "rv": [
+    {
+     "rule_id": "RV4",
+     "verdict": "pass",
+     "reason": "the decision does not access held-out grading data"
+    }
+   ]
+  },
+  {
+   "decision_id": "t-0:d-0010",
+   "parent_id": "t-0:d-0009",
+   "tool": "classify",
+   "rationale": "Train probe on all 16 examples vs random cells to score all cells",
+   "alternatives": [
+    {
+     "option": "few_shot only",
+     "reason": "probe uses negatives too"
+    }
+   ],
+   "confidence": 0.4,
+   "verdict": "sound",
+   "claim_ids": [],
+   "rv": [
+    {
+     "rule_id": "RV4",
+     "verdict": "pass",
+     "reason": "the decision does not access held-out grading data"
+    }
+   ]
+  },
+  {
+   "decision_id": "t-0:d-0011",
+   "parent_id": "t-0:d-0010",
+   "tool": "aggregate",
+   "rationale": "Merge high-scoring cells into sites and get count range",
+   "alternatives": [
+    {
+     "option": "threshold 0.7",
+     "reason": "more false positives"
+    }
+   ],
+   "confidence": 0.4,
+   "verdict": "sound",
+   "claim_ids": [],
+   "rv": [
+    {
+     "rule_id": "RV4",
+     "verdict": "pass",
+     "reason": "the decision does not access held-out grading data"
+    }
+   ]
+  },
+  {
+   "decision_id": "t-0:d-0012",
+   "parent_id": "t-0:d-0011",
+   "tool": "record_claim",
+   "rationale": "Record top candidate s-001",
+   "alternatives": [
+    {
+     "option": "cannot_assess",
+     "reason": "embedding score gives weak signal"
+    }
+   ],
+   "confidence": 0.3,
+   "verdict": "invalid",
+   "claim_ids": [
+    "c-0001"
+   ],
+   "rv": [
+    {
+     "rule_id": "RV4",
+     "verdict": "pass",
+     "reason": "the decision does not access held-out grading data"
+    },
+    {
+     "rule_id": "RV7",
+     "verdict": "fail",
+     "reason": "claim cites no evidence"
+    },
+    {
+     "rule_id": "RV10",
+     "verdict": "fail",
+     "reason": "present claim is labelled as a registry negative: factory"
+    }
+   ]
+  },
+  {
+   "decision_id": "t-0:d-0013",
+   "parent_id": "t-0:d-0011",
+   "tool": "record_claim",
+   "rationale": "Record s-002",
+   "alternatives": [
+    {
+     "option": "cannot_assess",
+     "reason": "weak signal"
+    }
+   ],
+   "confidence": 0.3,
+   "verdict": "invalid",
+   "claim_ids": [
+    "c-0002"
+   ],
+   "rv": [
+    {
+     "rule_id": "RV4",
+     "verdict": "pass",
+     "reason": "the decision does not access held-out grading data"
+    },
+    {
+     "rule_id": "RV7",
+     "verdict": "fail",
+     "reason": "claim cites no evidence"
+    },
+    {
+     "rule_id": "RV10",
+     "verdict": "pass",
+     "reason": "present claim is not labelled as a registry negative"
+    }
+   ]
+  },
+  {
+   "decision_id": "t-0:d-0014",
+   "parent_id": "t-0:d-0011",
+   "tool": "record_claim",
+   "rationale": "Record s-003",
+   "alternatives": [
+    {
+     "option": "cannot_assess",
+     "reason": "weak signal"
+    }
+   ],
+   "confidence": 0.3,
+   "verdict": "invalid",
+   "claim_ids": [
+    "c-0003"
+   ],
+   "rv": [
+    {
+     "rule_id": "RV4",
+     "verdict": "pass",
+     "reason": "the decision does not access held-out grading data"
+    },
+    {
+     "rule_id": "RV7",
+     "verdict": "fail",
+     "reason": "claim cites no evidence"
+    },
+    {
+     "rule_id": "RV10",
+     "verdict": "pass",
+     "reason": "present claim is not labelled as a registry negative"
+    }
+   ]
+  },
+  {
+   "decision_id": "t-0:d-0015",
+   "parent_id": "t-0:d-0011",
+   "tool": "record_claim",
+   "rationale": "Record s-004",
+   "alternatives": [
+    {
+     "option": "cannot_assess",
+     "reason": "weak signal"
+    }
+   ],
+   "confidence": 0.3,
+   "verdict": "invalid",
+   "claim_ids": [
+    "c-0004"
+   ],
+   "rv": [
+    {
+     "rule_id": "RV4",
+     "verdict": "pass",
+     "reason": "the decision does not access held-out grading data"
+    },
+    {
+     "rule_id": "RV7",
+     "verdict": "fail",
+     "reason": "claim cites no evidence"
+    },
+    {
+     "rule_id": "RV10",
+     "verdict": "pass",
+     "reason": "present claim is not labelled as a registry negative"
+    }
+   ]
+  },
+  {
+   "decision_id": "t-0:d-0016",
+   "parent_id": "t-0:d-0011",
+   "tool": "record_claim",
+   "rationale": "Record s-005",
+   "alternatives": [
+    {
+     "option": "cannot_assess",
+     "reason": "weak signal"
+    }
+   ],
+   "confidence": 0.3,
+   "verdict": "invalid",
+   "claim_ids": [
+    "c-0005"
+   ],
+   "rv": [
+    {
+     "rule_id": "RV4",
+     "verdict": "pass",
+     "reason": "the decision does not access held-out grading data"
+    },
+    {
+     "rule_id": "RV7",
+     "verdict": "fail",
+     "reason": "claim cites no evidence"
+    },
+    {
+     "rule_id": "RV10",
+     "verdict": "pass",
+     "reason": "present claim is not labelled as a registry negative"
+    }
+   ]
+  },
+  {
+   "decision_id": "t-0:d-0017",
+   "parent_id": "t-0:d-0011",
+   "tool": "record_claim",
+   "rationale": "Record s-006",
+   "alternatives": [
+    {
+     "option": "cannot_assess",
+     "reason": "weak signal"
+    }
+   ],
+   "confidence": 0.3,
+   "verdict": "invalid",
+   "claim_ids": [
+    "c-0006"
+   ],
+   "rv": [
+    {
+     "rule_id": "RV4",
+     "verdict": "pass",
+     "reason": "the decision does not access held-out grading data"
+    },
+    {
+     "rule_id": "RV7",
+     "verdict": "fail",
+     "reason": "claim cites no evidence"
+    },
+    {
+     "rule_id": "RV10",
+     "verdict": "pass",
+     "reason": "present claim is not labelled as a registry negative"
+    }
+   ]
+  },
+  {
+   "decision_id": "t-0:d-0018",
+   "parent_id": "t-0:d-0011",
+   "tool": "record_claim",
+   "rationale": "Record s-007",
+   "alternatives": [
+    {
+     "option": "cannot_assess",
+     "reason": "weak signal"
+    }
+   ],
+   "confidence": 0.3,
+   "verdict": "invalid",
+   "claim_ids": [
+    "c-0007"
+   ],
+   "rv": [
+    {
+     "rule_id": "RV4",
+     "verdict": "pass",
+     "reason": "the decision does not access held-out grading data"
+    },
+    {
+     "rule_id": "RV7",
+     "verdict": "fail",
+     "reason": "claim cites no evidence"
+    },
+    {
+     "rule_id": "RV10",
+     "verdict": "pass",
+     "reason": "present claim is not labelled as a registry negative"
+    }
+   ]
+  },
+  {
+   "decision_id": "t-0:d-0019",
+   "parent_id": "t-0:d-0011",
+   "tool": "record_claim",
+   "rationale": "Record s-008",
+   "alternatives": [
+    {
+     "option": "cannot_assess",
+     "reason": "weak signal"
+    }
+   ],
+   "confidence": 0.3,
+   "verdict": "invalid",
+   "claim_ids": [
+    "c-0008"
+   ],
+   "rv": [
+    {
+     "rule_id": "RV4",
+     "verdict": "pass",
+     "reason": "the decision does not access held-out grading data"
+    },
+    {
+     "rule_id": "RV7",
+     "verdict": "fail",
+     "reason": "claim cites no evidence"
+    },
+    {
+     "rule_id": "RV10",
+     "verdict": "pass",
+     "reason": "present claim is not labelled as a registry negative"
+    }
+   ]
+  },
+  {
+   "decision_id": "t-0:d-0020",
+   "parent_id": "t-0:d-0011",
+   "tool": "record_claim",
+   "rationale": "Record s-009",
+   "alternatives": [
+    {
+     "option": "cannot_assess",
+     "reason": "weak signal"
+    }
+   ],
+   "confidence": 0.3,
+   "verdict": "invalid",
+   "claim_ids": [
+    "c-0009"
+   ],
+   "rv": [
+    {
+     "rule_id": "RV4",
+     "verdict": "pass",
+     "reason": "the decision does not access held-out grading data"
+    },
+    {
+     "rule_id": "RV7",
+     "verdict": "fail",
+     "reason": "claim cites no evidence"
+    },
+    {
+     "rule_id": "RV10",
+     "verdict": "pass",
+     "reason": "present claim is not labelled as a registry negative"
+    }
+   ]
+  },
+  {
+   "decision_id": "t-0:d-0021",
+   "parent_id": "t-0:d-0011",
+   "tool": "record_claim",
+   "rationale": "Record s-010",
+   "alternatives": [
+    {
+     "option": "cannot_assess",
+     "reason": "weak signal"
+    }
+   ],
+   "confidence": 0.3,
+   "verdict": "invalid",
+   "claim_ids": [
+    "c-0010"
+   ],
+   "rv": [
+    {
+     "rule_id": "RV4",
+     "verdict": "pass",
+     "reason": "the decision does not access held-out grading data"
+    },
+    {
+     "rule_id": "RV7",
+     "verdict": "fail",
+     "reason": "claim cites no evidence"
+    },
+    {
+     "rule_id": "RV10",
+     "verdict": "pass",
+     "reason": "present claim is not labelled as a registry negative"
+    }
+   ]
+  },
+  {
+   "decision_id": "t-0:d-0022",
+   "parent_id": "t-0:d-0011",
+   "tool": "note_limitation",
+   "rationale": "Document limits",
+   "alternatives": [
+    {
+     "option": "none",
+     "reason": "required"
+    }
+   ],
+   "confidence": 0.9,
+   "verdict": "sound",
+   "claim_ids": [],
+   "rv": [
+    {
+     "rule_id": "RV4",
+     "verdict": "pass",
+     "reason": "the decision does not access held-out grading data"
+    }
+   ]
+  }
+ ],
+ "markers": [
+  {
+   "lon": 136.83940352,
+   "lat": 35.07515271,
+   "status": "present",
+   "confidence": 0.3,
+   "label": "warehouse",
+   "claim_id": "c-0001",
+   "earned": "unestablished",
+   "lowered": [
+    "RV7: cited no supporting evidence",
+    "RV10: contradicts a known negative",
+    "RV7: cited no supporting evidence"
+   ]
+  },
+  {
+   "lon": 136.90264463,
+   "lat": 35.05790514,
+   "status": "present",
+   "confidence": 0.3,
+   "label": "warehouse",
+   "claim_id": "c-0002",
+   "earned": "unestablished",
+   "lowered": [
+    "RV7: cited no supporting evidence",
+    "RV7: cited no supporting evidence"
+   ]
+  },
+  {
+   "lon": 136.82790514,
+   "lat": 35.06365433,
+   "status": "present",
+   "confidence": 0.3,
+   "label": "warehouse",
+   "claim_id": "c-0003",
+   "earned": "unestablished",
+   "lowered": [
+    "RV7: cited no supporting evidence",
+    "RV7: cited no supporting evidence"
+   ]
+  },
+  {
+   "lon": 136.8566511,
+   "lat": 35.07227812,
+   "status": "present",
+   "confidence": 0.3,
+   "label": "warehouse",
+   "claim_id": "c-0004",
+   "earned": "unestablished",
+   "lowered": [
+    "RV7: cited no supporting evidence",
+    "RV7: cited no supporting evidence"
+   ]
+  },
+  {
+   "lon": 136.89977003,
+   "lat": 35.06365433,
+   "status": "present",
+   "confidence": 0.3,
+   "label": "warehouse",
+   "claim_id": "c-0005",
+   "earned": "unestablished",
+   "lowered": [
+    "RV7: cited no supporting evidence",
+    "RV7: cited no supporting evidence"
+   ]
+  },
+  {
+   "lon": 136.87102407,
+   "lat": 35.0852138,
+   "status": "present",
+   "confidence": 0.3,
+   "label": "warehouse",
+   "claim_id": "c-0006",
+   "earned": "unestablished",
+   "lowered": [
+    "RV7: cited no supporting evidence",
+    "RV7: cited no supporting evidence"
+   ]
+  },
+  {
+   "lon": 136.83796622,
+   "lat": 35.10533597,
+   "status": "present",
+   "confidence": 0.3,
+   "label": "warehouse",
+   "claim_id": "c-0007",
+   "earned": "unestablished",
+   "lowered": [
+    "RV7: cited no supporting evidence",
+    "RV7: cited no supporting evidence"
+   ]
+  },
+  {
+   "lon": 136.91414301,
+   "lat": 35.09240029,
+   "status": "present",
+   "confidence": 0.3,
+   "label": "warehouse",
+   "claim_id": "c-0008",
+   "earned": "unestablished",
+   "lowered": [
+    "RV7: cited no supporting evidence",
+    "RV7: cited no supporting evidence"
+   ]
+  },
+  {
+   "lon": 136.91126842,
+   "lat": 35.05503054,
+   "status": "present",
+   "confidence": 0.3,
+   "label": "warehouse",
+   "claim_id": "c-0009",
+   "earned": "unestablished",
+   "lowered": [
+    "RV7: cited no supporting evidence",
+    "RV7: cited no supporting evidence"
+   ]
+  },
+  {
+   "lon": 136.82790514,
+   "lat": 35.11539705,
+   "status": "present",
+   "confidence": 0.3,
+   "label": "warehouse",
+   "claim_id": "c-0010",
+   "earned": "unestablished",
+   "lowered": [
+    "RV7: cited no supporting evidence",
+    "RV7: cited no supporting evidence"
+   ]
+  }
+ ],
+ "scores": {
+  "reasoning_rules": {
+   "status": "available",
+   "reason": null,
+   "scores": [
+    {
+     "metric": "rules_pass_rate",
+     "value": 71.42857142857143,
+     "unit": "percent",
+     "numerator": 5,
+     "denominator": 7,
+     "basis": "passed / assessed workflow rule criteria; not applicable criteria excluded; not intrinsic cognition"
+    }
+   ]
+  },
+  "reviewer": {
+   "status": "unavailable",
+   "reason": "No recorded reviewer result bound to this run.",
+   "scores": []
+  },
+  "agentcore": {
+   "status": "unavailable",
+   "reason": "No recorded agentcore result bound to this run.",
+   "scores": []
+  },
+  "output": {
+   "status": "unavailable",
+   "reason": "Historical held-out scores are unavailable: no split content is bound to this sealed run. Supply an explicit current server reference for a separately labelled comparison.",
+   "scores": []
+  },
+  "calibration": {
+   "status": "unavailable",
+   "reason": "Historical held-out scores are unavailable: no split content is bound to this sealed run. Supply an explicit current server reference for a separately labelled comparison.",
+   "scores": []
+  },
+  "predicted_accuracy": {
+   "status": "unavailable",
+   "reason": "No recorded predicted_accuracy result bound to this run.",
+   "scores": []
+  }
+ },
+ "rules_basis": null
+}
