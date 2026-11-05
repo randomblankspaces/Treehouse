@@ -62,3 +62,9 @@ temp/
 # Treehouse outputs (demo store, cassettes from record mode)
 out/
 .treehouse/
+
+# /lead process state (local only)
+.lead/
+CODEX-WORK-SINCE-KIRO-MERGE.md
+
+.claude/*.local.md
