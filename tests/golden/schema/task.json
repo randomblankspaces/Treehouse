@@ -740,6 +740,41 @@
       "title": "Thresholds",
       "type": "object"
     },
+    "UserExample": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "lat": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Lat",
+          "type": "number"
+        },
+        "lon": {
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Lon",
+          "type": "number"
+        }
+      },
+      "required": [
+        "lon",
+        "lat"
+      ],
+      "title": "UserExample",
+      "type": "object"
+    },
     "Windows": {
       "additionalProperties": false,
       "properties": {
@@ -945,6 +980,14 @@
         "type": "string"
       },
       "title": "Tools Allowed",
+      "type": "array"
+    },
+    "user_examples": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/UserExample"
+      },
+      "title": "User Examples",
       "type": "array"
     },
     "version": {

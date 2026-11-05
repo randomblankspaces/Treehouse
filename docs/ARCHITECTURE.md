@@ -89,6 +89,20 @@ Live example (`live-nagoya-real-sonnet-2`, real Clay data offered): the agent ch
 too coarse" for ~40 m warehouses, found no labelled examples, could not reach imagery, recorded the limitation and made
 one honest `cannot_assess` claim rather than guessing.
 
+## 4b. How confidence is gauged
+
+- **Stated** — the agent gives a 0–1 confidence with every decision and claim (self-reported).
+- **Calibrated (score b)** — on keyed areas each claim is graded against the reference; Brier score and reliability bins
+  show whether "0.8" really means right 80 % of the time.
+- **Earned (deliberation, inside score a)** — did the agent compare options (model, cell size, method), run an
+  independent check (second source or vision) and revise before stating high confidence? If not, the claim is flagged
+  *unearned*.
+- **Predicted (score c)** — for areas with no answer key, accuracy is estimated from those reasoning features and
+  labelled MODEL-ESTIMATED.
+
+Today the agent chooses between **precomputed** Clay grids (1,280 / 2,560 m) and AEF pooled to its chosen cell size;
+letting it ask Clay to embed chips of any size it picks is the top item in [FUTURE-FEATURES.md](FUTURE-FEATURES.md) (F1).
+
 ## 5. Scaling path (designed)
 
 1. **Host the agent on AgentCore Runtime**; turn on **online evaluation** so every production run is scored by the same

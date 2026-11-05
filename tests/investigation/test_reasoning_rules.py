@@ -129,6 +129,14 @@ def test_planted_held_out_examples_fail_rv4():
     assert failed(run(lg.snapshot())) == {"RV4"}
 
 
+def test_rv4_allows_user_split_but_still_forbids_grading_paths():
+    lg = good_ledger()
+    lg.decisions[1]["parameters"] = lg.actions[1]["parameters"] = {"split": "user"}
+    assert "RV4" not in failed(run(lg.snapshot()))
+    lg.decisions[1]["parameters"]["path"] = "keys/heldout.geojson"
+    assert "RV4" in failed(run(lg.snapshot()))
+
+
 def test_forbidden_dataset_id_fails_rv4():
     lg = good_ledger()
     lg.step("retrieve", {"dataset_id": "plateau-nagoya-warehouses", "bbox": AOI,

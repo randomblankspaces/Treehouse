@@ -1,0 +1,7 @@
+{
+  "synthetic": true,
+  "description": "Two planted embedding classes in contiguous 3x3 blocks; six interleaved background classes have no same-class 8-neighbour.",
+  "nx": 12,
+  "ny": 12,
+  "clumps": [[1, 1, 3, 3], [8, 8, 10, 10]]
+}
