@@ -361,8 +361,10 @@ def create_app(
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Referrer-Policy"] = "no-referrer"
         response.headers["Cache-Control"] = "no-store"
+        # img-src also allows GSI's public aerial tiles (Japan) for the storybook and dev-view maps.
         response.headers["Content-Security-Policy"] = (
-            "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'"
+            "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https://cyberjapandata.gsi.go.jp; "
+            "connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'"
         )
         return response
 
