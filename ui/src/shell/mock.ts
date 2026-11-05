@@ -1,6 +1,6 @@
 /** Scripted mock run: Nagoya Port warehouses (tasks/t1-nagoya-warehouses.yaml), replayed in real time.
  *  Numbers are illustrative, not measured; the UI labels this client MOCK. */
-import { EVALUATIONS, FOCUS_LABEL, focusOf, isKey, type Agent, type Json, type MapMarker, type Narrator, type Place, type RunSnapshot, type RunSummary, type TraceStep, type TreehouseClient } from './contract.ts';
+import { EVALUATIONS, FOCUS_LABEL, focusOf, isKey, type Agent, type ConfidenceProvenance, type DecisionNode, type Json, type MapMarker, type Narrator, type Place, type RunSnapshot, type RunSummary, type TraceStep, type TreehouseClient } from './contract.ts';
 
 // shortcut: illustrative $/token per agent, replace with backend-measured cost
 const AGENTS: (Agent & {price: [number, number]})[] = [
@@ -83,6 +83,38 @@ const MARKERS: MapMarker[] = (() => {
   return out.map((m, i) => ({...m, at_ms: Math.round((LABELLER.at + (i + 1) / out.length * LABELLER.dur) * 1000)}));
 })();
 
+// Decision beats, in order; the first is the root. Each node's parent is the previous decision (a derived
+// spine), and a final record_claim leaf collects the present markers so the tree ends in red sites.
+const DECISION_BEATS = BEATS.filter(b => b.why);
+function decisionsOf(elapsed: number): DecisionNode[] {
+  const visible = DECISION_BEATS.filter(b => b.at * 1000 <= elapsed);
+  const nodes: DecisionNode[] = visible.map((b, i) => {
+    const verdict: DecisionNode['verdict'] = b.error ? 'invalid' : 'sound';
+    return {decision_id: `mock:${b.id}`, parent_id: i === 0 ? null : `mock:${visible[i - 1].id}`,
+      parent_source: 'derived', is_root: i === 0, trial_id: 'mock', tool: b.tool ?? null, action_id: b.id,
+      rationale: b.why!, alternatives: (b.alts ?? []).map(([option, reason]) => ({option, reason})),
+      confidence: b.conf ?? 0.5, sequence: i, status: b.error ? 'error' : 'success', verdict,
+      rv: b.error ? [{rule_id: 'RV6', verdict: 'fail', reason: 'tool call failed; coverage not established'}]
+        : [{rule_id: 'RV1', verdict: 'pass', reason: 'cell size fits the ~40 m object'}], claim_ids: []};
+  });
+  // Attach the present markers as a claim leaf once labelling has started.
+  const present = MARKERS.filter(m => m.status === 'present' && m.at_ms! <= elapsed);
+  if (present.length && nodes.length) {
+    nodes.push({decision_id: 'mock:claims', parent_id: nodes[nodes.length - 1].decision_id, parent_source: 'derived',
+      is_root: false, trial_id: 'mock', tool: 'record_claim', action_id: 'claims',
+      rationale: 'Log the confirmed warehouses the vision sub-agent labelled.',
+      alternatives: [{option: 'record every candidate', reason: 'would claim unchecked cells as warehouses'}],
+      confidence: 0.7, sequence: nodes.length, status: 'success', verdict: 'sound',
+      rv: [{rule_id: 'RV7', verdict: 'pass', reason: 'claims cite the labelled image chip as evidence'}],
+      claim_ids: present.map(m => m.claim_id)});
+  }
+  return nodes;
+}
+const MOCK_PROVENANCE: ConfidenceProvenance = {stated: 0.7, label: 'earned', cited_evidence: true,
+  raised: ['RV7: cited the labelled image chip'], lowered: []};
+const MOCK_PROVENANCE_UNSURE: ConfidenceProvenance = {stated: 0.4, label: 'unestablished', cited_evidence: false,
+  raised: [], lowered: ['RV7: no image chip could be labelled']};
+
 function steps(elapsed: number, ids: Map<string, string>, agent = AGENTS[0]): TraceStep[] {
   const [PRICE_IN, PRICE_OUT] = agent.price, MODEL = agent.model_id;
   const out: TraceStep[] = [];
@@ -142,7 +174,10 @@ function snapshotOf(runId: string): RunSnapshot {
         {label: 'Tool schemas', tokens: 1350, detail: '12 tools incl. the Strands labelling sub-agent'},
         {label: 'Tool results', tokens: null, detail: 'Grows each turn; see per-call input tokens'}]},
     steps: list,
-    markers: MARKERS.filter(m => m.at_ms! <= elapsed),
+    markers: MARKERS.filter(m => m.at_ms! <= elapsed).map(m => ({...m,
+      decision_id: m.status === 'present' ? 'mock:claims' : null,
+      confidence_provenance: m.status === 'present' ? MOCK_PROVENANCE : m.status === 'cannot_assess' ? MOCK_PROVENANCE_UNSURE : null})),
+    decisions: decisionsOf(elapsed),
   };
 }
 

@@ -77,6 +77,21 @@ export function decodeSnapshot(value: unknown): RunSnapshot {
     for (const k of ['label', 'claim_id', 'trial_id']) text(m[k]); nullable(m.decision_id, text);
     choice(m.status, ['present', 'absent', 'cannot_assess', 'intact', 'damaged', 'destroyed']);
     array(m.evidence_refs, v => { const r = object(v); text(r.result_id); text(r.role); });
+    if (m.confidence_provenance !== undefined && m.confidence_provenance !== null) {
+      const cp = object(m.confidence_provenance); nullable(cp.stated, number);
+      choice(cp.label, ['earned', 'unearned', 'unestablished']); if (typeof cp.cited_evidence !== 'boolean') fail();
+      array(cp.raised, text); array(cp.lowered, text);
+    }
+  });
+  if (s.decisions !== undefined) array(s.decisions, v => {
+    const d = object(v); for (const k of ['decision_id', 'trial_id', 'status']) text(d[k]);
+    nullable(d.parent_id, text); nullable(d.tool, text); nullable(d.action_id, text);
+    text(d.rationale); nullable(d.confidence, number); nullable(d.sequence, number);
+    choice(d.parent_source, ['recorded', 'derived']); if (typeof d.is_root !== 'boolean') fail();
+    choice(d.verdict, ['sound', 'invalid', 'not_evaluated']);
+    array(d.alternatives, v => { const a = object(v); text(a.option); text(a.reason); });
+    array(d.claim_ids, text);
+    array(d.rv, v => { const r = object(v); text(r.rule_id); choice(r.verdict, ['pass', 'fail', 'not_applicable']); text(r.reason); });
   });
   return s as unknown as RunSnapshot;
 }
