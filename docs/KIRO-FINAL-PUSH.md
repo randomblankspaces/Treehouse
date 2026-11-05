@@ -17,13 +17,21 @@ Repo: `/workshop/Treehouse` = github.com/randomblankspaces/Treehouse. Work only 
 
 ## Tasks, in priority order
 
-1. **Finish unmerged package branches** (if they exist on origin): `wp/WP-004` (model thinking capture + deliberation
-   score: per-decision `thinking_ref`, `config/models.yaml` `request_fields` with Sonnet `{"thinking":{"type":"adaptive"}}`
-   — `enabled` is rejected by the model — and a run-config `thinking` switch that drops temperature), `wp/WP-007`
-   (`survey_clusters` k-means tool + card `user_examples`; wind cards with Global Renewables Watch reference), `wp/WP-003`
-   (Haiku 5.5 in `config/models.yaml`, real-data cards, Chattogram `oil_fuel_tank` card, review effort as analyst hours).
-   For each: merge `main` in, make the full suite green, keep every model-visible string identical to main (recorded
-   cassettes replay byte-exact), PR, merge.
+1. **Finish the two unmerged packages** (Codex is out until 10:35; WP-003 and WP-007 are already in `main`).
+   - **`wp/WP-004` (on origin)** — model thinking capture + deliberation score. Its suite is green and the reviewer
+     left two Blocking findings: (a) `src/treehouse/investigation/__init__.py` `_ObservedProvider` stores responses by
+     `trial_index` only, so a non-worker call with `trial_index=0` overwrites the worker turn's thinking; key by
+     (role, trial_index) and record worker turns only; a positional `trial_index` must not raise KeyError.
+     (b) `src/treehouse/investigation/runtime.py` ~179: attach thinking from the worker turn that produced the
+     `record_decision` call, and make `thinking_ref` the sha256 of the thinking/Reasoning text only. Add a test for each.
+     Also drop temperature only for Claude models when thinking is on (`providers/bedrock.py` ~270), so Nova runs keep
+     it. Merge `main` in first: it conflicts on `tests/golden/schema/manifest.json` and `runconfig.json`; regenerate
+     the goldens the way the tests say. Then PR and merge.
+   - **WP-010 (not started; branch from `main`)** — small WP-002 follow-ups: derive the LGND month from the card's
+     `time_window` instead of the hardcoded `month=4` in `tools/retrieval.py` and record it in provenance; accept
+     `RunConfig.servers` import paths only under `treehouse.providers.factories:`; one shared helper so every
+     `run_investigation` call without a server factory uses `cfg.servers`. Do this only if task 2 and 3 are done.
+   Keep every model-visible string identical to main (recorded cassettes replay byte-exact).
 2. **Simple thinking view (the essence of the demo)** — spec in `docs/FUTURE-FEATURES.md` §F2 and §F3. In the run
    report/story UI (`ui/src/shell/story.tsx`, `report.tsx`): (a) a pinned **scale card** for the cell/chip-size and
    foundation-model decision (chosen vs rejected options, the object's size from `config/asset-classes.yaml`, the agent's
