@@ -37,19 +37,40 @@ def _event(run, level, **kw):
 def test_session_spans_are_otel_span_logs(runs):
     _, r = runs
     run = r["synth-good"]
-    spans = ac.session_spans(run)
     trial = run.trials[0]
+    tool_args = {s.span_id: {"z": 2, "a": 1} for s in trial.spans if s.op == "execute_tool"}
+    spans = ac.session_spans(run, tool_args=tool_args)
     assert len(spans) == len(trial.spans)
     s0 = spans[0]
     assert set(s0) >= {"traceId", "spanId", "parentSpanId", "name", "kind", "startTimeUnixNano",
-                       "endTimeUnixNano", "durationNano", "attributes", "status", "resource", "scope"}
+                       "endTimeUnixNano", "durationNano", "attributes", "events", "status", "resource", "scope"}
+    assert {s["scope"]["name"] for s in spans} == {"strands.telemetry.tracer"}
     assert {s["attributes"]["session.id"] for s in spans} == {run.run_id}
+    assert {s["attributes"]["gen_ai.system"] for s in spans} == {"strands-agents"}
     assert {s["traceId"] for s in spans} == {trial.spans[0].trace_id}
     tools = [s for s in spans if s["attributes"]["gen_ai.operation.name"] == "execute_tool"]
     assert len(tools) == len(trial.calls) and all(ac.TOOL_PAYLOAD_ATTR in s["attributes"] for s in tools)
+    calls = trial.call_by_span()
+    for tool in tools:
+        call_id = tool["attributes"]["gen_ai.tool.call.id"]
+        assert tool["events"] == [
+            {"name": "gen_ai.tool.message", "timeUnixNano": tool["endTimeUnixNano"],
+             "attributes": {"content": '{"a":1,"z":2}', "role": "tool", "id": call_id}},
+            {"name": "gen_ai.choice", "timeUnixNano": tool["endTimeUnixNano"],
+             "attributes": {"message": ac.canonical_json(calls[tool["spanId"]].payload), "id": call_id}},
+        ]
+    default_tool = next(s for s in ac.session_spans(run) if s["attributes"]["gen_ai.operation.name"] == "execute_tool")
+    assert default_tool["events"][0]["attributes"]["content"] == "{}"
     roots = [s for s in spans if ac.CARD_ATTR in s["attributes"]]
     assert len(roots) == 1 and roots[0]["parentSpanId"] == ""
     assert len(json.loads(roots[0]["attributes"][ac.CLAIMS_ATTR])) == len(trial.claims)
+    assert roots[0]["events"] == [
+        {"name": "gen_ai.user.message", "timeUnixNano": roots[0]["endTimeUnixNano"],
+         "attributes": {"content": ac.canonical_json([{"text": run.card.goal}])}},
+        {"name": "gen_ai.choice", "timeUnixNano": roots[0]["endTimeUnixNano"],
+         "attributes": {"message": roots[0]["attributes"].get("treehouse.final_text", ""),
+                        "finish_reason": "end_turn"}},
+    ]
     json.dumps(spans)  # must be plain JSON for the API
 
 
@@ -101,7 +122,9 @@ def test_evaluate_success_error_and_ignored_fields(runs):
     _, r = runs
     run = r["synth-good"]
     client, stub = _stubbed()
-    spans, refs = ac.session_spans(run), ac.reference_inputs(run)
+    tool_span = next(s for s in run.trials[0].spans if s.op == "execute_tool")
+    tool_args = {tool_span.span_id: {"bbox": [1, 2, 3, 4]}}
+    spans, refs = ac.session_spans(run, tool_args=tool_args), ac.reference_inputs(run)
     ok = _res("Builtin.TrajectoryInOrderMatch", label="Pass", value=1.0, explanation="in order",
               ignoredReferenceInputFields=["assertions"])
     bad = _res("Builtin.GoalSuccessRate", errorCode="ValidationException", errorMessage="no messages")
@@ -110,7 +133,8 @@ def test_evaluate_success_error_and_ignored_fields(runs):
                           {"evaluatorId": ev, "evaluationInput": {"sessionSpans": spans},
                            "evaluationReferenceInputs": refs})
     with stub:
-        out = ac.run_agentcore_eval(run, ["Builtin.TrajectoryInOrderMatch", "Builtin.GoalSuccessRate"], client=client)
+        out = ac.run_agentcore_eval(run, ["Builtin.TrajectoryInOrderMatch", "Builtin.GoalSuccessRate"],
+                                    client=client, tool_args=tool_args)
     stub.assert_no_pending_responses()
     assert [o.ok for o in out] == [True, False]
     assert out[0].label == "Pass" and out[0].value == 1.0 and out[0].ignored_reference_fields == ["assertions"]
@@ -210,6 +234,25 @@ def test_lambda_module_is_import_light():
 
 
 # --- CLI -----------------------------------------------------------------------------------------------------
+
+def test_cli_loads_tool_args_from_investigation_ledgers(tmp_path):
+    import importlib.util
+    from pathlib import Path
+    spec = importlib.util.spec_from_file_location(
+        "agentcore_eval", Path(__file__).resolve().parents[2] / "scripts" / "agentcore_eval.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    assert mod._load_tool_args(tmp_path) is None
+    trials = tmp_path / "trials"
+    trials.mkdir()
+    (trials / "t-0.investigation.json").write_text(json.dumps({"actions": [
+        {"span_id": "span-b", "parameters": {"z": 2, "a": 1}},
+        {"span_id": "span-a", "parameters": {"query": "roads"}},
+    ]}))
+    assert mod._load_tool_args(tmp_path) == {
+        "span-a": {"query": "roads"}, "span-b": {"z": 2, "a": 1},
+    }
+
 
 def test_cli_writes_comparison_record(runs, monkeypatch, capsys):
     import importlib.util

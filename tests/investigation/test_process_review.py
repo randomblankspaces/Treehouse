@@ -70,7 +70,7 @@ def test_review_is_bounded_isolated_self_report_not_a_trust_verdict(context):
     result = invoke(store, reviewer)
     assert len(reviewer.calls) == 1
     req, role, trial_index, turn = reviewer.calls[0]
-    assert role == "process_reviewer" and req.tools == [] and req.params.max_tokens <= 800
+    assert role == "process_reviewer" and req.tools == [] and req.params.max_tokens <= 2000
     assert req.model_id == "separate-review-model"
     visible = req.model_dump_json()
     assert card.goal in visible

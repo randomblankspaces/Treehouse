@@ -25,32 +25,59 @@ MAX_INPUT_BYTES = 6 * 1024 * 1024  # AgentCore truncates larger Lambda inputs; w
 SERVICE_NAME = "treehouse"
 
 
-def session_spans(run: SealedRun, service_name: str = SERVICE_NAME) -> list[dict[str, Any]]:
+def session_spans(run: SealedRun, service_name: str = SERVICE_NAME,
+                  tool_args: dict[str, Any] | None = None) -> list[dict[str, Any]]:
     """OTel span-log records (``aws/spans`` shape) for every trial of ``run``.
 
     shortcut: span times are the run's own clock (logical in replays, so near 1970); if AgentCore rejects
     old timestamps, offset them by the manifest time.
     """
     card_json = canonical_json(run.card.model_dump(mode="json"))
+    user_message = canonical_json([{"text": run.card.goal}])
     out: list[dict[str, Any]] = []
     for t in run.trials:
         calls = t.call_by_span()
         root = next((s for s in t.spans if s.parent_span_id is None), t.spans[0] if t.spans else None)
         for s in t.spans:
-            attrs: dict[str, Any] = {**s.attributes, "session.id": run.run_id, "gen_ai.operation.name": s.op}
+            attrs: dict[str, Any] = {
+                **s.attributes,
+                "session.id": run.run_id,
+                "gen_ai.operation.name": s.op,
+                "gen_ai.system": "strands-agents",
+            }
             if s is root:
                 attrs[CARD_ATTR] = card_json
                 attrs[CLAIMS_ATTR] = canonical_json([c.model_dump(mode="json") for c in t.claims])
-            if (c := calls.get(s.span_id)) is not None:
-                attrs[TOOL_STATUS_ATTR] = c.status
-                attrs[TOOL_PAYLOAD_ATTR] = canonical_json(c.payload)
+            call = calls.get(s.span_id)
+            if call is not None:
+                attrs[TOOL_STATUS_ATTR] = call.status
+                attrs[TOOL_PAYLOAD_ATTR] = canonical_json(call.payload)
+            events = []
+            if s.op == "invoke_agent":
+                events = [
+                    {"name": "gen_ai.user.message", "timeUnixNano": s.end_ns,
+                     "attributes": {"content": user_message}},
+                    {"name": "gen_ai.choice", "timeUnixNano": s.end_ns,
+                     "attributes": {"message": attrs.get("treehouse.final_text", ""),
+                                    "finish_reason": "end_turn"}},
+                ]
+            elif s.op == "execute_tool":
+                call_id = attrs.get("gen_ai.tool.call.id", "")
+                events = [
+                    {"name": "gen_ai.tool.message", "timeUnixNano": s.end_ns,
+                     "attributes": {"content": canonical_json((tool_args or {}).get(s.span_id, {})),
+                                    "role": "tool", "id": call_id}},
+                    {"name": "gen_ai.choice", "timeUnixNano": s.end_ns,
+                     "attributes": {"message": canonical_json(call.payload if call else {}), "id": call_id}},
+                ]
             out.append({
                 "resource": {"attributes": {"service.name": service_name}},
-                "scope": {"name": "treehouse.trace"},
+                "scope": {"name": "strands.telemetry.tracer"},
                 "traceId": s.trace_id, "spanId": s.span_id, "parentSpanId": s.parent_span_id or "",
                 "name": s.name, "kind": "INTERNAL",
                 "startTimeUnixNano": s.start_ns, "endTimeUnixNano": s.end_ns, "durationNano": s.end_ns - s.start_ns,
                 "attributes": attrs,
+                "events": events,
                 "status": {"code": "ERROR" if s.status == "error" else "OK"},
             })
     return out
@@ -114,12 +141,13 @@ class AgentCoreResult:
 
 def run_agentcore_eval(run: SealedRun, evaluators: list[str], *, client: Any = None,
                        references: list[dict[str, Any]] | None = None,
+                       tool_args: dict[str, Any] | None = None,
                        region: str = "us-east-1") -> list[AgentCoreResult]:
     """Call ``bedrock-agentcore`` ``Evaluate`` once per evaluator over the whole session.
 
     ``references`` defaults to ``reference_inputs(run)``; pass ``[]`` to run reference-free. API errors
     (throttling, access denied) propagate; per-result failures come back as results with ``error_code``."""
-    spans = session_spans(run)
+    spans = session_spans(run, tool_args=tool_args)
     size = len(json.dumps(spans).encode())
     if size > MAX_INPUT_BYTES:
         raise ValueError(f"session spans are {size} bytes; AgentCore accepts at most {MAX_INPUT_BYTES}")

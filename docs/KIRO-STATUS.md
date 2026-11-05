@@ -190,3 +190,42 @@ no red-site claims (the agent refused without imagery; see below).
 - `content_filtered` (run 2) is unexplained; watch for recurrence.
 - `publish_run_s3.py` uploads the run directory (manifest, traces, claims, ledger) but not the store-level
   request/response blobs; those are covered by the committed cassette.
+
+---
+
+## Task 5 — Strands vision sub-agent classifier (merged, PR #23)
+
+- `classify(method="vision_subagent")` sends a GSI 0.5 m aerial tile per cell (Japan only, attribution
+  recorded) to a Bedrock vision model through the Treehouse provider path (metered, cassette-recorded).
+  Injected into live runs with `--servers treehouse.providers.factories:vision_servers`; replay uses a
+  pixel-free GSI tile log, so no pixels are committed.
+- Design choice (labelled): one direct `ModelRequest` per cell rather than a Strands `Agent` loop.
+  Classification has no tools or iteration, so the "sub-agent" is a provider-backed classifier.
+- `classify` probe/SVM output is now capped at k=200 cells with `n_scored` and `score_summary`.
+- Live: two vision-enabled Nagoya runs (`t1-nagoya-sonnet-strands-vision-{1,2}`). **Neither run called
+  `vision_subagent`.** Both agents tried `imagery_window` (no imagery source on the warehouse cards) and
+  then fell back to embeddings. Vision run 2 recorded **5 `present` warehouse claims at confidence 0.3**,
+  labelled embedding-only and unverified. The vision path is tested offline but **not exercised live**.
+
+## Task 7 — Reasoning validity, score (a)
+
+- Rules RV1–RV10 (`investigation/reasoning_rules.py`), now **rv-v2**. Two false positives seen on live runs
+  are fixed: an omitted `get_examples` split is the server default "train" (RV4); a missing numeric
+  `stated_count` is not_applicable, because `note_limitation` only takes free text (RV7). Planted-bad-agent
+  tests still fail RV1 / RV2 / RV4.
+- Live rule results: `fixtures/live/rules/*.rv.json`. Run 3 fails RV7 (its claim cites no evidence).
+  Vision run 2 fails RV7 (no cited evidence) and RV8 (unreviewed area not stated).
+- **Reviewer model (live):** Nova Pro (`us.amazon.nova-pro-v1:0`, a different family from the Claude worker)
+  reviewed vision run 2 against `RUBRIC-v1.md`: strategy supported, **evidence_use contradicted** ("claims
+  recorded as present without imagery"), adaptation supported, uncertainty supported, stopping supported.
+  Evidence: `fixtures/live/review/t1-nagoya-sonnet-strands-vision-2.nova-pro.{review.json,model.jsonl}`.
+  The first attempt stopped at `max_tokens`, so the review output cap was raised from 800 to 2,000.
+- **AgentCore Evaluations (live):** on run 3 with `Builtin.ToolSelectionAccuracy` (9/10 tool calls Yes),
+  `Builtin.ToolParameterAccuracy` (8/10 Yes), `Builtin.TrajectoryInOrderMatch` (Yes), `Builtin.GoalSuccessRate`
+  (Yes, judged against the card's assertions), plus the Treehouse Lambda evaluators `treehouse_rules` (FAIL:
+  R4 fabrication, the claim cites no evidence) and `treehouse_guard` (PASS).
+  Evidence: `fixtures/live/agentcore/t1-nagoya-sonnet-strands-3.agentcore.json` (account id redacted).
+  - Fix needed first: AgentCore accepts only Strands/LangChain span scopes and needs message content.
+    `aws/agentcore.py` now emits scope `strands.telemetry.tracer` with inline `gen_ai.*` events (the "unified
+    telemetry" format in the AgentCore docs), plus tool arguments taken from the investigation ledger.
+- Each source above is reported separately; none is blended into another.

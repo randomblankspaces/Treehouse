@@ -121,7 +121,7 @@ def review_command(
     if output.exists():
         raise typer.BadParameter("output already exists")
     result = review_investigation(LocalStore(store), run_id, _factory(reviewer)(card=None, config=None),
-                                  model_id=model_id, params=InferenceParams(max_tokens=800))
+                                  model_id=model_id, params=InferenceParams(max_tokens=2000))
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("x") as stream:
         json.dump(result, stream, ensure_ascii=False, indent=2)

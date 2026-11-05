@@ -1,0 +1,122 @@
+{
+  "schema_version": "treehouse.process-review/1",
+  "manifest_ref": "sha256:daa2bbc22bd9a67ecac0c087b9c13ddeaac2edfc36efb07947e8ba10908b1600",
+  "run_id": "t1-nagoya-sonnet-strands-vision-2",
+  "rubric_version": "investigation-process-review/1",
+  "rubric_sha256": "sha256:66900d40d18f47dc80a845648c1eac56a4934f8098ceb31d7e4a883f6870f38f",
+  "source": "model_estimated",
+  "model_id": "us.amazon.nova-pro-v1:0",
+  "configured_model_id": "nova-pro",
+  "cost_usd": 0.029494400000000004,
+  "pricing": "reported",
+  "usage": {
+    "input_tokens": 32644,
+    "output_tokens": 1056,
+    "cache_read": 0,
+    "cache_write": 0,
+    "image_input_tokens": null
+  },
+  "findings": [
+    {
+      "criterion": "strategy",
+      "decision_ids": [
+        "t-0:d-0001",
+        "t-0:d-0002",
+        "t-0:d-0003",
+        "t-0:d-0004",
+        "t-0:d-0005",
+        "t-0:d-0006",
+        "t-0:d-0007",
+        "t-0:d-0008",
+        "t-0:d-0009",
+        "t-0:d-0010",
+        "t-0:d-0011"
+      ],
+      "evidence_refs": [
+        "r-0007",
+        "r-0008",
+        "r-0009",
+        "r-0012",
+        "r-0014",
+        "r-0016",
+        "r-0018",
+        "r-0020",
+        "r-0024",
+        "r-0026"
+      ],
+      "assessment": "supported",
+      "explanation": "The strategy is supported by the use of embedding retrieval and classification to identify potential warehouse locations, followed by aggregation to estimate the count. The use of 160m cells and the aef-10m-annual index is appropriate given the task constraints and the available data."
+    },
+    {
+      "criterion": "evidence_use",
+      "decision_ids": [
+        "t-0:d-0012",
+        "t-0:d-0013",
+        "t-0:d-0014",
+        "t-0:d-0015",
+        "t-0:d-0016"
+      ],
+      "evidence_refs": [
+        "r-0033",
+        "r-0034",
+        "r-0035",
+        "r-0036",
+        "r-0037"
+      ],
+      "assessment": "contradicted",
+      "explanation": "The decisions to record claims as present are contradicted by the evidence, as no imagery was available to verify the claims. The claims are based solely on embedding scores and are therefore ungrounded."
+    },
+    {
+      "criterion": "adaptation",
+      "decision_ids": [
+        "t-0:d-0007",
+        "t-0:d-0008",
+        "t-0:d-0009"
+      ],
+      "evidence_refs": [
+        "r-0018",
+        "r-0020",
+        "r-0022"
+      ],
+      "assessment": "supported",
+      "explanation": "The process adapts to the lack of imagery by switching to a linear probe classification method after failed attempts to retrieve imagery. This is a relevant change in decision based on the observed result."
+    },
+    {
+      "criterion": "uncertainty",
+      "decision_ids": [
+        "t-0:d-0012",
+        "t-0:d-0013",
+        "t-0:d-0014",
+        "t-0:d-0015",
+        "t-0:d-0016"
+      ],
+      "evidence_refs": [
+        "r-0033",
+        "r-0034",
+        "r-0035",
+        "r-0036",
+        "r-0037"
+      ],
+      "assessment": "supported",
+      "explanation": "The self-reported confidence of 0.3 for the recorded claims is consistent with the unresolved uncertainty due to the lack of imagery verification. The claims are appropriately marked as ungrounded."
+    },
+    {
+      "criterion": "stopping",
+      "decision_ids": [
+        "t-0:d-0017",
+        "t-0:d-0018"
+      ],
+      "evidence_refs": [
+        "r-0039",
+        "r-0041"
+      ],
+      "assessment": "supported",
+      "explanation": "The stopping condition is supported by the documented limitations, which include the lack of usable imagery and the embedding-only, unverified nature of the claims. The process stopped after noting these limitations."
+    }
+  ],
+  "limitations": [
+    "No imagery was usable, so all claims are ungrounded.",
+    "The embedding-only approach cannot separate warehouses from other types of buildings.",
+    "The 3,371 cells below the threshold were not reviewed as candidates."
+  ]
+}
