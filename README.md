@@ -4,13 +4,7 @@ Treehouse evaluates how a geospatial agent investigates a target area and whethe
 
 **Start here:** [product outline](docs/OUTLINE.md), [current plan](docs/PLAN.md), [implementation status](docs/PRODUCT-STATUS.md), and [documentation index](docs/README.md). Earlier decisions remain in [docs/SCOPE.md](docs/SCOPE.md); the current plan records the user’s November 4 clarification.
 
-**Latest context — documentation only:** Suhas supplied the LGND/ADB inception report. Read
-[the extracted report context](docs/LGND-REPORT-CONTEXT.md) before proposing benchmark, data or
-workflow changes. It covers analyst tasks, asset definitions, cell-versus-asset scoring, imagery
-permissions, transfer results and Section 5.8's agent-evaluation layer. Suhas has confirmed the
-minimal agent-evaluation sandbox. Strands is part of the workflow under evaluation; model choices,
-embeddings, classification and red prediction markers provide inspectable actions/results.
-Use [the Kiro prompts](docs/KIRO-NEXT-PROMPTS.md) to continue that scope in the AWS environment.
+**Current integration:** [MVP integration and readiness](docs/MVP-INTEGRATION-STATUS.md) records the active UI/backend repairs and remaining live-data gates. Reports must show percentage scores with their metric/population, separate money/time, and a readable summary grounded in recorded decisions. The [LGND/ADB context](docs/LGND-REPORT-CONTEXT.md) explains the supplied benchmark. Strands is part of the workflow being evaluated. Earlier live evidence below uses synthetic inputs and is not operational accuracy validation.
 
 ## Warehouse MVP: what ran live (2026-11-05)
 
@@ -33,16 +27,18 @@ the pipeline working, not real-world accuracy.
 | Run sealed to S3 with COMPLIANCE retention; a delete of that version **denied** | `fixtures/live/receipts/` |
 | Bedrock spend ledger ($10.97 at the end of the matrix) | `.spend/spend.jsonl` |
 
-Not done: the UI view of these runs (task 10, skipped by decision). The vision sub-agent is tested offline but
-was never called by a live agent. The predicted-accuracy panel has insufficient validation (2 configs).
+The earlier task10 UI omission is superseded by the current integration work. Recorded vision-subagent attempts in the later matrix errored; no successful live geospatial vision result is established. The predicted-accuracy panel has insufficient validation (2 configs). Historical experiment tables have not been recomputed under the corrected held-out population rules.
 
 ### Quickstart: replay a live run offline (fresh machine, no AWS)
 
 ```sh
 uv sync --locked --all-extras
-uv run python scripts/replay_live.py exp-nagoya-sonnet-1 --store out/replay/store   # prints the sealed claims
-uv run python scripts/analyze_experiments.py --store <a store with sealed runs> --out out/metrics.json
-uv run pytest tests/journeys/test_live_replay.py   # replays 3 live runs, asserts identical claims
+uv run python scripts/replay_live.py exp-nagoya-sonnet-1 --store out/replay/store   # seals, evaluates and prepares the report
+uv run treehouse verify --store out/replay/store
+npm --prefix ui ci
+npm --prefix ui run build
+uv run treehouse ui serve --store out/replay/store
+# Open http://127.0.0.1:8765/?run=exp-nagoya-sonnet-1
 ```
 
 ### Run it live (needs AWS credentials and the spend guard)
@@ -63,7 +59,7 @@ npm --prefix ui ci
 npm --prefix ui run build
 uv run --extra api treehouse sandbox demo --store out/investigation/store --run-id investigation-demo
 uv run --extra api treehouse ui serve --store out/investigation/store
-# Open http://127.0.0.1:8765 and select Investigation in Atlas.
+# Open http://127.0.0.1:8765/?run=investigation-demo to inspect the saved run.
 ```
 
 The offline example makes choices from observed scene metadata and synthetic image bytes, records a

@@ -15,6 +15,18 @@ on one worker thread. Their real outcomes determine queued/running/report-ready/
 failed state. The immutable preset has one trial and at most 40 turns. No AWS
 client or external API is invoked.
 
+## Snapshot and numerical report
+
+`GET /api/runs/{id}/snapshot` is the verified bridge for the Story and Developer shell. A sealed run remains inspectable when optional evaluations are missing. Pending runs have empty trace/prediction collections, null metrics and explicit reasons. Corruption fails closed. Exact claim status, claim/trial IDs, decision IDs and support references survive adaptation/export; present is a prediction, not confirmed ground truth.
+
+Snapshot mode, embedding/reference provenance, actual vision availability and limitations travel with all reports. Each separate evaluation section has status/value/reason and named `scores` with metric, numeric value, unit, numerator, denominator, basis and availability reason. Rules pass rate excludes not-applicable criteria; precision and recall use their declared protocol/population. ECE is percent, Brier raw. Missing reviewer/AgentCore scale or validated predicted-accuracy evidence stays unavailable. Constructed reference-derived inputs stay method_test_only.
+
+`thinking_summary` is a deterministic, bounded summary of recorded decisions and action outcomes, including model/harness, reasons, alternatives and stopping where recorded. Omitted coverage is explicit. It does not recover hidden reasoning. UI and readable Markdown show these scores and narrative alongside optional raw details; JSON/GeoJSON retain evidence identity.
+
+Historical cell output/calibration require a sealed reference/split binding; mutable adjacent split files cannot define a historical score. An explicit server-owned `--reference` provides a separate current catalogue comparison, validated and frozen at server startup with a content reference. The browser cannot choose its path or obtain label features. A supplied comparison is not rewritten into the sealed historical run.
+
+Public tool parameters and nested metadata use explicit field projections, with normalized sensitive-key and known token redaction as defense in depth. No arbitrary nested tool input, raw imagery, model-message blobs or key material belongs in the snapshot. This remains a local trusted-store interface, not a multi-user security boundary.
+
 ## Read contract
 
 - `GET /api/capabilities`: offline capability reasons, one-run concurrency limit,
@@ -57,8 +69,7 @@ client or external API is invoked.
   manifest ref, ledger head, sanitized problems and bundle provenance. This is
   tamper evidence within the local store, not external attestation. No independent
   expected head is accepted from the browser.
-- `GET /api/runs/{id}/export`: attachment containing exactly the same public
-  bundle as the bundle endpoint, without image bytes or private store files.
+- `GET /api/runs/{id}/export`: attachment with the public bundle and snapshot when evaluated, or the inspectable snapshot when optional score ledgers are missing; no image bytes or private store files.
 
 All errors have a string `detail`. Invalid parameters return 400, missing runs
 404, integrity/not-ready/busy 409, POST bodies over 4096 bytes 413, unknown preset
@@ -69,7 +80,7 @@ All errors have a string `detail`. Invalid parameters return 400, missing runs
 
 Numeric values, tiers, panels, intervals, denominators, `n`, `n_gold`, reasons,
 details, synthetic flags and replay flags are preserved from the authoritative
-bundle. No statistics are recomputed in the API. Trust remains the existing stub:
+bundle. Stored bundle statistics are preserved. The read-only snapshot derives named rule percentages, a recorded narrative and any explicit current-reference comparison locally without model calls or store writes. Trust remains the existing stub:
 **Not issued**, never a claimed production trust assessment.
 
 Trace attributes are an explicit allowlist of public IDs, tool names/results

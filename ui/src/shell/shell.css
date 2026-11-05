@@ -154,3 +154,13 @@ body:has(.shell){margin:0;background:#0d0b12}
   .shell .row .dur,.shell .row .wf{display:none}
   .shell .bar{padding:.5rem .75rem;position:static}.shell .field select{max-width:calc(100vw - 6rem)}
 }
+
+.run-evaluation pre { white-space: pre-wrap; overflow-wrap: anywhere; max-block-size: 22rem; overflow: auto; }
+.run-evaluation details { margin-block: .6rem; }
+.run-evaluation summary { cursor: pointer; }
+.prediction-evidence select { inline-size: 100%; max-inline-size: 100%; margin-block: .5rem; }
+.prediction-evidence { overflow-wrap: anywhere; }
+.recorded-summary { white-space: pre-line; line-height: 1.55; }
+.run-evaluation table { inline-size: 100%; border-collapse: collapse; margin-block: .7rem; }
+.run-evaluation th, .run-evaluation td { text-align: start; padding: .5rem; vertical-align: top; overflow-wrap: anywhere; }
+.run-evaluation tr { border-block-end: 1px solid currentColor; }

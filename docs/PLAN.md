@@ -1,5 +1,7 @@
 # Current implementation and continuation plan
 
+**Active work:** [MVP integration and readiness](MVP-INTEGRATION-STATUS.md): independent regression tests, safe public projection, fixed evaluation population, percentage reports and recorded-decision summary, then independent review/browser/CI and the authorized fork merge. AWS remains in Kiro. Older stages below are historical context.
+
 Updated November 4, 2026. This plan incorporates the clarified agent-investigation product and takes
 precedence over old overnight package schedules. It does not discard historical decisions or tests.
 

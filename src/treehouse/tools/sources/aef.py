@@ -33,6 +33,9 @@ class AefSource:
 
     def index(self, aoi_bbox: BBox, cell_size_m: float, year: int) -> CellIndex:
         lon, lat, vec, meta = load_fixture_points(self.fixture)
+        dates = tuple(meta["date_range"])
+        if dates != (f"{year}-01-01", f"{year}-12-31"):
+            raise ValueError(f"requested year {year} is unavailable; fixture dates are {dates[0]} to {dates[1]}")
         base = float(meta["cell_m"])
         if cell_size_m < base:
             raise ValueError(f"fixture base grid is {base:g} m; request cell_size_m >= {base:g} "
@@ -42,7 +45,7 @@ class AefSource:
             grid_id=f"{self.source_id}:{year}:{cell_size_m:g}m:{aoi_bbox}", cell_size_m=cell_size_m,
             crs="EPSG:4326", lon0=grid["lon0"], lat0=grid["lat0"], cell_deg=grid["cell_deg"], nx=grid["nx"],
             ny=grid["ny"], cell_ids=ids, lon=clon, lat=clat, emb=emb, source=meta["source"],
-            source_id=self.source_id, date_range=(f"{year}-01-01", f"{year}-12-31"),
+            source_id=self.source_id, date_range=dates,
             resolution_m=self.resolution_m, licence=self.licence, cost_usd=0.0,
             synthetic=bool(meta.get("synthetic", True)),
             provenance={"access": "fixture", "fixture": self.fixture.name, "real_access_path": REAL_ACCESS_PATH,

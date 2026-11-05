@@ -3,15 +3,16 @@ import { createRoot } from 'react-dom/client';
 import { client } from './client.ts';
 import { FOCUS_LABEL, focusOf, isKey, terminal, type Json, type RunSnapshot, type RunSummary, type TraceStep } from './contract.ts';
 import { KIND_WORD, PHASES, asOf, bboxOf, gist, phaseState, sentence, sinceStart, title } from './describe.ts';
-import { pick, renderMap, TILE_CREDIT } from './mapart.ts';
+import { pick, pickMarker, renderMap, TILE_CREDIT } from './mapart.ts';
 import { useNarration, usePrefs, useSnapshot } from './hooks.ts';
+import { EvaluationPanels, PredictionEvidence, money, tokenTotal } from './report.tsx';
 import { Settings } from './settings.tsx';
 import './shell.css';
 
-const clock = (ms: number) => { const t = Math.max(0, ms) / 1000; return `${String(Math.floor(t / 60)).padStart(2, '0')}:${(t % 60).toFixed(1).padStart(4, '0')}`; };
-const usd = (v: number) => `$${v.toFixed(v < 1 ? 4 : 2)}`;
-const kilo = (v: number) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(v);
-const mb = (v: number) => v >= 1e6 ? `${(v / 1e6).toFixed(1)} MB` : v >= 1e3 ? `${(v / 1e3).toFixed(1)} kB` : `${v} B`;
+const clock = (ms: number | null) => { if (ms === null) return 'unavailable'; const t = Math.max(0, ms) / 1000; return `${String(Math.floor(t / 60)).padStart(2, '0')}:${(t % 60).toFixed(1).padStart(4, '0')}`; };
+const usd = money;
+const kilo = (v: number | null) => v === null ? 'unavailable' : v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(v);
+const mb = (v: number | null) => v === null ? 'unavailable' : v >= 1e6 ? `${(v / 1e6).toFixed(1)} MB` : v >= 1e3 ? `${(v / 1e3).toFixed(1)} kB` : `${v} B`;
 const STATUS: Record<TraceStep['status'], string> = {ok: '✓ ok', error: '✕ failed', running: '… running'};
 const PHASE_GLYPH = {pending: '○', active: '●', done: '✓', recovered: '✓', error: '✕', skipped: '–'} as const;
 type Filter = 'all' | 'key' | 'errors';
@@ -63,7 +64,6 @@ function DevApp() {
   const visible = steps.filter(s => filter === 'all' || (filter === 'key' ? isKey(s) : s.status === 'error'));
   const selected = (follow ? steps[steps.length - 1] : byId.get(stepId ?? '')) ?? visible[0] ?? null;
   const total = Math.max(snap?.elapsed_ms ?? 1, 1);
-  const tokens = steps.reduce((t, s) => [t[0] + (s.model?.input_tokens ?? 0), t[1] + (s.model?.output_tokens ?? 0)], [0, 0]);
   const keys = steps.filter(isKey);
 
   const choose = (id: string) => { setFollow(false); setStepId(id); };
@@ -79,20 +79,20 @@ function DevApp() {
   return <div className="shell dev" data-theme={prefs.theme} data-text={prefs.text} data-cb={prefs.colorSafe ? 'on' : 'off'} data-motion={reduce ? 'reduce' : 'full'}>
     <a className="skip" href="#trace">Skip to trace</a>
     <header className="bar">
-      <a className="brand" href="/"><Logo /><span>treehouse</span><b>dev</b></a>
+      <a className="brand" href={runId ? `/?run=${encodeURIComponent(runId)}` : "/"}><Logo /><span>treehouse</span><b>dev</b></a>
       <label className="field">Run
         <select value={runId ?? ''} onChange={e => switchRun(e.target.value)} disabled={!runs?.length}>
           {runs?.map(r => <option key={r.run_id} value={r.run_id}>{r.title} · {r.status}</option>)}
         </select>
       </label>
       {snap && <dl className="stats">
-        <div><dt>Status</dt><dd className={`st st-${snap.status}`}>{live ? '● live' : snap.status}</dd></div>
+        <div><dt>Status</dt><dd className={`st st-${snap.status}`}>{live ? `${snap.mode} pending` : snap.status}</dd></div>
         <div><dt>{live ? 'Since start' : 'Took'}</dt><dd>{clock(sinceStart(snap, now))}</dd></div>
         <div><dt>Cost</dt><dd>{usd(snap.cost_usd)}</dd></div>
-        <div><dt>Tokens in / out</dt><dd>{kilo(tokens[0])} / {kilo(tokens[1])}</dd></div>
+        <div><dt>Tokens in / out</dt><dd>{tokenTotal(snap)} total</dd></div>
         <div><dt>Steps</dt><dd>{steps.length}</dd></div>
       </dl>}
-      <span className="source" title="Where this data comes from">{client.label}{snap?.synthetic ? ' · synthetic' : ''}</span>
+      <span className="source" title="Where this data comes from">{client.label} · {snap?.mode ?? 'unknown'}{snap?.synthetic ? ' · synthetic' : ''}</span>
       {client.replay && runId && <button type="button" onClick={() => { client.replay!(runId); switchRun(runId); setTick(t => t + 1); }}>Replay</button>}
       <button type="button" onClick={() => settings.current?.showModal()}>Settings</button>
     </header>
@@ -159,7 +159,7 @@ function DevApp() {
           </div>
           <ol id="trace" className="rows" aria-label="Trace steps; use arrow keys to move" onKeyDown={onTraceKey}>
             {visible.map(s => {
-              const end = s.end_ms ?? snap.elapsed_ms;
+              const end = s.end_ms ?? snap.elapsed_ms ?? s.start_ms;
               return <li key={s.span_id} className={`row ${isKey(s) ? 'key' : ''} ${s.status}`}>
                 <button type="button" id={`step-${s.span_id}`} aria-current={s.span_id === selected?.span_id} tabIndex={s.span_id === selected?.span_id ? 0 : -1} onClick={() => choose(s.span_id)}>
                   <span className="t num">+{clock(s.start_ms)}</span>
@@ -191,9 +191,10 @@ function DevApp() {
 function DevMap({snap, step, night, reduce, colorSafe}: {snap: RunSnapshot; step: TraceStep | null; night: boolean; reduce: boolean; colorSafe: boolean}) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [scrub, setScrub] = useState<number | null>(null);
+  const [selectedPrediction, setSelectedPrediction] = useState<string | null>(null);
   const [hover, setHover] = useState<ReturnType<typeof pick>>(null);
   useEffect(() => setScrub(null), [step?.span_id]);
-  const t = scrub ?? (step ? step.end_ms ?? snap.elapsed_ms : snap.elapsed_ms);
+  const t = scrub ?? (step ? step.end_ms ?? snap.elapsed_ms : snap.elapsed_ms) ?? 0;
   const view = asOf(snap, t), bbox = bboxOf(snap);
   useEffect(() => {
     let raf = 0;
@@ -203,7 +204,7 @@ function DevMap({snap, step, night, reduce, colorSafe}: {snap: RunSnapshot; step
         const dpr = devicePixelRatio || 1, W = c.clientWidth, H = c.clientHeight;
         if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); }
         const ctx = c.getContext('2d')!; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        renderMap(ctx, W, H, {mode: night ? 'night' : 'day', t: now, animate: !reduce, colorSafe, bbox, steps: view.steps, elapsed: t, markers: view.markers, born: [], technical: true, focus: step?.tool?.name ?? null});
+        renderMap(ctx, W, H, {mode: night ? 'night' : 'day', t: now, animate: !reduce, colorSafe, bbox, steps: view.steps, elapsed: t, markers: view.markers, born: [], illustrative: snap.mode === 'mock', technical: snap.mode === 'mock', focus: step?.tool?.name ?? null});
       }
       raf = requestAnimationFrame(frame);
     };
@@ -218,16 +219,19 @@ function DevMap({snap, step, night, reduce, colorSafe}: {snap: RunSnapshot; step
       <span className={`badge ${step || scrub !== null ? 'at' : 'livemap'}`}>{scrub !== null ? 'scrubbed' : step ? `at step: ${title(step)}` : 'latest'}</span>
       <span className="num">+{clock(t)}</span>
     </div>
-    <canvas ref={canvas} className="devmap" role="img" aria-label={`Map of the task area at +${clock(t)}: ${n('confirmed')} warehouses, ${n('rejected')} rejected, ${n('unsure')} unsure.`}
+    <canvas ref={canvas} className="devmap" role="img" aria-label={`Map of the task area at +${clock(t)}: ${n('present')} predicted present, ${n('absent')} absent, ${n('cannot_assess')} cannot assess.`}
+      onClick={e => { const r = e.currentTarget.getBoundingClientRect(); const m = pickMarker(r.width, r.height, bbox, view.markers, e.clientX - r.left, e.clientY - r.top); if (m) setSelectedPrediction(`${m.trial_id}:${m.claim_id}`); }}
       onMouseMove={e => { const r = e.currentTarget.getBoundingClientRect(); setHover(pick(r.width, r.height, bbox, e.clientX - r.left, e.clientY - r.top)); }} onMouseLeave={() => setHover(null)} />
-    <label className="scrub">Run clock <input type="range" min={0} max={Math.max(1, Math.round(snap.elapsed_ms))} step={100} value={Math.round(t)} onChange={e => setScrub(Number(e.target.value))} aria-valuetext={`+${clock(t)}`} />
+    <label className="scrub">Run clock <input type="range" min={0} max={Math.max(1, Math.round(snap.elapsed_ms ?? 0))} step={100} disabled={snap.elapsed_ms === null} value={Math.round(t)} onChange={e => setScrub(Number(e.target.value))} aria-valuetext={`+${clock(t)}`} />
       {scrub !== null && <button type="button" className="linkish" onClick={() => setScrub(null)}>reset</button>}</label>
     <dl className="kv readout">
       <dt>Cursor</dt><dd>{hover ? `${hover.lat.toFixed(5)}°N ${hover.lon.toFixed(5)}°E · cell ${hover.col},${hover.row}` : 'hover the map'}</dd>
       <dt>Active tools</dt><dd>{running.length ? running.join(', ') : 'none'}</dd>
-      <dt>Labels so far</dt><dd>{n('confirmed')} warehouse · {n('rejected')} look-alike · {n('unsure')} unsure</dd>
-      <dt>Imagery</dt><dd>{TILE_CREDIT}</dd>
+      <dt>Labels so far</dt><dd>{n('present')} predicted present · {n('absent')} absent · {n('cannot_assess')} cannot assess</dd>
+      <dt>Browser basemap</dt><dd>{TILE_CREDIT}. Display only; not evidence the agent inspected imagery. Drawn fallback is illustrative.</dd>
     </dl>
+    <PredictionEvidence snap={snap} selected={selectedPrediction} onSelect={setSelectedPrediction} />
+    <EvaluationPanels snap={snap} />
   </section>;
 }
 
@@ -249,8 +253,8 @@ function Inspector({step, byId, steps, choose}: {step: TraceStep; byId: Map<stri
       {step.decision.alternatives.length > 0 && <><h4>What it turned down</h4><ul>{step.decision.alternatives.map(a => <li key={a.option}><b>{a.option}</b> — {a.reason}</li>)}</ul></>}
     </section>}
     {step.model && <section className="block">
-      <h3>What the model was thinking</h3>
-      {step.model.thinking ? <p className="thinking">{step.model.thinking}</p> : <p className="hint">{step.status === 'running' ? 'The model is responding…' : 'The backend did not record thinking for this call.'}</p>}
+      <h3>Recorded model response text</h3>
+      {step.model.thinking ? <p className="thinking">{step.model.thinking}</p> : <p className="hint">{step.status === 'running' ? 'The model is responding…' : 'No model response text is exposed for this call. The run’s recorded rationale summary appears in the evaluation report.'}</p>}
       <dl className="kv"><dt>Model</dt><dd>{step.model.model_id}</dd><dt>Read / wrote</dt><dd className="num">{kilo(step.model.input_tokens)} / {kilo(step.model.output_tokens)} tokens</dd>
         <dt>Cost</dt><dd className="num">{usd(step.model.cost_usd)}</dd><dt>Then</dt><dd>{step.model.stop_reason === 'tool_use' ? 'called a tool' : step.model.stop_reason === 'end_turn' ? 'finished its turn' : step.model.stop_reason ?? '—'}</dd></dl>
     </section>}
@@ -258,8 +262,9 @@ function Inspector({step, byId, steps, choose}: {step: TraceStep; byId: Map<stri
       <h3>Inputs</h3>
       {args.length ? <table className="args"><tbody>{args.map(([k, v]) => <tr key={k}><th scope="row">{k}</th><td>{short(v)}</td></tr>)}</tbody></table> : <p className="hint">No inputs recorded.</p>}
       <h3>Result</h3>
+      {step.tool.result_metadata && <pre>{JSON.stringify(step.tool.result_metadata, null, 2)}</pre>}
       <p>{step.tool.result ?? (step.status === 'running' ? 'Waiting…' : step.error ? 'No result: the call failed.' : '—')}</p>
-      {step.tool.bytes_read > 0 && <p className="hint">Read {mb(step.tool.bytes_read)} of data.</p>}
+      {step.tool.bytes_read !== null && step.tool.bytes_read > 0 && <p className="hint">Read {mb(step.tool.bytes_read)} of data.</p>}
     </section>}
     <section className="block">
       <h3>Around this step</h3>

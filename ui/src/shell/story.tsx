@@ -2,12 +2,13 @@ import { Fragment, StrictMode, useCallback, useEffect, useRef, useState, type CS
 import { createRoot } from 'react-dom/client';
 import { POSES, RECTS, WINDOW_X, ease, fit, lerpCam, lerpSide, render, toScreen, walkSide, type Boy, type Camera, type Rect, type Side } from './art.ts';
 import { client, usingMock } from './client.ts';
-import { FOCUS_LABEL, focusOf, isKey, terminal, type Agent, type Narration, type Place, type RunSnapshot, type TraceStep } from './contract.ts';
+import { FOCUS_LABEL, focusOf, isKey, terminal, type Agent, type Narration, type Place, type RunSnapshot, type RunSummary, type TraceStep } from './contract.ts';
 import { PHASES, bboxOf, clock, phaseState, sinceStart } from './describe.ts';
 import { canPickFolder, exportRun } from './export.ts';
 import { useNarration, usePrefs, useSnapshot } from './hooks.ts';
-import { renderMap, TILE_CREDIT } from './mapart.ts';
+import { pickMarker, renderMap, TILE_CREDIT } from './mapart.ts';
 import type { Prefs } from './prefs.ts';
+import { EvaluationPanels, PredictionEvidence, money, tokenTotal } from './report.tsx';
 import { Settings } from './settings.tsx';
 import '@fontsource/pixelify-sans/latin-400.css';   // latin only: files, not data: URIs (the API's CSP blocks those)
 import '@fontsource/pixelify-sans/latin-700.css';
@@ -54,11 +55,12 @@ const SCENES = {
 function StoryApp() {
   const {prefs, setPrefs, reduce} = usePrefs();
   const mode = prefs.theme === 'light' ? 'day' : 'night';
-  const [phase, setPhase] = useState<Phase>(() => prefs.skipIntro ? 'book' : 'intro');
+  const [phase, setPhase] = useState<Phase>(() => new URLSearchParams(location.search).has('run') ? 'map' : prefs.skipIntro ? 'book' : 'intro');
   const [sceneText, setSceneText] = useState(() => prefs.skipIntro ? SCENES.book : mode === 'day' ? SCENES.day : SCENES.intro);
   const [places, setPlaces] = useState<Place[] | null>(null);
   const [agents, setAgents] = useState<Agent[] | null>(null);
-  const [runId, setRunId] = useState<string | null>(null);
+  const [runId, setRunId] = useState<string | null>(() => new URLSearchParams(location.search).get('run'));
+  const [runs, setRuns] = useState<RunSummary[]>([]);
   const [tick, setTick] = useState(0);
   const [startError, setStartError] = useState<string | null>(null);
   const {snap, error} = useSnapshot(phase === 'map' ? runId : null, tick, 500);
@@ -78,6 +80,18 @@ function StoryApp() {
     client.places(ctl.signal).then(setPlaces).catch(fail); client.agents(ctl.signal).then(setAgents).catch(fail);
     return () => ctl.abort();
   }, []);
+
+  useEffect(() => {
+    const ctl = new AbortController();
+    client.listRuns(ctl.signal).then(setRuns).catch(e => { if (!ctl.signal.aborted) setStartError(String(e.message ?? e)); });
+    return () => ctl.abort();
+  }, [tick, phase === 'book']);
+  useEffect(() => {
+    const url = new URL(location.href);
+    if (runId) url.searchParams.set('run', runId); else url.searchParams.delete('run');
+    history.replaceState(null, '', `${url.pathname}${url.search}`);
+  }, [runId]);
+  const openSaved = (id: string) => { setRunId(id); setTick(t => t + 1); setPhase('map'); setSceneText(SCENES.map); };
 
   // one loop: tweens + world render (paused while the map covers the screen)
   useEffect(() => {
@@ -177,19 +191,20 @@ function StoryApp() {
       <button type="button" className="px primary" autoFocus onClick={enter}>Open the treehouse</button>
     </div>}
     {phase === 'flying' && <button type="button" className="skip-anim px" onClick={() => { skipping.current = true; }}>Skip animation <kbd>Esc</kbd></button>}
-    {phase === 'book' && <BookForm places={places} agents={agents} box={bookBox} error={startError} onBegin={begin} />}
+    {phase === 'book' && <BookForm places={places} agents={agents} runs={runs} onOpen={openSaved} box={bookBox} error={startError} onBegin={begin} />}
     {phase === 'map' && <MapStage snap={snap} error={error} lines={lines} prefs={prefs} reduce={reduce} mode={mode} onNewTask={newTask} />}
     <Settings ref={settings} prefs={prefs} setPrefs={setPrefs} story />
   </div>;
 }
 
-function BookForm({places, agents, box, error, onBegin}: {places: Place[] | null; agents: Agent[] | null; box: {x: number; y: number; w: number; h: number}; error: string | null; onBegin: (p: Place, goal: string, a: Agent) => void}) {
+function BookForm({places, agents, runs, onOpen, box, error, onBegin}: {places: Place[] | null; agents: Agent[] | null; runs: RunSummary[]; onOpen: (id: string) => void; box: {x: number; y: number; w: number; h: number}; error: string | null; onBegin: (p: Place, goal: string, a: Agent) => void}) {
   const [agentId, setAgentId] = useState<string>('');
   const agent = agents?.find(a => a.agent_id === agentId) ?? agents?.[0] ?? null;
   const [placeId, setPlaceId] = useState<string>('');
   const place = places?.find(p => p.place_id === placeId) ?? places?.[0] ?? null;
   const [goal, setGoal] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [saved, setSaved] = useState('');
   const style = {'--bx': `${box.x}px`, '--by': `${box.y}px`, '--bw': `${box.w}px`, '--bh': `${box.h}px`} as CSSProperties;
   return <form className="book" style={style} aria-labelledby="book-h" onSubmit={async e => { e.preventDefault(); if (!place || !agent) return; setBusy(true); await onBegin(place, goal ?? place.goal, agent); setBusy(false); }}>
     <section className="page left">
@@ -197,7 +212,7 @@ function BookForm({places, agents, box, error, onBegin}: {places: Place[] | null
       <h2 id="book-h">What should the agent find?</h2>
       <label htmlFor="goal" className="sr">Task for the agent</label>
       <textarea id="goal" className="px" rows={9} value={goal ?? place?.goal ?? ''} readOnly={!place?.editable_goal} onChange={e => setGoal(e.target.value)} aria-describedby="goal-note" />
-      <p id="goal-note" className="note">{place && !place.editable_goal ? 'This backend runs pinned tasks, so the text is shown but not sent.' : 'Edit the prompt or keep the example.'}</p>
+      <p id="goal-note" className="note">{place && !place.editable_goal ? 'Pinned recorded replay. Goal, model and harness must match an available preset; live/custom runs are unavailable.' : 'Edit the prompt or keep the example.'}</p>
     </section>
     <section className="page right">
       <p className="chapter">Chapter two</p>
@@ -215,7 +230,13 @@ function BookForm({places, agents, box, error, onBegin}: {places: Place[] | null
       </label>
       {agent && <p id="agent-note" className="note">{agent.note} Model <code>{agent.model_id}</code> in a <i>{agent.harness}</i> harness.</p>}
       {error && <p className="book-error" role="alert">Could not start: {error}</p>}
-      <button type="submit" className="px primary" disabled={!place || !agent || busy}>{busy ? 'Starting…' : 'Send the agent'}</button>
+      <button type="submit" className="px primary" disabled={!place || !agent || busy}>{busy ? 'Starting…' : usingMock ? 'Send the agent (mock)' : 'Replay preset'}</button>
+      <label htmlFor="saved-run">Saved runs</label>
+      <select id="saved-run" value={saved} onChange={e => setSaved(e.target.value)} disabled={!runs.length}>
+        <option value="">Choose a saved run</option>
+        {runs.map(r => <option key={r.run_id} value={r.run_id}>{r.title} · {r.status}</option>)}
+      </select>
+      <button type="button" className="px" disabled={!saved} onClick={() => onOpen(saved)}>Open saved run</button>
     </section>
   </form>;
 }
@@ -225,6 +246,7 @@ function MapStage({snap, error, lines, prefs, reduce, mode, onNewTask}: {snap: R
   const [iris, setIris] = useState(reduce ? 1 : 0);
   const [, rerender] = useState(0);   // 10 Hz tick for the timer and the easing cost readout
   const recv = useRef({elapsed: 0, at: performance.now()});
+  const [selectedPrediction, setSelectedPrediction] = useState<string | null>(null);
   const born = useRef<number[]>([]);
   const cost = useRef(0);
   const [floats, setFloats] = useState<{id: number; v: number}[]>([]);
@@ -232,16 +254,16 @@ function MapStage({snap, error, lines, prefs, reduce, mode, onNewTask}: {snap: R
   const summary = useRef<HTMLDialogElement>(null);
   const [exported, setExported] = useState<string | null>(null);
   const live = snap ? !terminal(snap.status) : true;
-  useEffect(() => { if (snap) recv.current = {elapsed: snap.elapsed_ms, at: performance.now()}; }, [snap]);
+  useEffect(() => { if (snap) recv.current = {elapsed: snap.elapsed_ms ?? 0, at: performance.now()}; }, [snap]);
   useEffect(() => {   // a coin pops up each time the cost goes up
     const c = snap?.cost_usd ?? 0, d = c - lastCost.current; lastCost.current = c;
-    if (d <= 0 || reduce) return;
+    if (d <= 0 || reduce || snap?.mode !== 'mock') return;
     const id = performance.now(); setFloats(f => [...f.slice(-3), {id, v: d}]);
     const t = setTimeout(() => setFloats(f => f.filter(x => x.id !== id)), 1400); return () => clearTimeout(t);
   }, [snap?.cost_usd, reduce]);
-  const elapsed = useCallback(() => snap && live ? recv.current.elapsed + performance.now() - recv.current.at : snap?.elapsed_ms ?? 0, [snap, live]);   // run clock, drives map progress
+  const elapsed = useCallback(() => snap?.mode === 'mock' && live ? recv.current.elapsed + performance.now() - recv.current.at : snap?.elapsed_ms ?? 0, [snap, live]);   // run clock, drives map progress
   useEffect(() => { if (reduce) { setIris(1); return; } const t0 = performance.now(); let raf = 0; const f = (t: number) => { const k = Math.min((t - t0) / 1900, 1); setIris(k); if (k < 1) raf = requestAnimationFrame(f); }; raf = requestAnimationFrame(f); return () => cancelAnimationFrame(raf); }, [reduce]);
-  useEffect(() => { const id = setInterval(() => { rerender(n => n + 1); if (snap) cost.current += (snap.cost_usd - cost.current) * (reduce ? 1 : 0.18); }, 100); return () => clearInterval(id); }, [snap, reduce]);
+  useEffect(() => { const id = setInterval(() => { rerender(n => n + 1); if (snap?.cost_usd !== null && snap?.cost_usd !== undefined) cost.current = snap.mode === 'mock' ? cost.current + (snap.cost_usd - cost.current) * (reduce ? 1 : 0.18) : snap.cost_usd; }, 100); return () => clearInterval(id); }, [snap, reduce]);
   useEffect(() => {
     let raf = 0;
     const frame = (t: number) => {
@@ -251,7 +273,7 @@ function MapStage({snap, error, lines, prefs, reduce, mode, onNewTask}: {snap: R
         if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); }
         while (born.current.length < snap.markers.length) born.current.push(t);
         const ctx = c.getContext('2d')!; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        renderMap(ctx, W, H, {mode, t, animate: !reduce, colorSafe: prefs.colorSafe, bbox: bboxOf(snap), steps: snap.steps, elapsed: elapsed(), markers: snap.markers, born: born.current});
+        renderMap(ctx, W, H, {mode, t, animate: !reduce, colorSafe: prefs.colorSafe, bbox: bboxOf(snap), steps: snap.steps, elapsed: elapsed(), markers: snap.markers, illustrative: snap.mode === 'mock', born: born.current});
       }
       raf = requestAnimationFrame(frame);
     };
@@ -262,33 +284,34 @@ function MapStage({snap, error, lines, prefs, reduce, mode, onNewTask}: {snap: R
   const steps = snap?.steps ?? [];
   const latest = (f: (s: TraceStep) => boolean) => [...steps].reverse().find(f);
   const active = latest(s => s.status === 'running' && s.kind === 'execute_tool') ?? latest(s => s.status === 'running' && s.kind === 'chat') ?? latest(s => !!s.decision) ?? null;
-  const tokens = steps.reduce((t, s) => t + (s.model?.input_tokens ?? 0) + (s.model?.output_tokens ?? 0), 0);
   const count = (st: string) => snap?.markers.filter(m => m.status === st).length ?? 0;
   const vmin = Math.min(innerWidth, innerHeight), r0 = vmin * 0.24;
   const r = iris < 0.15 ? r0 * ease(iris / 0.15) : iris < 0.55 ? r0 : r0 + (Math.max(innerWidth, innerHeight) - r0) * ease((iris - 0.55) / 0.45);
   const irisStyle = iris < 1 ? {'--r': `${r}px`, '--dx': `${Math.min(r0 * 0.78, r * 0.78)}px`} as CSSProperties : undefined;
   return <div className="map-stage">
     <section className={`map-view ${iris < 1 ? 'iris' : ''}`} style={irisStyle} aria-label="Map of the task area">
-      <canvas ref={canvas} className="map-canvas" role="img" aria-label={`Aerial map of the task area. ${count('confirmed')} warehouses, ${count('rejected')} rejected look-alikes and ${count('unsure')} unsure labels so far.`} />
+      <canvas ref={canvas} className="map-canvas" role="img" aria-label={`Map of the task area. ${count('present')} predicted present, ${count('absent')} absent and ${count('cannot_assess')} cannot assess so far.`}
+        onClick={e => { if (!snap) return; const r = e.currentTarget.getBoundingClientRect(); const m = pickMarker(r.width, r.height, bboxOf(snap), snap.markers, e.clientX - r.left, e.clientY - r.top); if (m) setSelectedPrediction(`${m.trial_id}:${m.claim_id}`); }} />
       <div className="legend px">
         <ul aria-label="Map legend">
-          <li><i className="sw embed" />Embedded cell</li><li><i className="sw cand" />Candidate</li>
-          <li><i className="sw pin" />Warehouse <b>{count('confirmed')}</b></li><li><i className="sw rej" />Look-alike <b>{count('rejected')}</b></li><li><i className="sw uns" />Unsure <b>{count('unsure')}</b></li>
+          {snap?.mode === 'mock' && <><li><i className="sw embed" />Mock embedded cell</li><li><i className="sw cand" />Mock candidate</li></>}
+          <li><i className="sw pin" />Predicted present <b>{count('present')}</b></li><li><i className="sw rej" />Absent <b>{count('absent')}</b></li><li><i className="sw uns" />Cannot assess <b>{count('cannot_assess')}</b></li>
         </ul>
-        <p className="credit">{TILE_CREDIT}</p>
+        <p className="credit">{TILE_CREDIT} · browser basemap, not agent evidence. Drawn fallback is illustrative.</p>
       </div>
     </section>
     <aside className="panel" aria-label="Run summary">
       <p className="kicker"><Icon name="bino" /> Through the binoculars</p>
       <h2>{snap?.input.title ?? 'Starting the agent…'}</h2>
       {snap && <p className="agent-line"><Icon name="star" size={14} /> Agent: <b>{snap.context.model_id}</b> · {snap.context.harness}</p>}
+      {snap && <p className="note">{snap.mode} · {snap.provenance.embeddings} · vision {snap.provenance.vision}</p>}
       {error && <p className="alert" role="alert">Lost contact with the run: {error}</p>}
       <dl className="meters">
-        <div className="px"><dt><Icon name="hourglass" /> {live ? 'Since start' : 'Took'}</dt><dd>{snap ? clock(sinceStart(snap)) : '00:00'}</dd></div>
-        <div className="px coinbox"><dt><Icon name="coin" /> Cost</dt><dd>${cost.current.toFixed(4)}</dd>
+        <div className="px"><dt><Icon name="hourglass" /> {live ? 'Since start' : 'Took'}</dt><dd>{snap ? clock(sinceStart(snap)) : 'unavailable'}</dd></div>
+        <div className="px coinbox"><dt><Icon name="coin" /> {snap?.mode === 'replay' ? 'Recorded cost' : 'Cost'}</dt><dd>{snap ? money(snap.cost_usd) : 'unavailable'}</dd>
           <span className="floats" aria-hidden="true">{floats.map(f => <span key={f.id} className="float"><Icon name="coin" size={12} /> +${f.v.toFixed(4)}</span>)}</span></div>
-        <div className="px"><dt><Icon name="gem" /> Tokens</dt><dd>{kilo(tokens)}</dd></div>
-        <div className="px"><dt><Icon name="lamp" /> Status</dt><dd className={live ? 'livestat' : `st st-${snap?.status ?? 'queued'}`}>{live ? 'working' : snap?.status}</dd></div>
+        <div className="px"><dt><Icon name="gem" /> Tokens</dt><dd>{snap ? tokenTotal(snap) : 'unavailable'}</dd></div>
+        <div className="px"><dt><Icon name="lamp" /> Status</dt><dd className={live ? 'livestat' : `st st-${snap?.status ?? 'queued'}`}>{live ? `${snap?.mode ?? 'unknown'} pending` : snap?.status}</dd></div>
       </dl>
       {active && <section className={`bubble px ${isKey(active) ? 'key' : ''}`} aria-label="What the agent is doing" key={active.span_id}>
         <p className="eyebrow">{live ? 'Deciding now' : 'Last decision'}</p>
@@ -303,6 +326,7 @@ function MapStage({snap, error, lines, prefs, reduce, mode, onNewTask}: {snap: R
           {PHASES.map(([label, tools]) => { const state = phaseState(steps, tools, !live); return <li key={label} className={state}><span className="box" aria-hidden="true" /> {label} <span className="sr">({state})</span>{state === 'recovered' && <span className="mini">recovered from an error</span>}</li>; })}
         </ol>
       </section>
+      {snap && <PredictionEvidence snap={snap} selected={selectedPrediction} onSelect={setSelectedPrediction} />}
       <div className="actions">
         <button type="button" className={`px ${live ? '' : 'primary'}`} onClick={() => summary.current?.showModal()} disabled={!snap}>{live ? 'Summary so far' : 'Read the full summary'}</button>
         <button type="button" className="px" onClick={async () => { if (!snap) return; try { setExported(await exportRun(snap, lines)); } catch (e) { if ((e as Error).name !== 'AbortError') setExported(`Export failed: ${(e as Error).message}`); } }} disabled={!snap}>{canPickFolder() ? 'Export to a folder' : 'Download export'}</button>
@@ -318,7 +342,8 @@ function MapStage({snap, error, lines, prefs, reduce, mode, onNewTask}: {snap: R
 function Summary({ref, snap, lines, count}: {ref: Ref<HTMLDialogElement>; snap: RunSnapshot; lines: Narration[]; count: (s: string) => number}) {
   const keys = snap.steps.filter(isKey), errors = snap.steps.filter(s => s.error), thoughts = snap.steps.filter(s => s.model?.thinking);
   const labeller = snap.steps.find(s => s.tool?.name === 'strands_label');
-  const bytes = snap.steps.reduce((b, s) => b + (s.tool?.bytes_read ?? 0), 0);
+  const tools = snap.steps.flatMap(s => s.tool ? [s.tool] : []);
+  const bytes = tools.length && tools.every(t => t.bytes_read !== null) ? tools.reduce((b, t) => b + t.bytes_read!, 0) : null;
   const recovery = (e: TraceStep) => snap.steps.find(s => s.start_ms > e.start_ms && s.tool?.name === e.tool?.name);
   return <dialog ref={ref} className="summary" aria-labelledby="sum-h">
     <form method="dialog" className="summary-head"><h2 id="sum-h">The full story</h2><button type="submit">Close</button></form>
@@ -335,16 +360,17 @@ function Summary({ref, snap, lines, count}: {ref: Ref<HTMLDialogElement>; snap: 
           {k.decision && <><p>{k.decision.rationale}</p><p className="note">Self-reported confidence {Math.round(k.decision.confidence * 100)} %</p>
             {k.decision.alternatives.length > 0 && <ul>{k.decision.alternatives.map(a => <li key={a.option}>Not chosen — <b>{a.option}</b>: {a.reason}</li>)}</ul>}</>}
         </li>)}</ol></section>
-      <section><h3>What it was thinking</h3>
-        {thoughts.length ? <ol className="thoughts">{thoughts.map(t => <li key={t.span_id}><span className="num">{clock(t.start_ms)}</span> {t.model!.thinking}</li>)}</ol> : <p className="note">The backend did not record thinking for this run.</p>}</section>
+      {thoughts.length > 0 && <section><h3>Recorded model text</h3>
+        <ol className="thoughts">{thoughts.map(t => <li key={t.span_id}><span className="num">{clock(t.start_ms)}</span> {t.model!.thinking}</li>)}</ol></section>}
       <section><h3>How it built the database</h3>
         <p>{labeller ? <>It handed {String(labeller.tool?.args.chips ?? 'the')} image chips to the Strands labelling sub-agent. {labeller.decision?.rationale}</> : 'No Strands labelling step was recorded.'}</p>
-        <p>{count('confirmed')} labelled warehouse · {count('rejected')} look-alikes rejected · {count('unsure')} unsure. Labels are the agent’s own; Treehouse records them, it does not grade them here.</p></section>
+        <p>{count('present')} predicted present · {count('absent')} absent · {count('cannot_assess')} cannot assess. Class labels, status and confidence are the agent’s own reports.</p></section>
       <section><h3>Problems and recovery</h3>
         {errors.length ? <ul>{errors.map(e => { const r = recovery(e); return <li key={e.span_id}><code>{e.tool?.name}</code>: {e.error!.type}: {e.error!.message}. {r ? `It retried (${r.status}).` : 'It did not retry.'}</li>; })}</ul> : <p>None.</p>}</section>
+      <EvaluationPanels snap={snap} />
       <section><h3>Cost and time</h3>
-        <dl className="kv"><dt>Time</dt><dd>{(snap.elapsed_ms / 1000).toFixed(1)} s</dd><dt>Cost</dt><dd>${snap.cost_usd.toFixed(4)}</dd>
-          <dt>Steps</dt><dd>{snap.steps.length}</dd><dt>Data read</dt><dd>{(bytes / 1e6).toFixed(1)} MB</dd></dl></section>
+        <dl className="kv"><dt>Time</dt><dd>{snap.elapsed_ms === null ? 'unavailable' : `${(snap.elapsed_ms / 1000).toFixed(1)} s (${snap.timing_basis ?? 'recorded trace'})`}</dd><dt>Cost</dt><dd>{money(snap.cost_usd)}</dd>
+          <dt>Steps</dt><dd>{snap.steps.length}</dd><dt>Data read</dt><dd>{bytes === null ? 'unavailable' : `${(bytes / 1e6).toFixed(1)} MB`}</dd></dl></section>
       {lines.length > 0 && <section><h3>Narration</h3><ol>{[...lines].reverse().map((l, i) => <li key={i}>{l.text}</li>)}</ol></section>}
       <p><a href={`/dev?run=${encodeURIComponent(snap.run_id)}`}>Open every span in the dev view</a></p>
     </div>

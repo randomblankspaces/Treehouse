@@ -1,26 +1,35 @@
 /** Export a run: input, context, thinking, trace, decisions, narration, map markers.
  *  Chromium: the user picks a folder once and we write files into a new subfolder (File System Access API).
  *  Elsewhere: one JSON bundle download plus the readable summary. */
-import { FOCUS_LABEL, focusOf, isKey, type Narration, type RunSnapshot } from './contract.ts';
+import { EVALUATIONS, FOCUS_LABEL, focusOf, isKey, type Narration, type RunSnapshot } from './contract.ts';
 
 type DirHandle = {getDirectoryHandle(name: string, o: {create: true}): Promise<DirHandle>;
   getFileHandle(name: string, o: {create: true}): Promise<{createWritable(): Promise<{write(d: string): Promise<void>; close(): Promise<void>}>}>};
 type Picker = (o?: {mode: 'readwrite'; id?: string}) => Promise<DirHandle>;
 
-const usd = (v: number) => `$${v.toFixed(4)}`;
+const usd = (v: number | null) => v === null ? "unavailable" : `$${v.toFixed(4)}`;
 export function summaryMarkdown(s: RunSnapshot, lines: Narration[]) {
   const keys = s.steps.filter(isKey), errors = s.steps.filter(x => x.error);
-  const tokens = s.steps.reduce((t, x) => t + (x.model?.input_tokens ?? 0) + (x.model?.output_tokens ?? 0), 0);
+  const models = s.steps.flatMap(x => x.model ? [x.model] : []);
+  const tokens = models.length && models.every(m => m.input_tokens !== null && m.output_tokens !== null)
+    ? models.reduce((t, m) => t + m.input_tokens! + m.output_tokens!, 0).toLocaleString() : 'unavailable';
   const count = (st: string) => s.markers.filter(m => m.status === st).length;
   return [
-    `# ${s.title}`, '', `Run \`${s.run_id}\` · ${s.status} · ${(s.elapsed_ms / 1000).toFixed(1)} s · ${usd(s.cost_usd)} · ${tokens.toLocaleString()} tokens${s.synthetic ? ' · synthetic/mock data' : ''}`, '',
+    `# ${s.title}`, '', `Run \`${s.run_id}\` · ${s.status} · ${s.elapsed_ms === null ? 'unavailable time' : `${(s.elapsed_ms / 1000).toFixed(1)} s`} · ${usd(s.cost_usd)} · ${tokens} tokens${s.synthetic ? ' · synthetic/mock data' : ''}`, '',
+    '## Execution and provenance', `- Mode: ${s.mode}`, `- Embeddings: ${s.provenance.embeddings}`, `- Reference: ${s.provenance.reference}`, `- Vision: ${s.provenance.vision}`, ...s.provenance.limitations.map(l => `- ${l}`), '',
+    '## Recorded rationale summary', s.thinking_summary?.status === 'available' ? s.thinking_summary.text : s.thinking_summary?.reason ?? 'No contemporaneous decision summary is available. Hidden reasoning cannot be recovered.', '',
+    '## Independent evaluation', ...EVALUATIONS.flatMap(name => { const e = s.evaluation[name]; return [
+      `### ${name.replaceAll('_', ' ')}`, `Status: ${e.status}`, e.reason ?? '',
+      ...(e.scores ?? []).map(score => `- ${score.metric.replaceAll('_', ' ')}${score.trial_id ? ` (${score.trial_id})` : ''}: ${score.value === null ? 'unavailable' : `${Number(score.value.toFixed(3))}${score.unit === 'percent' ? '%' : ' raw'}`} · ${score.status.replaceAll('_', ' ')}. ${score.numerator !== null && score.denominator !== null ? `${score.numerator} / ${score.denominator}. ` : score.denominator !== null ? `${score.denominator} observations. ` : ''}${score.basis}${score.reason ? ` ${score.reason}` : ''}`),
+      e.scores?.length ? '' : 'No numeric score is available for this section.',
+      e.value === null ? '' : `<details><summary>Raw evaluation evidence</summary>\n\n${JSON.stringify(e.value, null, 2)}\n\n</details>`, '']; }),
     '## Input', s.input.goal, '', `- Task: ${s.input.task_id}`, `- Area (W,S,E,N): ${s.input.aoi_bbox?.join(', ') ?? '—'}`, `- Time window: ${s.input.time_window?.join(' → ') ?? '—'}`,
     `- Data: ${s.input.data_allowlist.map(d => d.source_id).join(', ') || '—'}`, `- Tools: ${s.input.tools_allowed.join(', ') || '—'}`, '',
     '## Context', `- Model: ${s.context.model_id}`, `- Provider: ${s.context.provider}`, `- Harness: ${s.context.harness}`, ...s.context.items.map(i => `- ${i.label}: ${i.detail}${i.tokens ? ` (${i.tokens} tokens)` : ''}`), '',
     '## Key decisions', ...keys.flatMap(k => [`### ${FOCUS_LABEL[focusOf(k)]}: ${k.tool?.name} (${k.status})`, k.decision?.rationale ?? '', k.decision ? `Self-reported confidence: ${Math.round(k.decision.confidence * 100)} %` : '',
       ...(k.decision?.alternatives ?? []).map(a => `- Not chosen: ${a.option}: ${a.reason}`), '']),
-    '## Thinking', ...s.steps.filter(x => x.model?.thinking).map(x => `- [${(x.start_ms / 1000).toFixed(1)} s] ${x.model!.thinking}`), '',
-    '## How the database was built', `${count('confirmed')} confirmed · ${count('rejected')} rejected · ${count('unsure')} unsure (labels as recorded by the agent; not graded here).`, '',
+    '## Recorded model text (when present)', ...s.steps.filter(x => x.model?.thinking).map(x => `- [${(x.start_ms / 1000).toFixed(1)} s] ${x.model!.thinking}`), '',
+    '## How the database was built', `${count('present')} predicted present · ${count('absent')} absent · ${count('cannot_assess')} cannot assess. Status and confidence are the agent’s own reports.`, ...s.markers.map(m => `- ${m.claim_id} (${m.trial_id}): ${m.label}; ${m.status}; decision ${m.decision_id ?? 'unavailable'}; evidence ${m.evidence_refs.map(r => `${r.result_id} (${r.role})`).join(', ') || 'none recorded'}`), '',
     '## Errors', ...(errors.length ? errors.map(e => `- ${e.tool?.name ?? e.name}: ${e.error!.type}: ${e.error!.message}`) : ['None.']), '',
     '## Narration', ...[...lines].reverse().map(l => `- ${l.text}`), '',
   ].join('\n');
@@ -35,7 +44,7 @@ export function exportFiles(s: RunSnapshot, lines: Narration[]): Record<string, 
     'trace.json': j(s.steps),
     'decisions.json': j(s.steps.filter(x => x.decision).map(x => ({span_id: x.span_id, tool: x.tool?.name, focus: focusOf(x), status: x.status, ...x.decision}))),
     'thinking.json': j(s.steps.filter(x => x.model).map(x => ({span_id: x.span_id, start_ms: x.start_ms, thinking: x.model!.thinking}))),
-    'markers.geojson': j({type: 'FeatureCollection', features: s.markers.map(m => ({type: 'Feature', geometry: {type: 'Point', coordinates: [m.lon, m.lat]}, properties: {label: m.label, status: m.status, confidence: m.confidence}}))}),
+    'markers.geojson': j({type: 'FeatureCollection', features: s.markers.map(m => ({type: 'Feature', geometry: {type: 'Point', coordinates: [m.lon, m.lat]}, properties: {label: m.label, status: m.status, confidence: m.confidence, claim_id: m.claim_id, trial_id: m.trial_id, evidence_refs: m.evidence_refs, decision_id: m.decision_id}}))}),
     'narration.txt': [...lines].reverse().map(l => l.text).join('\n'),
     'run.json': j({schema_version: 'treehouse.shell-export/1', exported_at: new Date().toISOString(), run: s, narration: [...lines].reverse()}),
   };

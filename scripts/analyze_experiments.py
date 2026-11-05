@@ -20,7 +20,14 @@ from typing import Any
 import numpy as np
 
 from treehouse.cards import load_card
-from treehouse.checks.protocol_grader import Asset, GradeReport, PredictedClaim, grade, transfer_gap
+from treehouse.checks.protocol_grader import (
+    Asset,
+    GradeReport,
+    PredictedClaim,
+    exclude_example_claims,
+    grade,
+    transfer_gap,
+)
 from treehouse.investigation.reasoning_rules import evaluate
 from treehouse.paths import repo_root
 from treehouse.schemas.tools import ToolError
@@ -110,6 +117,24 @@ def _assets(path: Path, heldout: set[str] | None = None) -> list[Asset]:
     return assets
 
 
+def _validated_split(reference_path):
+    split_path = reference_path.with_name(reference_path.stem.removesuffix("-warehouses") + "-split.json")
+    try:
+        split = json.loads(split_path.read_text())
+        groups = [split[name] for name in ("train", "heldout")]
+        if any(not isinstance(group, list) or not all(isinstance(x, str) for x in group)
+               or len(group) != len(set(group)) for group in groups):
+            raise ValueError("split populations must be unique ID lists")
+        train, heldout = map(set, groups)
+        identifiers = {str(f.get("id") or f.get("properties", {}).get("id"))
+                       for f in json.loads(reference_path.read_text())["features"]}
+        if not heldout or train & heldout or not (train | heldout) <= identifiers:
+            raise ValueError("split populations must be nonempty, disjoint and contain known reference IDs")
+        return train, heldout, split_path
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise ValueError("Reference split population is missing or invalid; held-out grading refused.") from exc
+
+
 def _reference(card) -> tuple[list[Asset], str, bool, str]:
     keyed_step = next((step for step in card.steps if step.keying.mode == "keyed"), None)
     if keyed_step is None:
@@ -122,16 +147,20 @@ def _reference(card) -> tuple[list[Asset], str, bool, str]:
     if relative is None:
         raise ValueError(f"keyed card {card.id} has no key_path")
     reference_path = repo_root() / relative
-    split_name = reference_path.stem.removesuffix("-warehouses") + "-split.json"
-    split_path = reference_path.with_name(split_name)
-    heldout = None
-    note = f"reference: {relative}"
-    if split_path.is_file():
-        heldout = set(json.loads(split_path.read_text())["heldout"])
-        note += f"; held-out IDs only from {split_path.relative_to(repo_root())}"
+    _, heldout, split_path = _validated_split(reference_path)
+    note = f"current reference: {relative}; current held-out split {split_path.relative_to(repo_root())}; not a sealed historical population"
     quality = keyed_step.keying.reference_quality
     completeness = "incomplete" if quality == "incomplete" else "complete"
     return _assets(reference_path, heldout), completeness, True, note
+
+
+def _examples(card):
+    step = next((s for s in card.steps if s.keying.mode == "keyed"), None)
+    if step is None or step.keying.key_path is None:
+        return []
+    path = repo_root() / step.keying.key_path
+    train, _, _ = _validated_split(path)
+    return _assets(path, train)
 
 
 def _claims(trial) -> list[PredictedClaim]:
@@ -147,10 +176,10 @@ def _claims(trial) -> list[PredictedClaim]:
 
 
 def _claim_correctness(
-    claims: list[PredictedClaim], assets: list[Asset], aoi_bbox: tuple[float, float, float, float]
+    claims: list[PredictedClaim], assets: list[Asset], aoi_bbox: tuple[float, float, float, float], examples=()
 ) -> list[bool]:
     return [
-        grade([claim], assets, aoi_bbox, completeness="complete", cell_size_m=CELL_SIZE_M).precision == 1.0
+        grade([claim], assets, aoi_bbox, completeness="complete", cell_size_m=CELL_SIZE_M, excluded_assets=examples).precision == 1.0
         for claim in claims
     ]
 
@@ -196,8 +225,9 @@ def _features(ledger: dict, claims: list[PredictedClaim], rv_pass_rate: float) -
 
 
 def _trial_panels(store: LocalStore, run, trial, assets, completeness, keyed, aoi_bbox):
-    claims = _claims(trial)
-    output_report = grade(claims, assets, aoi_bbox, completeness=completeness, cell_size_m=CELL_SIZE_M)
+    examples = _examples(run.card)
+    claims = exclude_example_claims(_claims(trial), examples, aoi_bbox, assets=assets, cell_size_m=CELL_SIZE_M)
+    output_report = grade(claims, assets, aoi_bbox, completeness=completeness, cell_size_m=CELL_SIZE_M, excluded_assets=examples)
     ledger_path = store.run_dir(run.run_id) / "trials" / f"{trial.trial_id}.investigation.json"
     ledger = json.loads(ledger_path.read_text())
     claim_rows = [claim.model_dump(mode="json") for claim in trial.claims]
@@ -211,14 +241,14 @@ def _trial_panels(store: LocalStore, run, trial, assets, completeness, keyed, ao
         "failed_rules": summary["failed_rules"],
         "rv_pass_rate": rv_pass_rate,
     }
-    if keyed:
-        correct = _claim_correctness(claims, assets, aoi_bbox)
+    if keyed and output_report.n_assets:
+        correct = _claim_correctness(claims, assets, aoi_bbox, examples)
         calibration = calibrate([claim.score for claim in claims], correct, n_bins=5) | {
             "correctness_method": CALIBRATION_METHOD
         }
     else:
         correct = []
-        calibration = {"no_grade_reason": "unkeyed"}
+        calibration = {"no_grade_reason": "No valid held-out population" if keyed else "unkeyed"}
     panels = {
         "output": output_report.model_dump(mode="json"),
         "reasoning": reasoning,
@@ -289,8 +319,9 @@ def _config_panels(rows: list[dict]) -> dict[str, dict]:
             values = [value for trial in trials if (value := _value(trial["panels"], path)) is not None]
             metrics[name] = _summary(values)
         if trials[0]["keyed"]:
-            confidences = [claim.score for trial in trials for claim in trial["claims"]]
-            correct = [outcome for trial in trials for outcome in trial["correct"]]
+            valid = [trial for trial in trials if len(trial["claims"]) == len(trial["correct"])]
+            confidences = [claim.score for trial in valid for claim in trial["claims"]]
+            correct = [outcome for trial in valid for outcome in trial["correct"]]
             pooled = calibrate(confidences, correct, n_bins=5) | {"correctness_method": CALIBRATION_METHOD}
         else:
             pooled = {"no_grade_reason": "unkeyed"}
@@ -395,6 +426,8 @@ def _predicted_accuracy(rows: list[dict]) -> dict:
         }
     return {
         "label": "MODEL-ESTIMATED",
+        "status": "method_test_only",
+        "reason": "Reference-derived synthetic fixtures demonstrate this estimator; they cannot validate operational accuracy or generalization.",
         "training_scope": "keyed Nagoya runs; None targets are skipped",
         "validation_scope": "leave-one-config-out on Nagoya and transfer to Gifu",
         "targets": output,
@@ -427,7 +460,7 @@ def _classifier_comparison() -> dict:
                 PredictedClaim(lon=site["lon"], lat=site["lat"], score=site["max_score"])
                 for site in aggregated["sites"]
             ]
-            report = grade(claims, assets, aoi_bbox, completeness="complete", cell_size_m=CELL_SIZE_M)
+            report = grade(claims, assets, aoi_bbox, completeness="complete", cell_size_m=CELL_SIZE_M, excluded_assets=_examples(card))
             methods[method] = report.model_dump(mode="json")
         trials.append({"seed": seed, "training_example_ids": subset, "methods": methods})
 

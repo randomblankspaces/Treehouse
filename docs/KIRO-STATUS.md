@@ -1,5 +1,7 @@
 # Kiro build status
 
+**Read the current checkpoint first:** [MVP integration and readiness](MVP-INTEGRATION-STATUS.md). Entries and metrics below record earlier execution, not current readiness or validated real-world accuracy. The new read-only UI integration is being repaired and reviewed. Old numerical tables have not been recomputed under the corrected population rules.
+
 Live log of what Kiro ran against the Workshop AWS account, with artifacts and blockers. Account IDs/ARNs
 are redacted to role/resource names. One section per task.
 

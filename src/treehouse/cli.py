@@ -473,6 +473,7 @@ app.add_typer(ui_app, name="ui")
 @ui_app.command("serve")
 def ui_serve(
     store: Annotated[Path, typer.Option("--store", help="Local run store; browser cannot change this path.")] = Path("out/demo/store"),
+    reference: Annotated[Path | None, typer.Option("--reference", help="Server-owned current comparison reference JSON; not a historical sealed score.")] = None,
     frontend: Annotated[Path | None, typer.Option("--frontend", help="Built frontend directory (default ui/dist).")] = None,
     judge_config: Annotated[Path | None, typer.Option("--judge-config", help="Optional server-owned AWS configuration.")] = None,
     judge_recorded: Annotated[Path | None, typer.Option("--judge-recorded", help="Optional recorded AWS receipt.")] = None,
@@ -498,7 +499,7 @@ def ui_serve(
         judge = create_judge_app(JudgeService(settings, recorded=read_json(judge_recorded) if judge_recorded else None),
                                  origin=browser_origin)
         web_app = create_app(store, origin=browser_origin,
-                             frontend_dist=frontend or repo_root() / "ui" / "dist", judge_app=judge)
+                             frontend_dist=frontend or repo_root() / "ui" / "dist", judge_app=judge, server_reference=reference)
     except (OSError, ValueError) as exc:
         typer.echo("Invalid UI configuration. Check the store, origin, frontend build and optional judge JSON.", err=True)
         raise typer.Exit(2) from exc

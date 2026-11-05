@@ -1,6 +1,6 @@
 /** Scripted mock run: Nagoya Port warehouses (tasks/t1-nagoya-warehouses.yaml), replayed in real time.
  *  Numbers are illustrative, not measured; the UI labels this client MOCK. */
-import { FOCUS_LABEL, focusOf, isKey, type Agent, type Json, type MapMarker, type Narrator, type Place, type RunSnapshot, type RunSummary, type TraceStep, type TreehouseClient } from './contract.ts';
+import { EVALUATIONS, FOCUS_LABEL, focusOf, isKey, type Agent, type Json, type MapMarker, type Narrator, type Place, type RunSnapshot, type RunSummary, type TraceStep, type TreehouseClient } from './contract.ts';
 
 // shortcut: illustrative $/token per agent, replace with backend-measured cost
 const AGENTS: (Agent & {price: [number, number]})[] = [
@@ -74,10 +74,10 @@ const LABELLER = BEATS.find(b => b.tool === 'strands_label')!;
 const MARKERS: MapMarker[] = (() => {
   let seed = 7; const r = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32;
   const out = Array.from({length: 48}, (_, i): MapMarker => {
-    const status = i < 31 ? 'confirmed' : i < 42 ? 'rejected' : 'unsure';
+    const status = i < 31 ? 'present' : i < 42 ? 'absent' : 'cannot_assess';
     return {lon: AOI[0] + (0.05 + 0.9 * r()) * (AOI[2] - AOI[0]), lat: AOI[3] - (0.06 + 0.28 * r()) * (AOI[3] - AOI[1]),
-      status, label: status === 'confirmed' ? 'warehouse' : status === 'rejected' ? 'factory' : 'unsure',
-      confidence: status === 'unsure' ? 0.3 + 0.2 * r() : 0.65 + 0.3 * r(), at_ms: 0};
+      claim_id: `mock-${i}`, trial_id: "mock", evidence_refs: [], decision_id: null, status, label: status === 'present' ? 'warehouse' : status === 'absent' ? 'factory' : 'unsure',
+      confidence: status === 'cannot_assess' ? 0.3 + 0.2 * r() : 0.65 + 0.3 * r(), at_ms: 0};
   });
   for (let i = out.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [out[i], out[j]] = [out[j], out[i]]; }
   return out.map((m, i) => ({...m, at_ms: Math.round((LABELLER.at + (i + 1) / out.length * LABELLER.dur) * 1000)}));
@@ -120,7 +120,9 @@ function snapshotOf(runId: string): RunSnapshot {
   const list = steps(elapsed, spanIds(runId), agent);
   const status = elapsed >= TOTAL_MS ? 'complete' : 'running';
   return {
-    run_id: run.run_id, title: run.title, status, synthetic: true,
+    run_id: run.run_id, title: run.title, status, synthetic: true, mode: 'mock',
+    provenance: {embeddings: 'synthetic', reference: 'none', vision: 'not_used', limitations: ['Scripted mock artwork, steps, thinking, costs and predictions are illustrative. No real execution or accuracy was measured.']},
+    evaluation: Object.fromEntries(EVALUATIONS.map(name => [name, {status: 'unavailable', value: null, reason: 'Scripted mock; no independent evaluation.'}])) as RunSnapshot['evaluation'],
     started_at: new Date(run.live ? startedAt.get(runId)! : Date.now() - 3_600_000).toISOString(),
     elapsed_ms: elapsed, cost_usd: list.reduce((sum, s) => sum + (s.model?.cost_usd ?? 0), 0),
     input: {task_id: 't1-nagoya-warehouses', title: 'Warehouses in a Nagoya port/logistics district',
