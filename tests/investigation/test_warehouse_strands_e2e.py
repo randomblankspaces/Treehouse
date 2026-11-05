@@ -233,3 +233,38 @@ def test_nagoya_warehouse_run_seals_with_bound_decisions(tmp_path: Path) -> None
     assert len(notes) == 1 and "count range" in notes[0]["text"] and "unreviewed" in notes[0]["text"]
     report = evaluate(ledger, card, asset_class="warehouse", claims=claims)
     assert not ({"RV1", "RV2", "RV4"} & set(report["summary"]["failed_rules"]))
+
+
+class LiveLikeProvider(WarehouseScriptProvider):
+    """Like a real Bedrock model: the decision's action_id is a free label, and the ToolUse id is assigned
+    independently, so binding must fall back to the exact tool + parameters."""
+
+    async def complete(self, req, *, role, trial_index, turn):
+        resp = await super().complete(req, role=role, trial_index=trial_index, turn=turn)
+        blocks = []
+        for b in resp.message.content:
+            if isinstance(b, ToolUse) and b.name == "record_decision":
+                b = b.model_copy(update={"input": {**b.input, "action_id": f"label-{b.input['action_id']}"}})
+            elif isinstance(b, ToolUse):
+                b = b.model_copy(update={"id": f"tooluse_{b.id}"})  # results are mapped back below
+            blocks.append(b)
+        return resp.model_copy(update={"message": resp.message.model_copy(update={"content": blocks})})
+
+    def _collect_results(self, req) -> None:
+        super()._collect_results(req)
+        for k in [k for k in self.results if k.startswith("tooluse_")]:
+            self.results[k.removeprefix("tooluse_")] = self.results[k]
+
+
+def test_decisions_bind_by_tool_and_parameters_when_toolUse_id_is_unknown(tmp_path: Path) -> None:
+    card = load_card(ROOT / "tasks/t1-nagoya-warehouses.yaml")
+    live = RunConfig.model_validate_json((ROOT / "fixtures/live/configs/t1-nagoya-sonnet-strands.json").read_bytes())
+    config = live.model_copy(update={"mode": "fake", "clock": "logical",
+                                     "worker": live.worker.model_copy(update={"provider": "fake"})})
+    store = LocalStore(tmp_path / "store")
+    run_investigation(store, card, config, LiveLikeProvider(), run_id="live-like")
+    run_dir = store.run_dir("live-like")
+    ledger = json.loads((run_dir / "trials/t-0.investigation.json").read_text())
+    assert ledger["actions"] and all(a["status"] == "success" and a["decision_id"] for a in ledger["actions"])
+    claims = (run_dir / "trials/t-0.claims.jsonl").read_text().splitlines()
+    assert len(claims) >= 2

@@ -44,7 +44,8 @@ def cost_panel(run: SealedRun) -> Panel:
     chats = [s for s in spans if s.op == "chat"]
     calls = [c for t in run.trials for c in t.calls]
     windows = [c for c in calls if c.name == "imagery_window" and c.status == "success"]
-    models = {str(w.payload.get("detail", {}).get("bytes_model", "measured")) for w in windows}
+    # no windows => zero bytes, trivially measured (an empty set used to fall through to the invalid "mixed")
+    models = {str(w.payload.get("detail", {}).get("bytes_model", "measured")) for w in windows} or {"measured"}
     bytes_detail = {"bytes_model": models.pop()} if len(models) == 1 else {"bytes_model": "mixed"}
     if bytes_detail["bytes_model"] != "measured":
         bytes_detail["chip"] = "modelled bytes"
