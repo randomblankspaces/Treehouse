@@ -1,5 +1,6 @@
 /** The same per-run evaluation and evidence appear in both shell views. */
 import { EVALUATIONS, type MapMarker, type RunSnapshot } from './contract.ts';
+import { words } from './describe.ts';
 
 const LABELS = {reasoning_rules: 'Reasoning rules', reviewer: 'Independent model reviewer', agentcore: 'AgentCore evaluation',
   output: 'Final output quality', calibration: 'Confidence calibration', predicted_accuracy: 'Predicted accuracy'};
@@ -15,7 +16,7 @@ export function EvaluationPanels({snap}: {snap: RunSnapshot}) {
     <h3>Recorded rationale summary</h3>
     <p className="recorded-summary">{snap.thinking_summary?.status === 'available' ? snap.thinking_summary.text : snap.thinking_summary?.reason ?? 'No contemporaneous decision summary is available. Hidden reasoning cannot be recovered.'}</p>
     <h3>Independent evaluation</h3>
-    <p>Execution: <b>{snap.mode}</b> · embeddings: {snap.provenance.embeddings} · reference: {snap.provenance.reference} · vision: {snap.provenance.vision}</p>
+    <p>Execution: <b>{words(snap.mode)}</b> · {words(snap.provenance.embeddings)} · reference: {snap.provenance.reference.replace(/_/g, ' ')} · {words('vision_' + snap.provenance.vision)}</p>
     <ul>{snap.provenance.limitations.map((text, i) => <li key={i}>{text}</li>)}</ul>
     {EVALUATIONS.map(name => { const e = snap.evaluation[name]; return <section key={name}>
       <h4>{LABELS[name]} · {e.status.replaceAll('_', ' ')}</h4>

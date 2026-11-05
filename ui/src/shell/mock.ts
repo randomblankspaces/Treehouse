@@ -204,7 +204,7 @@ export const mockClient: TreehouseClient & {replay(runId: string): void} = {
 /** Template captions. AWS plan: Bedrock writes the line, Polly returns audio_url. */
 export const mockNarrator: Narrator = {
   async line(step) {
-    if (step.error) return {text: `A ${step.tool?.name ?? 'tool'} call failed: ${step.error.message}. Watch whether the agent retries or gives up.`, audio_url: null};
+    if (step.error) return {text: `A ${step.tool?.name ?? 'tool'} call failed: ${step.error.message}.`, audio_url: null};
     if (step.status !== 'ok' || !step.decision || !isKey(step)) return null;
     return {text: `${FOCUS_LABEL[focusOf(step)]} — ${step.tool!.name}: ${step.decision.rationale}`, audio_url: null};
   },

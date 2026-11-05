@@ -59,3 +59,9 @@ export function bboxOf(s: RunSnapshot): [number, number, number, number] | null 
   const lon = s.markers.map(m => m.lon), lat = s.markers.map(m => m.lat), pad = 0.002;
   return [Math.min(...lon) - pad, Math.min(...lat) - pad, Math.max(...lon) + pad, Math.max(...lat) + pad];
 }
+
+/** Plain words for provenance ids shown to people. */
+const WORDS: Record<string, string> = {replay: 'Replay of a recorded live run', live: 'Live run', mock: 'Scripted mock',
+  real: 'real LGND Clay embeddings', synthetic: 'synthetic embeddings', synthetic_reference_derived: 'synthetic embeddings (derived from the reference)',
+  unknown: 'embeddings: unknown', vision_not_used: 'no vision model used', vision_used: 'vision model used'};
+export const words = (id: string) => WORDS[id] ?? id.replace(/_/g, ' ');

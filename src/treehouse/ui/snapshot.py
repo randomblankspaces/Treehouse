@@ -166,7 +166,7 @@ def snapshot(store, run, *, reference=None):
             row["decision"] = {key: d[key] for key in ("rationale", "alternatives", "confidence")}
             row["decision_id"] = d["decision_id"]
         if span.error:
-            row["error"] = {"type": span.error.type, "message": "Recorded span failed; raw error text is withheld."}
+            row["error"] = {"type": span.error.type, "message": "Tool call failed (details sealed in the trace)"}
         steps.append(row)
     claim_decision_ids = {}
     for trial in run.trials:

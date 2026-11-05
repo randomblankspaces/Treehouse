@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { POSES, RECTS, WINDOW_X, ease, fit, lerpCam, lerpSide, render, toScreen, walkSide, type Boy, type Camera, type Rect, type Side } from './art.ts';
 import { client, usingMock } from './client.ts';
 import { FOCUS_LABEL, focusOf, isKey, terminal, type Agent, type Narration, type Place, type RunSnapshot, type RunSummary, type TraceStep } from './contract.ts';
-import { PHASES, bboxOf, clock, phaseState, sinceStart } from './describe.ts';
+import { PHASES, bboxOf, clock, phaseState, sinceStart, words } from './describe.ts';
 import { canPickFolder, exportRun } from './export.ts';
 import { useNarration, usePrefs, useRunNarration, useSnapshot } from './hooks.ts';
 import { pickMarker, renderMap, TILE_CREDIT } from './mapart.ts';
@@ -93,7 +93,7 @@ function StoryApp() {
     if (runId) url.searchParams.set('run', runId); else url.searchParams.delete('run');
     history.replaceState(null, '', `${url.pathname}${url.search}`);
   }, [runId]);
-  const openSaved = (id: string) => { setRunId(id); setTick(t => t + 1); setPhase('map'); setSceneText(SCENES.map); };
+  const openSaved = (id: string) => { setRunId(id); setTick(t => t + 1); void walkToMap(); };
 
   // one loop: tweens + world render (paused while the map covers the screen)
   useEffect(() => {
@@ -148,7 +148,10 @@ function StoryApp() {
     setStartError(null);
     try { setRunId(await client.startRun({place_id: place.place_id, goal, agent_id: agent.agent_id})); setTick(t => t + 1); }
     catch (e) { setStartError(String((e as Error).message ?? e)); return; }
-    await sequence(async () => {
+    await walkToMap();
+  };
+  // book -> binoculars: the same walk every time, whether a new run or a saved one
+  const walkToMap = () => sequence(async () => {
       await fly(RECTS.room, 1600, 0.98);
       setSceneText(SCENES.walk);
       const pose = (side: Side, held = false) => { boy.current = {pose: 'side', side, held}; };
@@ -164,7 +167,6 @@ function StoryApp() {
       await fly(RECTS.window, 1800, 1, true);
       setSceneText(SCENES.map); setPhase('map');
     });
-  };
   const newTask = () => sequence(async () => {
     boy.current = {pose: 'side', side: POSES.lying, held: false, kick: true};
     cam.current = fit(RECTS.room, size.current.W, size.current.H, 0.98);
@@ -311,7 +313,7 @@ function MapStage({snap, error, lines, prefs, reduce, mode, onNewTask}: {snap: R
       <p className="kicker"><Icon name="bino" /> Through the binoculars</p>
       <h2>{snap?.input.title ?? 'Starting the agent…'}</h2>
       {snap && <p className="agent-line"><Icon name="star" size={14} /> Agent: <b>{snap.context.model_id}</b> · {snap.context.harness}</p>}
-      {snap && <p className="note">{snap.mode} · {snap.provenance.embeddings} · vision {snap.provenance.vision}</p>}
+      {snap && <p className="note">{words(snap.mode)} · {words(snap.provenance.embeddings)} · {words('vision_' + snap.provenance.vision)}</p>}
       {error && <p className="alert" role="alert">Lost contact with the run: {error}</p>}
       <dl className="meters">
         <div className="px"><dt><Icon name="hourglass" /> {live ? 'Since start' : 'Took'}</dt><dd>{snap ? clock(sinceStart(snap)) : 'unavailable'}</dd></div>
@@ -383,7 +385,7 @@ function Summary({ref, snap, lines, count}: {ref: Ref<HTMLDialogElement>; snap: 
       <section><h3>Cost and time</h3>
         <dl className="kv"><dt>Time</dt><dd>{snap.elapsed_ms === null ? 'unavailable' : `${(snap.elapsed_ms / 1000).toFixed(1)} s (${snap.timing_basis ?? 'recorded trace'})`}</dd><dt>Cost</dt><dd>{money(snap.cost_usd)}</dd>
           <dt>Steps</dt><dd>{snap.steps.length}</dd><dt>Data read</dt><dd>{bytes === null ? 'unavailable' : `${(bytes / 1e6).toFixed(1)} MB`}</dd></dl></section>
-      {lines.length > 0 && <section><h3>Narration</h3><ol>{[...lines].reverse().map((l, i) => <li key={i}>{l.text}</li>)}</ol></section>}
+      {lines.length > 0 && <section><h3>Narration</h3><ol>{collapse([...lines].reverse().map(l => l.text)).map(([t, n], i) => <li key={i}>{t}{n > 1 ? ` (×${n})` : ''}</li>)}</ol></section>}
       <PlainRunSummary snap={snap} />
       <p><a href={`/dev?run=${encodeURIComponent(snap.run_id)}`}>Open every span in the dev view</a></p>
     </div>
@@ -391,3 +393,7 @@ function Summary({ref, snap, lines, count}: {ref: Ref<HTMLDialogElement>; snap: 
 }
 
 createRoot(document.getElementById('root')!).render(<StrictMode><StoryApp /></StrictMode>);
+
+/** Consecutive identical lines become one line with a count. */
+const collapse = (xs: string[]) => xs.reduce<[string, number][]>((out, x) => {
+  const last = out[out.length - 1]; if (last && last[0] === x) last[1] += 1; else out.push([x, 1]); return out; }, []);
