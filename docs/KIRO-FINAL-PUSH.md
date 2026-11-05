@@ -24,21 +24,31 @@ Repo: `/workshop/Treehouse` = github.com/randomblankspaces/Treehouse. Work only 
    (Haiku 5.5 in `config/models.yaml`, real-data cards, Chattogram `oil_fuel_tank` card, review effort as analyst hours).
    For each: merge `main` in, make the full suite green, keep every model-visible string identical to main (recorded
    cassettes replay byte-exact), PR, merge.
-2. **Narrator + colour themes (accessibility).** `scripts/narrate_polly.py --store <store> --run <id> --out ui/public/narration/`
+2. **Simple thinking view (the essence of the demo)** — spec in `docs/FUTURE-FEATURES.md` §F2 and §F3. In the run
+   report/story UI (`ui/src/shell/story.tsx`, `report.tsx`): (a) a pinned **scale card** for the cell/chip-size and
+   foundation-model decision (chosen vs rejected options, the object's size from `config/asset-classes.yaml`, the agent's
+   one-sentence why); (b) one card per decision with a one-sentence "Chose X over Y because Z", a confidence bar, a
+   verdict chip from the RV rules (✓/⚠/✗) and an evidence badge; (c) clicking a red site shows the decision chain that
+   produced it; (d) a short "How confidence is gauged" panel (stated vs calibration vs earned) using the text in §F3,
+   with the deliberation numbers if WP-004 merged. Build from data already in the snapshot API; no new backend unless
+   needed. Check at 1440 px and 390 px.
+3. **Narrator + colour themes (accessibility).** `scripts/narrate_polly.py --store <store> --run <id> --out ui/public/narration/`
    (Amazon Polly neural, ≤2,900-char chunks, writes `<run>.mp3` + `<run>.json` with text sha256, voice, engine).
    The UI already has `useNarration` in `ui/src/shell/hooks.ts` playing `audio_url`: play the MP3 only when its sha
    matches the shown summary, else browser speech; label "Voice: Amazon Polly". Colour-safe theme options (Okabe–Ito
    red–green safe, blue–yellow safe, monochrome) and status by marker shape (present = filled circle, cannot_assess =
    hollow diamond, absent = ×). Generate MP3s live for the committed demo runs.
-3. **Live runs (≤ $15):** use `probe/live1.sh` from branch `lead/k1-probe` (`git show origin/lead/k1-probe:probe/live1.sh`)
+4. **Live runs (≤ $15):** use `probe/live1.sh` from branch `lead/k1-probe` (`git show origin/lead/k1-probe:probe/live1.sh`)
    or the same commands: card `tasks/t1-nagoya-warehouses-real.yaml` (real LGND Clay), Sonnet with `thinking` on × 2,
    Haiku × 1, Nova Pro × 1; if WP-007 merged, one run of a card with `user_examples` so the agent reaches the vision
    sub-agent; if WP-003 merged, Chattogram fuel tanks × 1. Env for vision: `TREEHOUSE_VISION_MODE=record`,
    `TREEHOUSE_VISION_CASSETTE`, `TREEHOUSE_GSI_LOG`, `TREEHOUSE_CASSETTE_OUT`. Commit evidence under
    `fixtures/live/real/` exactly like PR #31 (scan first), then run AgentCore Evaluations on one new run
    (`src/treehouse/aws/` helpers) and commit the result JSON (account id redacted).
-4. **Docs and numbers:** update `docs/ARCHITECTURE.md` status rows and README "what ran live" with what actually ran
+5. **Docs and numbers:** update `docs/ARCHITECTURE.md` status rows and README "what ran live" with what actually ran
    (run ids, $ spent, decisions the agent made, deliberation numbers); append a final section to `docs/KIRO-STATUS.md`.
+
+Anything you cannot finish goes into `docs/FUTURE-FEATURES.md` with what is left.
 
 If something is blocked, record it in `docs/KIRO-STATUS.md` and move to the next task. Do not ask questions; there is
 nobody to answer before 10:00.
