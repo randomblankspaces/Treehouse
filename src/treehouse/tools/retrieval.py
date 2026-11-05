@@ -485,7 +485,9 @@ def make_retrieval_server(tools: RetrievalTools) -> MCPServer:
         "Score cells in [0, 1] with a classifier trained on example cells vs random cells (fixed seed).\n"
         "method linear_probe or linear_svm returns at most k cells (default 200, maximum 1000), ranked by score\n"
         "descending then cell_id, plus total cells scored and min/median/max. Explicit cell_ids limit the scored\n"
-        "set. method vision_subagent (may be unconfigured) requires explicit cell_ids (maximum 20)."))
+        "set. method vision_subagent sends a 0.5 m GSI aerial photo of each cell (Japan only) to a vision model\n"
+        "and returns per-cell label, confidence-based score and explanation; it requires explicit cell_ids\n"
+        "(maximum 20) and may be unconfigured. Use it to check embedding candidates visually."))
     async def classify(index_id: str, method: Literal["linear_probe", "linear_svm", "vision_subagent"],
                        cell_ids: list[str] | None = None,
                        example_ids: list[str] | None = None, k: int = 200) -> dict | ToolError:
